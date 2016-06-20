@@ -77,6 +77,60 @@ def create_parser():
     return parser
 
 
+def process_args(parser, args):
+    args.input = abspath(realpath(args.input))
+    if not exists(args.input):
+        parser.error('Input file does not exits: %s' % args.input)
+
+    args.test = abspath(realpath(args.test))
+    if not exists(args.test) or not os.access(abspath(args.test), os.X_OK):
+        parser.error('Tester program does not exist or isn\'t executable: %s' % args.test)
+    args.tester_class = SubprocessTest
+
+    if args.encoding:
+        try:
+            codecs.lookup(args.encoding)
+        except LookupError:
+            parser.error('The given encoding (%s) is not known.' % args.encoding)
+
+    split_method = getattr(config_splitters, args.split_method)
+    subset_iterator = getattr(config_iterators, args.subset_iterator)
+    complement_iterator = getattr(config_iterators, args.complement_iterator)
+
+    args.out = abspath(realpath(args.out if args.out else '%s.%s' % (args.input, time.strftime('%Y%m%d_%H%M%S'))))
+    args.jobs = 1 if not args.parallel else args.jobs if args.jobs else os.cpu_count()
+
+    with open(args.input, 'rb') as f:
+        args.src = f.read()
+
+    if not args.encoding:
+        args.encoding = chardet.detect(args.src)['encoding']
+        if not args.encoding:
+            parser.error('The encoding of the test is not recognized.'
+                         'Please define it with the --encoding command line option.')
+
+    # Choose the reducer class that will be used and its configuration.
+    args.reduce_config = {'split': split_method}
+    if not args.parallel:
+        args.reduce_class = LightDD
+        args.reduce_config['subset_iterator'] = subset_iterator
+        args.reduce_config['complement_iterator'] = complement_iterator
+        args.reduce_config['subset_first'] = args.subset_first
+    else:
+        args.reduce_config['proc_num'] = args.jobs
+        args.reduce_config['max_utilization'] = args.max_utilization
+
+        if args.combine_loops:
+            args.reduce_class = CombinedParallelDD
+            args.reduce_config['config_iterator'] = CombinedIterator(args.subset_first, subset_iterator,
+                                                                     complement_iterator)
+        else:
+            args.reduce_class = ParallelDD
+            args.reduce_config['subset_iterator'] = subset_iterator
+            args.reduce_config['complement_iterator'] = complement_iterator
+            args.reduce_config['subset_first'] = args.subset_first
+
+
 def execute():
 
     parser = create_parser()
@@ -90,81 +144,33 @@ def execute():
     logging.basicConfig(format='%(message)s')
     logger.setLevel(args.log_level)
 
-    args.input = abspath(realpath(args.input))
-    if not exists(args.input):
-        parser.error('Input file does not exits: %s' % args.input)
+    process_args(parser, args)
 
-    args.test = abspath(realpath(args.test))
-    if not exists(args.test) or not os.access(abspath(args.test), os.X_OK):
-        parser.error('Tester program does not exist or isn\'t executable: %s' % args.test)
-
-    if args.encoding:
-        try:
-            codecs.lookup(args.encoding)
-        except LookupError:
-            parser.error('The given encoding (%s) is not known.' % args.encoding)
-
-    split_method = getattr(config_splitters, args.split_method)
-    subset_iterator = getattr(config_iterators, args.subset_iterator)
-    complement_iterator = getattr(config_iterators, args.complement_iterator)
-
-    args.out = abspath(realpath(args.out if args.out else '%s.%s' % (args.input, time.strftime('%Y%m%d_%H%M%S'))))
     tests_dir = join(args.out, 'tests')
-    args.jobs = 1 if not args.parallel else args.jobs if args.jobs else os.cpu_count()
-
-    with open(args.input, 'rb') as f:
-        src = f.read()
-
-    if not args.encoding:
-        args.encoding = chardet.detect(src)['encoding']
-        if not args.encoding:
-            parser.error('The encoding of the test is not recognized.'
-                         'Please define it with the --encoding command line option.')
-
-    if not exists(abspath(args.out)):
-        os.makedirs(args.out)
+    if not exists(tests_dir):
         os.makedirs(tests_dir)
 
+    global_structures.init(args.parallel, args.disable_cache)
+
+    # Split source to the chosen atoms.
     if args.atom == 'line':
-        content = src.decode(args.encoding).splitlines(keepends=True)
+        content = args.src.decode(args.encoding).splitlines(keepends=True)
     elif args.atom == 'char':
-        content = src.decode(args.encoding)
+        content = args.src.decode(args.encoding)
 
     if len(content) < 2:
-        parser.info('Test case is minimal already.')
+        logger.info('Test case is minimal already.')
         sys.exit(0)
 
     logger.info('Reduce session starts for %s\n%s' % (
         args.input, reduce(lambda x, y: x + y, ['\t%s: %s\n' % (k, v) for k, v in sorted(vars(args).items())], '')))
     logger.info('Initial test contains %s %ss' % (len(content), args.atom))
 
-    test_path_pattern = join(tests_dir, '%s', basename(args.input))
-    command_pattern = '%s %%s' % abspath(args.test)
-
-    global_structures.init(args.parallel, args.disable_cache)
-
-    test = SubprocessTest(command_pattern, ConcatTestBuilder(content), test_path_pattern, args.encoding)
-    if not args.parallel:
-        dd = LightDD(test,
-                     split=split_method,
-                     subset_first=args.subset_first,
-                     subset_iterator=subset_iterator,
-                     complement_iterator=complement_iterator)
-    elif not args.combine_loops:
-        dd = ParallelDD(test,
-                        split=split_method,
-                        proc_num=args.jobs,
-                        max_utilization=args.max_utilization,
-                        subset_first=args.subset_first,
-                        subset_iterator=subset_iterator,
-                        complement_iterator=complement_iterator)
-    else:
-        dd = CombinedParallelDD(test,
-                                split=split_method,
-                                proc_num=args.jobs,
-                                max_utilization=args.max_utilization,
-                                config_iterator=CombinedIterator(args.subset_first, subset_iterator, complement_iterator))
-
+    dd = args.reduce_class(args.tester_class('%s %%s' % abspath(args.test),
+                                             ConcatTestBuilder(content),
+                                             join(tests_dir, '%s', basename(args.input)),
+                                             args.encoding),
+                           **args.reduce_config)
     min_set = dd.ddmin(list(range(len(content))))
 
     logger.debug('A minimal config is: %s' % min_set)

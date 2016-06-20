@@ -72,11 +72,15 @@ class LightDD(AbstractDD):
 
             # Minimization ends if no interesting configuration was found by the finest splitting or
             # if the configuration is already reduced to a single unit.
-            if not failed and n == len(config) or len(next_config) == 1:
+            if not failed and n == len(config):
                 # No further minimizing
                 logger.info('Done.')
-
                 return config
+
+            if failed and len(next_config) == 1:
+                # No further minimizing
+                logger.info('Done.')
+                return next_config
 
             config = next_config
             n = next_n

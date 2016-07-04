@@ -102,7 +102,7 @@ def process_args(parser, args):
 
     args.tester_class = SubprocessTest
     args.tester_config = {
-        'enc': args.encoding,
+        'encoding': args.encoding,
         'command_pattern': '%s %%s' % abspath(args.test)
     }
 

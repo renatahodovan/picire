@@ -16,7 +16,7 @@ from .abstract_dd import AbstractDD
 
 class SubprocessTest(object):
 
-    def __init__(self, command_pattern, test_builder, test_pattern, enc):
+    def __init__(self, command_pattern, test_builder, test_pattern, encoding):
         """
         Wrapper around the script provided by the user. It decides about the
         interestingness based on the return code of executed script.
@@ -26,10 +26,10 @@ class SubprocessTest(object):
         :param test_builder: Callable object that creates test case from a configuration.
         :param test_pattern: The patter of the test's path. It contains one %s part
                              that will be replaced with the ID of the certain configurations.
-        :param enc: The encoding that will be used to save the tests.
+        :param encoding: The encoding that will be used to save the tests.
         """
         self.command_pattern = command_pattern
-        self.encoding = enc
+        self.encoding = encoding
         self.test_builder = test_builder
         self.test_pattern = test_pattern
 

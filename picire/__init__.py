@@ -7,7 +7,7 @@
 
 from .abstract_dd import AbstractDD
 from .abstract_parallel_dd import AbstractParallelDD
-from .cli import __version__
+from .cli import __version__, call
 from .combined_iterator import CombinedIterator
 from .combined_parallel_dd import CombinedParallelDD
 from .light_dd import LightDD
@@ -15,16 +15,19 @@ from .parallel_dd import ParallelDD
 from .subprocess_test import ConcatTestBuilder, SubprocessTest
 
 
-__all__ = ['__version__',
-           'AbstractDD',
-           'AbstractParallelDD',
-           'cli',
-           'CombinedIterator',
-           'CombinedParallelDD',
-           'ConcatTestBuilder',
-           'config_iterators',
-           'config_splitters',
-           'global_structures',
-           'LightDD',
-           'ParallelDD',
-           'SubprocessTest']
+__all__ = [
+    '__version__',
+    'AbstractDD',
+    'AbstractParallelDD',
+    'call',
+    'cli',
+    'CombinedIterator',
+    'CombinedParallelDD',
+    'ConcatTestBuilder',
+    'config_iterators',
+    'config_splitters',
+    'global_structures',
+    'LightDD',
+    'ParallelDD',
+    'SubprocessTest'
+]

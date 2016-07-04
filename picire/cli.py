@@ -82,32 +82,35 @@ def process_args(parser, args):
     if not exists(args.input):
         parser.error('Input file does not exits: %s' % args.input)
 
-    args.test = abspath(realpath(args.test))
-    if not exists(args.test) or not os.access(abspath(args.test), os.X_OK):
-        parser.error('Tester program does not exist or isn\'t executable: %s' % args.test)
-    args.tester_class = SubprocessTest
+    with open(args.input, 'rb') as f:
+        args.src = f.read()
 
     if args.encoding:
         try:
             codecs.lookup(args.encoding)
         except LookupError:
             parser.error('The given encoding (%s) is not known.' % args.encoding)
-
-    split_method = getattr(config_splitters, args.split_method)
-    subset_iterator = getattr(config_iterators, args.subset_iterator)
-    complement_iterator = getattr(config_iterators, args.complement_iterator)
-
-    args.out = abspath(realpath(args.out if args.out else '%s.%s' % (args.input, time.strftime('%Y%m%d_%H%M%S'))))
-    args.jobs = 1 if not args.parallel else args.jobs if args.jobs else os.cpu_count()
-
-    with open(args.input, 'rb') as f:
-        args.src = f.read()
-
-    if not args.encoding:
+    else:
         args.encoding = chardet.detect(args.src)['encoding']
         if not args.encoding:
             parser.error('The encoding of the test is not recognized.'
                          'Please define it with the --encoding command line option.')
+
+    args.test = abspath(realpath(args.test))
+    if not exists(args.test) or not os.access(abspath(args.test), os.X_OK):
+        parser.error('Tester program does not exist or isn\'t executable: %s' % args.test)
+
+    args.tester_class = SubprocessTest
+    args.tester_config = {
+        'enc': args.encoding,
+        'command_pattern': '%s %%s' % abspath(args.test)
+    }
+
+    args.jobs = 1 if not args.parallel else args.jobs if args.jobs else os.cpu_count()
+
+    split_method = getattr(config_splitters, args.split_method)
+    subset_iterator = getattr(config_iterators, args.subset_iterator)
+    complement_iterator = getattr(config_iterators, args.complement_iterator)
 
     # Choose the reducer class that will be used and its configuration.
     args.reduce_config = {'split': split_method}
@@ -130,8 +133,81 @@ def process_args(parser, args):
             args.reduce_config['complement_iterator'] = complement_iterator
             args.reduce_config['subset_first'] = args.subset_first
 
+    args.out = abspath(realpath(args.out if args.out else '%s.%s' % (args.input, time.strftime('%Y%m%d_%H%M%S'))))
+
+
+def call(*,
+         reduce_class, reduce_config,
+         tester_class, tester_config,
+         input, src, encoding, out,
+         atom,
+         parallel=False, disable_cache=False, cleanup=True):
+    """
+    Execute picire as if invoked from command line, however, control its
+    behaviour not via command line arguments but function parameters.
+
+    :param reduce_class: Reference to the reducer class.
+    :param reduce_config: Dictionary containing information to initialize the reduce_class.
+    :param tester_class: Reference to a runnable class that can decide about the interestingness of a test case.
+    :param tester_config: Dictionary containing information to initialize the tester_class.
+    :param input: Path to the test case to reduce (only used to determine the name of the output file).
+    :param src: Contents of the test case to reduce.
+    :param encoding: Encoding of the input test case.
+    :param out: Path to the output directory.
+    :param atom: Input granularity to work with during reduce ('char' or 'line').
+    :param parallel: Boolean to enable parallel mode (default: False).
+    :param disable_cache: Boolean to disable cache (default: False).
+    :param cleanup: Binary flag denoting whether removing auxiliary files at the end is enabled (default: True).
+    :return: The path to the minimal test case.
+    """
+
+    # Get the parameters in a dictionary so that they can be pretty-printed later
+    # (minus src, as that parameter can be arbitrarily large)
+    args = locals().copy()
+    del args['src']
+
+    tests_dir = join(out, 'tests')
+    if not exists(tests_dir):
+        os.makedirs(tests_dir)
+
+    global_structures.init(parallel, disable_cache)
+
+    # Split source to the chosen atoms.
+    if atom == 'line':
+        content = src.decode(encoding).splitlines(keepends=True)
+    elif atom == 'char':
+        content = src.decode(encoding)
+
+    if len(content) < 2:
+        logger.info('Test case is minimal already.')
+        sys.exit(0)
+
+    logger.info('Reduce session starts for %s\n%s' % (
+        input, reduce(lambda x, y: x + y, ['\t%s: %s\n' % (k, v) for k, v in sorted(args.items())], '')))
+    logger.info('Initial test contains %s %ss' % (len(content), atom))
+
+    dd = reduce_class(tester_class(test_builder=ConcatTestBuilder(content),
+                                   test_pattern=join(tests_dir, '%s', basename(input)),
+                                   **tester_config),
+                      **reduce_config)
+    min_set = dd.ddmin(list(range(len(content))))
+
+    logger.debug('A minimal config is: %s' % min_set)
+    out_file = join(out, basename(input))
+    with codecs.open(out_file, 'w', encoding=encoding) as f:
+        f.write(''.join(content[x] for x in min_set))
+    logger.info('Result is saved to %s.' % out_file)
+
+    if cleanup:
+        rmtree(tests_dir)
+
+    return out_file
+
 
 def execute():
+    """
+    The main entry point of picire.
+    """
 
     parser = create_parser()
     # Implementation specific CLI options that are not needed to be part of the core parser.
@@ -146,38 +222,15 @@ def execute():
 
     process_args(parser, args)
 
-    tests_dir = join(args.out, 'tests')
-    if not exists(tests_dir):
-        os.makedirs(tests_dir)
-
-    global_structures.init(args.parallel, args.disable_cache)
-
-    # Split source to the chosen atoms.
-    if args.atom == 'line':
-        content = args.src.decode(args.encoding).splitlines(keepends=True)
-    elif args.atom == 'char':
-        content = args.src.decode(args.encoding)
-
-    if len(content) < 2:
-        logger.info('Test case is minimal already.')
-        sys.exit(0)
-
-    logger.info('Reduce session starts for %s\n%s' % (
-        args.input, reduce(lambda x, y: x + y, ['\t%s: %s\n' % (k, v) for k, v in sorted(vars(args).items())], '')))
-    logger.info('Initial test contains %s %ss' % (len(content), args.atom))
-
-    dd = args.reduce_class(args.tester_class('%s %%s' % abspath(args.test),
-                                             ConcatTestBuilder(content),
-                                             join(tests_dir, '%s', basename(args.input)),
-                                             args.encoding),
-                           **args.reduce_config)
-    min_set = dd.ddmin(list(range(len(content))))
-
-    logger.debug('A minimal config is: %s' % min_set)
-    out_file = join(args.out, basename(args.input))
-    with codecs.open(out_file, 'w', encoding=args.encoding) as f:
-        f.write(''.join(content[x] for x in min_set))
-    logger.info('Result is saved to %s.' % out_file)
-
-    if args.cleanup:
-        rmtree(tests_dir)
+    call(reduce_class=args.reduce_class,
+         reduce_config=args.reduce_config,
+         tester_class=args.tester_class,
+         tester_config=args.tester_config,
+         input=args.input,
+         src=args.src,
+         encoding=args.encoding,
+         out=args.out,
+         atom=args.atom,
+         parallel=args.parallel,
+         disable_cache=args.disable_cache,
+         cleanup=args.cleanup)

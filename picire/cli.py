@@ -15,7 +15,7 @@ import time
 
 from argparse import ArgumentParser
 from functools import reduce
-from os.path import abspath, basename, exists, join, realpath
+from os.path import abspath, basename, exists, join, relpath
 from shutil import rmtree
 
 from . import config_splitters, config_iterators, global_structures
@@ -78,7 +78,7 @@ def create_parser():
 
 
 def process_args(parser, args):
-    args.input = abspath(realpath(args.input))
+    args.input = abspath(relpath(args.input))
     if not exists(args.input):
         parser.error('Input file does not exits: %s' % args.input)
 
@@ -96,14 +96,14 @@ def process_args(parser, args):
             parser.error('The encoding of the test is not recognized.'
                          'Please define it with the --encoding command line option.')
 
-    args.test = abspath(realpath(args.test))
-    if not exists(args.test) or not os.access(abspath(args.test), os.X_OK):
+    args.test = abspath(relpath(args.test))
+    if not exists(args.test) or not os.access(args.test, os.X_OK):
         parser.error('Tester program does not exist or isn\'t executable: %s' % args.test)
 
     args.tester_class = SubprocessTest
     args.tester_config = {
         'encoding': args.encoding,
-        'command_pattern': '%s %%s' % abspath(args.test)
+        'command_pattern': '%s %%s' % args.test
     }
 
     args.jobs = 1 if not args.parallel else args.jobs if args.jobs else os.cpu_count()
@@ -133,7 +133,7 @@ def process_args(parser, args):
             args.reduce_config['complement_iterator'] = complement_iterator
             args.reduce_config['subset_first'] = args.subset_first
 
-    args.out = abspath(realpath(args.out if args.out else '%s.%s' % (args.input, time.strftime('%Y%m%d_%H%M%S'))))
+    args.out = abspath(relpath(args.out if args.out else '%s.%s' % (args.input, time.strftime('%Y%m%d_%H%M%S'))))
 
 
 def call(*,
@@ -167,8 +167,7 @@ def call(*,
     del args['src']
 
     tests_dir = join(out, 'tests')
-    if not exists(tests_dir):
-        os.makedirs(tests_dir)
+    os.makedirs(tests_dir, exist_ok=True)
 
     global_structures.init(parallel, disable_cache)
 
@@ -194,8 +193,8 @@ def call(*,
 
     logger.debug('A minimal config is: %s' % min_set)
     out_file = join(out, basename(input))
-    with codecs.open(out_file, 'w', encoding=encoding) as f:
-        f.write(''.join(content[x] for x in min_set))
+    with codecs.open(out_file, 'w', encoding=encoding, errors='ignore') as f:
+        f.write(ConcatTestBuilder(content)(min_set))
     logger.info('Result is saved to %s.' % out_file)
 
     if cleanup:

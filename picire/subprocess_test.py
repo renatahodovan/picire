@@ -47,8 +47,7 @@ class SubprocessTest(object):
         test_path = self.test_pattern % config_id
         test_dir = os.path.dirname(test_path)
 
-        if not os.path.exists(test_dir):
-            os.makedirs(test_dir)
+        os.makedirs(test_dir, exist_ok=True)
 
         with codecs.open(test_path, 'w', encoding=self.encoding, errors='ignore') as f:
             f.write(self.test_builder(config))

@@ -10,7 +10,6 @@ import codecs
 import logging
 import os
 import pkgutil
-import sys
 import time
 
 from argparse import ArgumentParser
@@ -176,10 +175,6 @@ def call(*,
         content = src.decode(encoding).splitlines(keepends=True)
     elif atom == 'char':
         content = src.decode(encoding)
-
-    if len(content) < 2:
-        logger.info('Test case is minimal already.')
-        sys.exit(0)
 
     logger.info('Reduce session starts for %s\n%s' % (
         input, reduce(lambda x, y: x + y, ['\t%s: %s\n' % (k, v) for k, v in sorted(args.items())], '')))

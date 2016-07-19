@@ -92,6 +92,11 @@ class AbstractDD(object):
         :return: 1-minimal failing configuration.
         """
 
+        if len(config) < 2:
+            assert self.test(config, 'assert') == self.FAIL
+            logger.info('Test case is minimal already.')
+            return config
+
         logger.debug('dd(%s) ...' % (repr(config)))
 
         outcome = self._dd(config)

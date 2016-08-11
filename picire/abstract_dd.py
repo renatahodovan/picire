@@ -73,7 +73,7 @@ class AbstractDD(object):
     @staticmethod
     def minus(c1, c2):
         """Return a list of all elements of C1 that are not in C2."""
-        return [c for c in c1 if c not in c2]
+        return [c for c in c1 if c not in set(c2)]
 
     def _dd(self, config):
         """

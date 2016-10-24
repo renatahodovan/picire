@@ -29,50 +29,49 @@ __version__ = pkgutil.get_data(__package__, 'VERSION').decode('ascii').strip()
 
 
 def create_parser():
-    parser = ArgumentParser(description='Command line interface of the "picire" test case reducer.',
-                            prog='Picire', add_help=True)
-    parser.add_argument('-i', '--input', required=True,
-                        help='The test case to be reduced.')
+    parser = ArgumentParser(description='Command line interface of the "picire" test case reducer')
+    parser.add_argument('-i', '--input', metavar='FILE', required=True,
+                        help='test case to be reduced')
 
     # Base reduce settings.
     parser.add_argument('--disable-cache', action='store_true', default=False,
-                        help='Turn off caching.')
-    parser.add_argument('--split', dest='split_method',
+                        help='turn off caching')
+    parser.add_argument('--split', metavar='NAME', dest='split_method',
                         choices=[i for i in dir(config_splitters) if not i.startswith('_')], default='zeller',
-                        help='The split algorithm to use.')
-    parser.add_argument('--test', required=True,
-                        help='The test command to execute to decide whether an input is interesting or not.')
-    parser.add_argument('--encoding',
-                        help='The encoding of the input test.')
+                        help='split algorithm (%(choices)s; default: %(default)s)')
+    parser.add_argument('--test', metavar='FILE', required=True,
+                        help='test command that decides about interestingness of an input')
+    parser.add_argument('--encoding', metavar='NAME',
+                        help='test case encoding (default: autodetect)')
 
     # Extra settings for parallel reduce.
     parser.add_argument('-p', '--parallel', action='store_true', default=False,
-                        help='Run dd in parallel.')
+                        help='run DD in parallel')
     parser.add_argument('-c', '--combine-loops', action='store_true', default=False,
-                        help='Combine subset and complement check loops for more parallelization (has effect in parallel mode only).')
-    parser.add_argument('-j', '--jobs', type=int,
-                        help='The maximum number of test commands to execute in parallel (has effect in parallel mode only).')
-    parser.add_argument('-u', '--max-utilization', type=int, default=100,
-                        help='Maximum CPU utilization allowed; don\'t start new parallel jobs if utilization is higher (has effect in parallel mode only).')
+                        help='combine subset and complement check loops for more parallelization (has effect in parallel mode only)')
+    parser.add_argument('-j', '--jobs', metavar='N', type=int, default=os.cpu_count(),
+                        help='maximum number of test commands to execute in parallel (has effect in parallel mode only; default: %(default)s)')
+    parser.add_argument('-u', '--max-utilization', metavar='N', type=int, default=100,
+                        help='maximum CPU utilization allowed; don\'t start new parallel jobs until utilization is higher (has effect in parallel mode only; default: %(default)s)')
 
     # Tweaks how to walk through the chunk lists.
     parser.add_argument('--complement-first', dest='subset_first', action='store_false', default=True,
-                        help='Check complements first.')
-    parser.add_argument('--subset-iterator',
+                        help='check complements first')
+    parser.add_argument('--subset-iterator', metavar='NAME',
                         choices=[i for i in dir(config_iterators) if not i.startswith('_')], default='forward',
-                        help='The ordering strategy for looping through subsets.')
-    parser.add_argument('--complement-iterator',
+                        help='ordering strategy for looping through subsets (%(choices)s; default: %(default)s)')
+    parser.add_argument('--complement-iterator', metavar='NAME',
                         choices=[i for i in dir(config_iterators) if not i.startswith('_')], default='forward',
-                        help='The ordering strategy for looping through complements.')
+                        help='ordering strategy for looping through complements (%(choices)s; default: %(default)s)')
 
     # Additional settings.
-    parser.add_argument('-l', '--log-level',
+    parser.add_argument('-l', '--log-level', metavar='LEVEL',
                         choices=['DEBUG', 'INFO', 'WARNING', 'ERROR'], default='INFO',
-                        help='The verbosity level of diagnostic messages.')
-    parser.add_argument('-o', '--out',
-                        help='The path of the working directory.')
+                        help='verbosity level of diagnostic messages (%(choices)s; default: %(default)s)')
+    parser.add_argument('-o', '--out', metavar='DIR',
+                        help='working directory (default: input.timestamp)')
     parser.add_argument('--disable-cleanup', dest='cleanup', default=True, action='store_false',
-                        help='Disable the removal of generated temporary files.')
+                        help='disable the removal of generated temporary files')
     return parser
 
 
@@ -104,8 +103,6 @@ def process_args(parser, args):
         'encoding': args.encoding,
         'command_pattern': '%s %%s' % args.test
     }
-
-    args.jobs = 1 if not args.parallel else args.jobs if args.jobs else os.cpu_count()
 
     split_method = getattr(config_splitters, args.split_method)
     subset_iterator = getattr(config_iterators, args.subset_iterator)
@@ -205,8 +202,8 @@ def execute():
 
     parser = create_parser()
     # Implementation specific CLI options that are not needed to be part of the core parser.
-    parser.add_argument('-a', '--atom', choices=['char', 'line'], default='line',
-                        help='The atom (i.e., input granularity) to work with.')
+    parser.add_argument('-a', '--atom', metavar='NAME', choices=['char', 'line'], default='line',
+                        help='atom (i.e., granularity) of input (%(choices)s; default: %(default)s)')
     parser.add_argument('--version', action='version', version='%(prog)s {version}'.format(version=__version__))
 
     args = parser.parse_args()

@@ -5,9 +5,6 @@
 # This file may not be copied, modified, or distributed except
 # according to those terms.
 
-from random import shuffle
-
-
 forward = range  #: Generator returning numbers from 0 to n-1.
 
 
@@ -38,6 +35,8 @@ def random(n):
     :param n: Upper bound of the interval.
     :return: Numbers in random order from 0 to n - 1.
     """
+    from random import shuffle
+
     lst = list(range(n))
     shuffle(lst)
     yield from lst

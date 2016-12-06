@@ -52,7 +52,7 @@ class SubprocessTest(object):
         with codecs.open(test_path, 'w', encoding=self.encoding, errors='ignore') as f:
             f.write(self.test_builder(config))
 
-        with Popen(shlex.split(self.command_pattern % test_path)) as proc:
+        with Popen(shlex.split(self.command_pattern % test_path), cwd=test_dir) as proc:
             proc.wait()
 
         # Determine outcome.

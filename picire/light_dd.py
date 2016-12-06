@@ -1,4 +1,4 @@
-# Copyright (c) 2016 Renata Hodovan, Akos Kiss.
+# Copyright (c) 2016-2017 Renata Hodovan, Akos Kiss.
 #
 # Licensed under the BSD 3-Clause License
 # <LICENSE.rst or https://opensource.org/licenses/BSD-3-Clause>.
@@ -10,6 +10,7 @@ import logging
 from . import config_iterators
 from . import config_splitters
 from .abstract_dd import AbstractDD
+from .outcome_cache import ConfigCache
 
 logger = logging.getLogger(__name__)
 
@@ -17,18 +18,20 @@ logger = logging.getLogger(__name__)
 class LightDD(AbstractDD):
     """Single process version of the Delta Debugging algorithm."""
 
-    def __init__(self, test, *, split=config_splitters.zeller,
+    def __init__(self, test, *, cache=None, split=config_splitters.zeller,
                  subset_first=True, subset_iterator=config_iterators.forward, complement_iterator=config_iterators.forward):
         """
         Initialize a LightDD object.
 
         :param test: A callable tester object.
+        :param cache: Cache object to use.
         :param split: Splitter method to break a configuration up to n parts.
         :param subset_first: Boolean value denoting whether the reduce has to start with the subset based approach or not.
         :param subset_iterator: Reference to a generator function that provides config indices in an arbitrary order.
         :param complement_iterator: Reference to a generator function that provides config indices in an arbitrary order.
         """
-        AbstractDD.__init__(self, test, split)
+        cache = cache or ConfigCache()
+        AbstractDD.__init__(self, test, split, cache=cache)
 
         self._subset_first = subset_first
         self._subset_iterator = subset_iterator

@@ -1,4 +1,4 @@
-# Copyright (c) 2016 Renata Hodovan, Akos Kiss.
+# Copyright (c) 2016-2017 Renata Hodovan, Akos Kiss.
 #
 # Licensed under the BSD 3-Clause License
 # <LICENSE.rst or https://opensource.org/licenses/BSD-3-Clause>.
@@ -38,6 +38,11 @@ resources_dir = os.path.join(tests_dir, 'resources')
     ('--complement-iterator=forward', ),
     ('--complement-iterator=backward', ),
 ])
+@pytest.mark.parametrize('args_cache', [
+    ('--cache=none', ),
+    ('--cache=config', ),
+    ('--cache=content', ),
+])
 class TestCli:
 
     def _run_picire(self, test, inp, exp, tmpdir, args):
@@ -55,13 +60,13 @@ class TestCli:
         ('test-sumprod10-sum.sh', 'inp-sumprod10.py', 'exp-sumprod10-sum.py'),
         ('test-sumprod10-prod.sh', 'inp-sumprod10.py', 'exp-sumprod10-prod.py'),
     ])
-    def test_line(self, test, inp, exp, tmpdir, args_parallel, args_split, args_first, args_subsit, args_complit):
+    def test_line(self, test, inp, exp, tmpdir, args_parallel, args_split, args_first, args_subsit, args_complit, args_cache):
         self._run_picire(test, inp, exp, tmpdir,
-                         ('--atom=line', ) + args_parallel + args_split + args_first + args_subsit + args_complit)
+                         ('--atom=line', ) + args_parallel + args_split + args_first + args_subsit + args_complit + args_cache)
 
     @pytest.mark.parametrize('test, inp, exp', [
         ('test-json-invalid-escape.sh', 'inp-invalid-escape.json', 'exp-invalid-escape.json'),
     ])
-    def test_char(self, test, inp, exp, tmpdir, args_parallel, args_split, args_first, args_subsit, args_complit):
+    def test_char(self, test, inp, exp, tmpdir, args_parallel, args_split, args_first, args_subsit, args_complit, args_cache):
         self._run_picire(test, inp, exp, tmpdir,
-                         ('--atom=char', ) + args_parallel + args_split + args_first + args_subsit + args_complit)
+                         ('--atom=char', ) + args_parallel + args_split + args_first + args_subsit + args_complit + args_cache)

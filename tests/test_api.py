@@ -1,4 +1,4 @@
-# Copyright (c) 2016 Renata Hodovan, Akos Kiss.
+# Copyright (c) 2016-2017 Renata Hodovan, Akos Kiss.
 #
 # Licensed under the BSD 3-Clause License
 # <LICENSE.rst or https://opensource.org/licenses/BSD-3-Clause>.
@@ -84,6 +84,10 @@ class CaseTest:
     picire.config_iterators.forward,
     picire.config_iterators.backward,
 ])
+@pytest.mark.parametrize('cache', [
+    picire.OutcomeCache,
+    picire.ConfigCache,
+])
 class TestApi:
 
     @pytest.mark.parametrize('case', [
@@ -91,9 +95,7 @@ class TestApi:
         CaseB,
         CaseC,
     ])
-    def test_case(self, case, dd, split, subset_first, subset_iterator, complement_iterator):
-        picire.global_structures.init(parallel=dd != picire.LightDD, disable_cache=False)
-
+    def test_case(self, case, dd, split, subset_first, subset_iterator, complement_iterator, cache):
         if dd != picire.CombinedParallelDD:
             it_kwargs = {
                 'subset_first': subset_first,
@@ -105,7 +107,13 @@ class TestApi:
                 'config_iterator': picire.CombinedIterator(subset_first, subset_iterator, complement_iterator)
             }
 
-        dd_obj = dd(CaseTest(case.interesting, case.config), split=split, **it_kwargs)
+        if dd != picire.LightDD:
+            cache = picire.shared_cache_decorator(cache)
+
+        dd_obj = dd(CaseTest(case.interesting, case.config),
+                    split=split,
+                    cache=cache(),
+                    **it_kwargs)
         output = [case.config[x] for x in dd_obj.ddmin(list(range(len(case.config))))]
 
         assert output == case.expect

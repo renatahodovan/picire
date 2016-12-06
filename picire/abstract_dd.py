@@ -7,7 +7,7 @@
 
 import logging
 
-from . import global_structures
+from .outcome_cache import OutcomeCache
 
 logger = logging.getLogger(__name__)
 
@@ -19,16 +19,18 @@ class AbstractDD(object):
     PASS = 'PASS'
     FAIL = 'FAIL'
 
-    def __init__(self, test, split):
+    def __init__(self, test, split, *, cache=None):
         """
         Initialise an abstract DD class. Not to be called directly,
         only by super calls in subclass initializers.
 
         :param test: A callable tester object.
         :param split: Splitter method to break a configuration up to n parts.
+        :param cache: Cache object to use.
         """
         self._test = test
         self._split = split
+        self._cache = cache or OutcomeCache()
 
     @staticmethod
     def config_id(run, dir, i):
@@ -52,8 +54,7 @@ class AbstractDD(object):
         """
         return config_id.replace('_', ' / ')
 
-    @staticmethod
-    def lookup_cache(config, config_id):
+    def lookup_cache(self, config, config_id):
         """
         Perform a cache lookup if caching is enabled.
 
@@ -61,12 +62,9 @@ class AbstractDD(object):
         :param config_id: The ID describing the configuration (only for debug message).
         :return: None if caching is disabled, PASS or FAIL otherwise.
         """
-        if not global_structures.outcome_cache:
-            return None
-
-        cached_result = global_structures.outcome_cache.lookup(config)
+        cached_result = self._cache.lookup(config)
         if cached_result is not None:
-            logger.debug('\t\t-- [ %s ]: %s' % (AbstractDD.pretty_config_id(config_id), cached_result))
+            logger.debug('\t[ %s ]: cache = \'%s\'' % (AbstractDD.pretty_config_id(config_id), cached_result))
 
         return cached_result
 
@@ -121,8 +119,7 @@ class AbstractDD(object):
 
         logger.debug('\t[ %s ]: test = %s' % (AbstractDD.pretty_config_id(config_id), repr(outcome)))
 
-        if global_structures.outcome_cache and config_id != 'assert':
-            global_structures.outcome_cache.add(config, outcome)
-            logger.debug('\t\t++ [ %s ]' % AbstractDD.pretty_config_id(config_id))
+        if config_id != 'assert':
+            self._cache.add(config, outcome)
 
         return outcome

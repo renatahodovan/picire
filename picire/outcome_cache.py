@@ -1,4 +1,4 @@
-# Copyright (c) 2016 Renata Hodovan, Akos Kiss.
+# Copyright (c) 2016-2017 Renata Hodovan, Akos Kiss.
 #
 # Licensed under the BSD 3-Clause License
 # <LICENSE.rst or https://opensource.org/licenses/BSD-3-Clause>.
@@ -7,6 +7,36 @@
 
 
 class OutcomeCache(object):
+    """
+    Base class for configuration outcome caching strategies. It does not
+    implement a caching strategy itself (or, it implements the disable-cache
+    strategy) but leaves the implementation of real strategies to subclasses.
+    """
+
+    def add(self, config, result):
+        """
+        Add a new configuration to the cache.
+
+        :param config: The configuration to save.
+        :param result: The outcome of the added configuration.
+        """
+        pass
+
+    def lookup(self, config):
+        """
+        Cache lookup to find out the outcome of a given configuration.
+
+        :param config: The configuration we are looking for.
+        :return: PASS or FAIL if config is in the cache; None, otherwise.
+        """
+        return None
+
+    def clear(self):
+        """Clear the cache."""
+        pass
+
+
+class ConfigCache(OutcomeCache):
 
     class _Entry(object):
         """
@@ -39,7 +69,7 @@ class OutcomeCache(object):
             p = self
             for cs in config:
                 if cs not in p.tail:
-                    p.tail[cs] = OutcomeCache._Entry()
+                    p.tail[cs] = ConfigCache._Entry()
                 p = p.tail[cs]
             p.result = result
 
@@ -59,26 +89,38 @@ class OutcomeCache(object):
             return p.result
 
     def __init__(self):
-        self._root = OutcomeCache._Entry()
+        self._root = ConfigCache._Entry()
 
     def add(self, config, result):
-        """
-        Add a new configuration to the cache.
-
-        :param config: The configuration to save.
-        :param result: The outcome of the added configuration.
-        """
         self._root.add(config, result)
 
     def lookup(self, config):
-        """
-        Cache lookup to find out the outcome of a given configuration.
-
-        :param config: The configuration we are looking for.
-        :return: PASS or FAIL if config is in the cache; None, otherwise.
-        """
         return self._root.lookup(config)
 
     def clear(self):
-        """Clear the cache."""
-        self._root = OutcomeCache._Entry()
+        self._root = ConfigCache._Entry()
+
+
+class ContentCache(OutcomeCache):
+    """
+    Class that can cache the outcome of test cases by their content.
+    """
+
+    def __init__(self, test_builder):
+        self.container = dict()
+        self.test_builder = test_builder
+
+    def add(self, config, result):
+        self.container[self.test_builder(config)] = result
+
+    def lookup(self, config):
+        return self.container.get(self.test_builder(config), None)
+
+    def clear(self):
+        pass
+
+
+# Aliases for cache classes to help their identification in CLI.
+none = OutcomeCache
+config = ConfigCache
+content = ContentCache

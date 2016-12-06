@@ -1,43 +1,51 @@
-# Copyright (c) 2016 Renata Hodovan, Akos Kiss.
+# Copyright (c) 2016-2017 Renata Hodovan, Akos Kiss.
 #
 # Licensed under the BSD 3-Clause License
 # <LICENSE.rst or https://opensource.org/licenses/BSD-3-Clause>.
 # This file may not be copied, modified, or distributed except
 # according to those terms.
 
+import inspect
+
 from multiprocessing import Lock
+from multiprocessing.managers import BaseManager
 
-from .outcome_cache import OutcomeCache
+shared_manager_store = dict()
 
 
-class SharedCache(OutcomeCache):
-    """Thread-safe cache representation that stores the evaluated configurations and their outcome."""
+def shared_cache_decorator(cache_class):
+    global shared_manager_store
 
-    def __init__(self):
-        OutcomeCache.__init__(self)
-        self._lock = Lock()
+    if cache_class in shared_manager_store:
+        return shared_manager_store[cache_class].SharedCache
 
-    def add(self, config, result):
-        """
-        Add a new configuration to the cache.
+    class SharedDataManager(BaseManager):
+        """Data manager to share the cache object between parallel processes."""
+        pass
 
-        :param config: The configuration to save.
-        :param result: The outcome of the added configuration.
-        """
-        with self._lock:
-            OutcomeCache.add(self, config, result)
+    class SharedCache(cache_class):
+        """Thread-safe cache representation that stores the evaluated configurations and their outcome."""
 
-    def lookup(self, config):
-        """
-        Cache lookup to find out the outcome of a given configuration.
+        def __init__(self, *args, **kwargs):
+            cache_class.__init__(self, *args, **kwargs)
+            self._lock = Lock()
 
-        :param config: The configuration we are looking for.
-        :return: PASS or FAIL if config is in the cache; None, otherwise.
-        """
-        with self._lock:
-            return OutcomeCache.lookup(self, config)
+        def add(self, config, result):
+            with self._lock:
+                cache_class.add(self, config, result)
 
-    def clear(self):
-        """Thread-safe way of clearing cache."""
-        with self._lock:
-            OutcomeCache.clear(self)
+        def lookup(self, config):
+            with self._lock:
+                return cache_class.lookup(self, config)
+
+        def clear(self):
+            with self._lock:
+                cache_class.clear(self)
+
+    SharedDataManager.register('SharedCache', SharedCache)
+    getattr(SharedDataManager, 'SharedCache').__signature__ = inspect.signature(cache_class)
+    data_manager = SharedDataManager()
+    data_manager.start()
+    shared_manager_store[cache_class] = data_manager
+
+    return data_manager.SharedCache

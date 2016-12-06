@@ -1,4 +1,4 @@
-# Copyright (c) 2016 Renata Hodovan, Akos Kiss.
+# Copyright (c) 2016-2017 Renata Hodovan, Akos Kiss.
 #
 # Licensed under the BSD 3-Clause License
 # <LICENSE.rst or https://opensource.org/licenses/BSD-3-Clause>.
@@ -19,13 +19,14 @@ logger = logging.getLogger(__name__)
 
 class ParallelDD(AbstractParallelDD):
 
-    def __init__(self, test, *, split=config_splitters.zeller,
+    def __init__(self, test, *, cache=None, split=config_splitters.zeller,
                  proc_num=os.cpu_count(), max_utilization=100,
                  subset_first=True, subset_iterator=config_iterators.forward, complement_iterator=config_iterators.forward):
         """
         Initialize a ParallelDD object.
 
         :param test: A callable tester object.
+        :param cache: Cache object to use.
         :param split: Splitter method to break a configuration up to n part.
         :param proc_num: The level of parallelization.
         :param max_utilization: The maximum CPU utilization accepted.
@@ -33,7 +34,7 @@ class ParallelDD(AbstractParallelDD):
         :param subset_iterator: Reference to a generator function that provides config indices in an arbitrary order.
         :param complement_iterator: Reference to a generator function that provides config indices in an arbitrary order.
         """
-        AbstractParallelDD.__init__(self, test, split, proc_num, max_utilization)
+        AbstractParallelDD.__init__(self, test, split, proc_num, max_utilization, cache=cache)
 
         self._subset_first = subset_first
         self._subset_iterator = subset_iterator

@@ -1,4 +1,4 @@
-# Copyright (c) 2016 Renata Hodovan, Akos Kiss.
+# Copyright (c) 2016-2017 Renata Hodovan, Akos Kiss.
 #
 # Licensed under the BSD 3-Clause License
 # <LICENSE.rst or https://opensource.org/licenses/BSD-3-Clause>.
@@ -10,6 +10,8 @@ import logging
 from multiprocessing.sharedctypes import Value
 
 from .abstract_dd import AbstractDD
+from .outcome_cache import ConfigCache
+from .shared_cache import shared_cache_decorator
 
 logger = logging.getLogger(__name__)
 
@@ -17,7 +19,7 @@ logger = logging.getLogger(__name__)
 class AbstractParallelDD(AbstractDD):
     """Abstract super-class of the various parallel DD implementations."""
 
-    def __init__(self, test, split, proc_num, max_utilization):
+    def __init__(self, test, split, proc_num, max_utilization, *, cache=None):
         """
         Initialize an AbstractParallelDD object.
 
@@ -25,8 +27,10 @@ class AbstractParallelDD(AbstractDD):
         :param split: Splitter method to break a configuration up to n parts.
         :param proc_num: The level of parallelization.
         :param max_utilization: The maximum CPU utilization accepted.
+        :param cache: Cache object to use.
         """
-        AbstractDD.__init__(self, test, split)
+        cache = cache or shared_cache_decorator(ConfigCache)()
+        AbstractDD.__init__(self, test, split, cache=cache)
 
         self._proc_num = proc_num
         self._max_utilization = max_utilization

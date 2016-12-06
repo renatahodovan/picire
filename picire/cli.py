@@ -1,4 +1,4 @@
-# Copyright (c) 2016 Renata Hodovan, Akos Kiss.
+# Copyright (c) 2016-2017 Renata Hodovan, Akos Kiss.
 #
 # Licensed under the BSD 3-Clause License
 # <LICENSE.rst or https://opensource.org/licenses/BSD-3-Clause>.
@@ -7,6 +7,7 @@
 
 import chardet
 import codecs
+import inspect
 import logging
 import os
 import pkgutil
@@ -17,11 +18,12 @@ from functools import reduce
 from os.path import abspath, basename, exists, join, relpath
 from shutil import rmtree
 
-from . import config_splitters, config_iterators, global_structures
+from . import config_splitters, config_iterators, outcome_cache
 from .combined_iterator import CombinedIterator
 from .combined_parallel_dd import CombinedParallelDD
 from .light_dd import LightDD
 from .parallel_dd import ParallelDD
+from .shared_cache import shared_cache_decorator
 from .subprocess_test import ConcatTestBuilder, SubprocessTest
 
 logger = logging.getLogger('picire')
@@ -34,8 +36,9 @@ def create_parser():
                         help='test case to be reduced')
 
     # Base reduce settings.
-    parser.add_argument('--disable-cache', action='store_true', default=False,
-                        help='turn off caching')
+    parser.add_argument('--cache', metavar='NAME',
+                        choices=[i for i in dir(outcome_cache) if not i.startswith('_') and i.islower()], default='config',
+                        help='cache strategy (%(choices)s; default: %(default)s)')
     parser.add_argument('--split', metavar='NAME', dest='split_method',
                         choices=[i for i in dir(config_splitters) if not i.startswith('_')], default='zeller',
                         help='split algorithm (%(choices)s; default: %(default)s)')
@@ -104,6 +107,10 @@ def process_args(parser, args):
         'command_pattern': '%s %%s' % args.test
     }
 
+    args.cache = getattr(outcome_cache, args.cache)
+    if args.parallel:
+        args.cache = shared_cache_decorator(args.cache)
+
     split_method = getattr(config_splitters, args.split_method)
     subset_iterator = getattr(config_iterators, args.subset_iterator)
     complement_iterator = getattr(config_iterators, args.complement_iterator)
@@ -137,7 +144,7 @@ def call(*,
          tester_class, tester_config,
          input, src, encoding, out,
          atom,
-         parallel=False, disable_cache=False, cleanup=True):
+         cache_class=None, cleanup=True):
     """
     Execute picire as if invoked from command line, however, control its
     behaviour not via command line arguments but function parameters.
@@ -151,8 +158,7 @@ def call(*,
     :param encoding: Encoding of the input test case.
     :param out: Path to the output directory.
     :param atom: Input granularity to work with during reduce ('char' or 'line').
-    :param parallel: Boolean to enable parallel mode (default: False).
-    :param disable_cache: Boolean to disable cache (default: False).
+    :param cache_class: Reference to the cache class to use.
     :param cleanup: Binary flag denoting whether removing auxiliary files at the end is enabled (default: True).
     :return: The path to the minimal test case.
     """
@@ -165,8 +171,6 @@ def call(*,
     tests_dir = join(out, 'tests')
     os.makedirs(tests_dir, exist_ok=True)
 
-    global_structures.init(parallel, disable_cache)
-
     # Split source to the chosen atoms.
     if atom == 'line':
         content = src.decode(encoding).splitlines(keepends=True)
@@ -177,9 +181,13 @@ def call(*,
         input, reduce(lambda x, y: x + y, ['\t%s: %s\n' % (k, v) for k, v in sorted(args.items())], '')))
     logger.info('Initial test contains %s %ss' % (len(content), atom))
 
-    dd = reduce_class(tester_class(test_builder=ConcatTestBuilder(content),
+    test_builder = ConcatTestBuilder(content)
+    cache_config = {'test_builder': test_builder} if 'test_builder' in inspect.getfullargspec(cache_class)[0] else {}
+
+    dd = reduce_class(tester_class(test_builder=test_builder,
                                    test_pattern=join(tests_dir, '%s', basename(input)),
                                    **tester_config),
+                      cache=(cache_class(**cache_config) if cache_class else None),
                       **reduce_config)
     min_set = dd.ddmin(list(range(len(content))))
 
@@ -222,6 +230,5 @@ def execute():
          encoding=args.encoding,
          out=args.out,
          atom=args.atom,
-         parallel=args.parallel,
-         disable_cache=args.disable_cache,
+         cache_class=args.cache,
          cleanup=args.cleanup)

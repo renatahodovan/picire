@@ -3,6 +3,11 @@ Picire
 ======
 *Parallel Delta Debugging Framework*
 
+.. image:: https://badge.fury.io/py/picire.svg
+   :target: https://badge.fury.io/py/picire
+.. image:: https://travis-ci.org/renatahodovan/picire.svg?branch=master
+   :target: https://travis-ci.org/renatahodovan/picire
+
 Picire (pronounced as /pitsirE/) is a Python 3 implementation of the
 `Delta Debugging`_ algorithm supporting parallelization and further
 configuration options. It can be used either as a command line tool

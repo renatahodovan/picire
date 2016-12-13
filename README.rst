@@ -1,10 +1,12 @@
-# Picire
-_Parallel Delta Debugging Framework_
+======
+Picire
+======
+*Parallel Delta Debugging Framework*
 
-Picire (pronounced as /pitsirE/) is a Python 3 implementation of the [Delta
-Debugging](https://www.st.cs.uni-saarland.de/dd/) algorithm supporting
-parallelization and further configuration options. It can be used either as
-a command line tool or as a library.
+Picire (pronounced as /pitsirE/) is a Python 3 implementation of the
+`Delta Debugging`_ algorithm supporting parallelization and further
+configuration options. It can be used either as a command line tool
+or as a library.
 
 Just like the original algorithm, *picire* automatically reduces "interesting"
 tests while keeping their "interesting" behaviour. A common use case is
@@ -20,33 +22,40 @@ test case is found, it becomes the input of the next iteration. The iterations
 stop if removing any further chunks would make the test uninteresting (e.g. the
 test is **1-minimal**).
 
+.. _`Delta Debugging`: https://www.st.cs.uni-saarland.de/dd/
 
-## Requirements
+Requirements
+============
 
-* Python >= 3.4
-* pip and setuptools Python packages (the latter is automatically installed by
+* Python_ >= 3.4
+* pip_ and setuptools Python packages (the latter is automatically installed by
   pip).
 
+.. _Python: https://www.python.org
+.. _pip: https://pip.pypa.io
 
-## Install
+Install
+=======
 
-The quick way:
+The quick way::
 
     pip install picire
 
-Alternatively, by cloning the project and running setuptools:
+Alternatively, by cloning the project and running setuptools::
 
     python setup.py install
 
 
-## Usage
+Usage
+=====
 
 *picire* has two mandatory command line arguments: one that defines the input
 test case to be reduced (`--input`) and another describing an executable tester
 script or program (`--test`) that can decide about the interestingness of an
 arbitrary input. This will be run in every iteration to check a test case.
 
-### Common settings
+Common settings
+===============
 
 * `--parallel`: Enables *picire* to run in multiprocess mode. (Otherwise, the
   original single-process variant will run.)
@@ -83,18 +92,20 @@ arbitrary input. This will be run in every iteration to check a test case.
 
 For the detailed options, see `picire --help`.
 
-### Tester script
+Tester script
+=============
 
 The tester script is expected to take one command line argument, the path of a
 test case, and it has to exit with 0 if the test is interesting and with
 non-zero otherwise. An example tester script that runs an arbitrary target
 application and checks if it fails on an assertion might look like the one
-below:
+below::
 
     #! /bin/bash
     timeout --foreground 10 <path/to/the/target/application> $1 2>&1 | grep -q "Assertion failed";
 
-**Remarks:**
+Remarks:
+========
 
 * `$1` is the single and mandatory command line argument containing the path
   of a test case.
@@ -111,13 +122,14 @@ below:
   since it returns 0 if the pattern was found and 1 if not. Exactly the
   return value *picire* expects.
 
-A common form of *picire*'s usage:
+A common form of *picire*'s usage::
 
     picire --input=<path/to/the/input> --test=<path/to/the/tester> \
     --parallel --subset-iterator=skip --complement-iterator=backward
 
 
-## Compatibility
+Compatibility
+=============
 
 *picire* was tested on:
 
@@ -125,7 +137,8 @@ A common form of *picire*'s usage:
 * Mac OS X (OS X El Capitan - 10.11).
 
 
-## Acknowledgement and Citations
+Acknowledgement and Citations
+=============================
 
 This software uses the delta debugging algorithm as described in (A. Zeller:
 "Yesterday, my program worked", ESEC/FSE 1999) and (R. Hildebrandt, A. Zeller:
@@ -135,6 +148,9 @@ Further improvements are described in (R. Hodovan, A. Kiss: "Practical
 Improvements to the Minimizing Delta Debugging Algorithm", ICSOFT-EA 2016).
 
 
-## Copyright and Licensing
+Copyright and Licensing
+=======================
 
-See [LICENSE](LICENSE.md).
+See LICENSE_.
+
+.. _LICENSE: LICENSE.rst

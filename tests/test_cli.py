@@ -23,7 +23,7 @@ resources_dir = os.path.join(tests_dir, 'resources')
 ])
 @pytest.mark.parametrize('args_split', [
     ('--split=balanced', ),
-    ('--split=zeller', )
+    ('--split=zeller', ),
 ])
 @pytest.mark.parametrize('args_first', [
     (),
@@ -50,7 +50,7 @@ class TestCli:
         assert proc.returncode == 0
         assert filecmp.cmp(os.path.join(out_dir, inp), os.path.join(resources_dir, exp))
 
-    @pytest.mark.parametrize('test,inp,exp', [
+    @pytest.mark.parametrize('test, inp, exp', [
         ('test-json-extra-comma.sh', 'inp-extra-comma.json', 'exp-extra-comma.json'),
         ('test-sumprod10-sum.sh', 'inp-sumprod10.py', 'exp-sumprod10-sum.py'),
         ('test-sumprod10-prod.sh', 'inp-sumprod10.py', 'exp-sumprod10-prod.py'),
@@ -59,7 +59,7 @@ class TestCli:
         self._run_picire(test, inp, exp, tmpdir,
                          ('--atom=line', ) + args_parallel + args_split + args_first + args_subsit + args_complit)
 
-    @pytest.mark.parametrize('test,inp,exp', [
+    @pytest.mark.parametrize('test, inp, exp', [
         ('test-json-invalid-escape.sh', 'inp-invalid-escape.json', 'exp-invalid-escape.json'),
     ])
     def test_char(self, test, inp, exp, tmpdir, args_parallel, args_split, args_first, args_subsit, args_complit):

@@ -5,8 +5,9 @@
 # This file may not be copied, modified, or distributed except
 # according to those terms.
 
-import picire
 import pytest
+
+import picire
 
 
 class CaseA(object):

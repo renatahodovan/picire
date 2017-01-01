@@ -1,4 +1,4 @@
-# Copyright (c) 2016 Renata Hodovan, Akos Kiss.
+# Copyright (c) 2016-2017 Renata Hodovan, Akos Kiss.
 #
 # Licensed under the BSD 3-Clause License
 # <LICENSE.rst or https://opensource.org/licenses/BSD-3-Clause>.
@@ -73,7 +73,8 @@ class AbstractDD(object):
     @staticmethod
     def minus(c1, c2):
         """Return a list of all elements of C1 that are not in C2."""
-        return [c for c in c1 if c not in set(c2)]
+        c2 = set(c2)
+        return [c for c in c1 if c not in c2]
 
     def _dd(self, config):
         """

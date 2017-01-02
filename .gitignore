@@ -2,5 +2,7 @@ __pycache__
 build
 dist
 picire.egg-info
+.DS_Store
+.idea
 .cache
 .tox

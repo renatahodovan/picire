@@ -57,47 +57,47 @@ Usage
 =====
 
 *picire* has two mandatory command line arguments: one that defines the input
-test case to be reduced (`--input`) and another describing an executable tester
-script or program (`--test`) that can decide about the interestingness of an
-arbitrary input. This will be run in every iteration to check a test case.
+test case to be reduced (``--input``) and another describing an executable
+tester script or program (``--test``) that can decide about the interestingness
+of an arbitrary input. This will be run in every iteration to check a test case.
 
 Common settings
 ---------------
 
-* `--parallel`: Enables *picire* to run in multiprocess mode. (Otherwise, the
+* ``--parallel``: Enables *picire* to run in multiprocess mode. (Otherwise, the
   original single-process variant will run.)
 
-* `-j <num>`: Defines the maximum number of parallel jobs.
+* ``-j <num>``: Defines the maximum number of parallel jobs.
 
-* `--combine-loops`: The base algorithm had a dependency between subset and
+* ``--combine-loops``: The base algorithm had a dependency between subset and
   complement-based reduce loops, but because of the sequential nature of its
   implementation, it had no effect on efficiency. However, in parallel mode,
   this separation becomes a potential sub-optimality. With this option, the
   two reduce loops run combined for additional performance. Further details
   about the algorithm variants are available in the cited papers.
 
-* `--complement-first`: For some input types, subset-based reduce is not as
+* ``--complement-first``: For some input types, subset-based reduce is not as
   effective as the complement-based one (sometimes, aggressively removing too
   big parts of the input eliminates the interestingness as well). By default,
   *picire* performs subset-based reduce before complement-based reduce, which
   can result in many superfluous checks for such inputs. This flag forces to
   start with complement checks.
 
-* `--subset-iterator` / `--complement-iterator`: Guide the iteration strategies
-  of the subset and complement-based reduce loops.
+* ``--subset-iterator`` / ``--complement-iterator``: Guide the iteration
+  strategies of the subset and complement-based reduce loops.
 
-  * `forward`: Start investigating subsets (or complements) from the beginning
+  * ``forward``: Start investigating subsets (or complements) from the beginning
     of the input.
 
-  * `backward`: Start investigating subsets (or complements) from the end of
+  * ``backward``: Start investigating subsets (or complements) from the end of
     the input. The goal is to reduce the number of semantic violations
     (assuming that definitions - like variable declarations - appear before
     uses).
 
-  * `skip`: Completely avoids the subset or complement checks (mostly used with
-    `--subset-iterator`).
+  * ``skip``: Completely avoids the subset or complement checks (mostly used
+    with ``--subset-iterator``).
 
-For the detailed options, see `picire --help`.
+For the detailed options, see ``picire --help``.
 
 Tester script
 -------------
@@ -113,18 +113,18 @@ below::
 
 **Remarks:**
 
-* `$1` is the single and mandatory command line argument containing the path
+* ``$1`` is the single and mandatory command line argument containing the path
   of a test case.
 * If the target application is not guaranteed to exit, then it's worth running
-  it with `timeout` to limit the amount of time waiting for producing the
+  it with ``timeout`` to limit the amount of time waiting for producing the
   expected behaviour.
-* If the target is run with timeout then the `--foreground` flag can also be
-  useful as it  allows forwarding the `KILL` signals (used by the parallel
+* If the target is run with timeout then the ``--foreground`` flag can also be
+  useful as it allows forwarding the ``KILL`` signals (used by the parallel
   implementation) through the timeout's process group. This enables us to
   stop all alive parallel processes when a new interesting configuration
   is found already.
 * If the interestingness decision is based on the content of the output then
-  using `grep` (perhaps with `-q` or `--quiet`) might be a right choice,
+  using ``grep`` (perhaps with ``-q`` or ``--quiet``) might be a right choice,
   since it returns 0 if the pattern was found and 1 if not. Exactly the
   return value *picire* expects.
 

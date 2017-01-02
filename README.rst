@@ -29,6 +29,7 @@ test is **1-minimal**).
 
 .. _`Delta Debugging`: https://www.st.cs.uni-saarland.de/dd/
 
+
 Requirements
 ============
 
@@ -38,6 +39,7 @@ Requirements
 
 .. _Python: https://www.python.org
 .. _pip: https://pip.pypa.io
+
 
 Install
 =======
@@ -60,7 +62,7 @@ script or program (`--test`) that can decide about the interestingness of an
 arbitrary input. This will be run in every iteration to check a test case.
 
 Common settings
-===============
+---------------
 
 * `--parallel`: Enables *picire* to run in multiprocess mode. (Otherwise, the
   original single-process variant will run.)
@@ -98,7 +100,7 @@ Common settings
 For the detailed options, see `picire --help`.
 
 Tester script
-=============
+-------------
 
 The tester script is expected to take one command line argument, the path of a
 test case, and it has to exit with 0 if the test is interesting and with
@@ -109,8 +111,7 @@ below::
     #! /bin/bash
     timeout --foreground 10 <path/to/the/target/application> $1 2>&1 | grep -q "Assertion failed";
 
-Remarks:
-========
+**Remarks:**
 
 * `$1` is the single and mandatory command line argument containing the path
   of a test case.

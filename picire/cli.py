@@ -183,15 +183,18 @@ def call(*,
 
     test_builder = ConcatTestBuilder(content)
     cache_config = {'test_builder': test_builder} if 'test_builder' in inspect.getfullargspec(cache_class)[0] else {}
+    cache = cache_class(**cache_config) if cache_class else None
 
     dd = reduce_class(tester_class(test_builder=test_builder,
                                    test_pattern=join(tests_dir, '%s', basename(input)),
                                    **tester_config),
-                      cache=(cache_class(**cache_config) if cache_class else None),
+                      cache=cache,
                       **reduce_config)
     min_set = dd.ddmin(list(range(len(content))))
 
+    logger.debug('The cached results are: %s' % cache)
     logger.debug('A minimal config is: %s' % min_set)
+
     out_file = join(out, basename(input))
     with codecs.open(out_file, 'w', encoding=encoding, errors='ignore') as f:
         f.write(ConcatTestBuilder(content)(min_set))

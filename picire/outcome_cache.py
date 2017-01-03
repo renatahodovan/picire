@@ -88,6 +88,17 @@ class ConfigCache(OutcomeCache):
 
             return p.result
 
+        def _str(self, config=None):
+            config = config or []
+            s = ''
+            if self.result is not None:
+                s += '\t[%s]: %r,\n' % (', '.join([repr(c) for c in config]), self.result)
+            for c, e in sorted(self.tail.items()):
+                config.append(c)
+                s += e._str(config)
+                config.pop()
+            return s
+
     def __init__(self):
         self._root = ConfigCache._Entry()
 
@@ -99,6 +110,9 @@ class ConfigCache(OutcomeCache):
 
     def clear(self):
         self._root = ConfigCache._Entry()
+
+    def __str__(self):
+        return '{\n%s}' % self._root._str()
 
 
 class ContentCache(OutcomeCache):
@@ -118,6 +132,13 @@ class ContentCache(OutcomeCache):
 
     def clear(self):
         pass
+
+    def __str__(self):
+        from functools import reduce
+        return '{\n%s}' % reduce(lambda x, y: x + y,
+                                 ['\t%r: %r,\n' % (k, v)
+                                  for k, v in sorted(self.container.items())],
+                                 '')
 
 
 # Aliases for cache classes to help their identification in CLI.

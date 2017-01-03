@@ -42,7 +42,8 @@ def shared_cache_decorator(cache_class):
             with self._lock:
                 cache_class.clear(self)
 
-    SharedDataManager.register('SharedCache', SharedCache)
+    SharedDataManager.register('SharedCache', SharedCache, None,
+                               [nv[0] for nv in inspect.getmembers(cache_class, lambda m: inspect.isfunction(m) and m.__name__ != '__init__')])
     getattr(SharedDataManager, 'SharedCache').__signature__ = inspect.signature(cache_class)
     data_manager = SharedDataManager()
     data_manager.start()

@@ -64,7 +64,7 @@ class AbstractDD(object):
         """
         cached_result = self._cache.lookup(config)
         if cached_result is not None:
-            logger.debug('\t[ %s ]: cache = \'%s\'' % (AbstractDD.pretty_config_id(config_id), cached_result))
+            logger.debug('\t[ %s ]: cache = %r', AbstractDD.pretty_config_id(config_id), cached_result)
 
         return cached_result
 
@@ -96,11 +96,11 @@ class AbstractDD(object):
             logger.info('Test case is minimal already.')
             return config
 
-        logger.debug('dd(%s) ...' % (repr(config)))
+        logger.debug('dd(%r) ...', config)
 
         outcome = self._dd(config)
 
-        logger.debug('dd(%s) = %s' % (repr(config), repr(outcome)))
+        logger.debug('dd(%r) = %r', config, outcome)
 
         return outcome
 
@@ -113,11 +113,11 @@ class AbstractDD(object):
         :return: PASS or FAIL
         """
 
-        logger.debug('\t[ %s ]: test...' % AbstractDD.pretty_config_id(config_id))
+        logger.debug('\t[ %s ]: test...', AbstractDD.pretty_config_id(config_id))
 
         outcome = self._test(config, config_id)
 
-        logger.debug('\t[ %s ]: test = %s' % (AbstractDD.pretty_config_id(config_id), repr(outcome)))
+        logger.debug('\t[ %s ]: test = %r', AbstractDD.pretty_config_id(config_id), outcome)
 
         if config_id != 'assert':
             self._cache.add(config, outcome)

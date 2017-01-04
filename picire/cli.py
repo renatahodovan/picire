@@ -177,9 +177,9 @@ def call(*,
     elif atom == 'char':
         content = src.decode(encoding)
 
-    logger.info('Reduce session starts for %s\n%s' % (
-        input, reduce(lambda x, y: x + y, ['\t%s: %s\n' % (k, v) for k, v in sorted(args.items())], '')))
-    logger.info('Initial test contains %s %ss' % (len(content), atom))
+    logger.info('Reduce session starts for %s\n%s',
+                input, reduce(lambda x, y: x + y, ['\t%s: %s\n' % (k, v) for k, v in sorted(args.items())], ''))
+    logger.info('Initial test contains %d %ss', len(content), atom)
 
     test_builder = ConcatTestBuilder(content)
     cache_config = {'test_builder': test_builder} if 'test_builder' in inspect.getfullargspec(cache_class)[0] else {}
@@ -192,13 +192,13 @@ def call(*,
                       **reduce_config)
     min_set = dd.ddmin(list(range(len(content))))
 
-    logger.debug('The cached results are: %s' % cache)
-    logger.debug('A minimal config is: %s' % min_set)
+    logger.debug('The cached results are: %s', cache)
+    logger.debug('A minimal config is: %r', min_set)
 
     out_file = join(out, basename(input))
     with codecs.open(out_file, 'w', encoding=encoding, errors='ignore') as f:
         f.write(ConcatTestBuilder(content)(min_set))
-    logger.info('Result is saved to %s.' % out_file)
+    logger.info('Result is saved to %s.', out_file)
 
     if cleanup:
         rmtree(tests_dir)

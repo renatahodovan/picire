@@ -53,7 +53,7 @@ class CombinedParallelDD(AbstractParallelDD):
 
             subsets = self._split(config, n)
 
-            logger.info('Run #%d: trying %s.' % (run, ' + '.join([str(len(subsets[i])) for i in range(n)])))
+            logger.info('Run #%d: trying %s.', run, ' + '.join([str(len(subsets[i])) for i in range(n)]))
 
             # Reset fail index.
             self._fail_index.value = -1
@@ -91,8 +91,8 @@ class CombinedParallelDD(AbstractParallelDD):
             if fvalue != -1:
                 # Subset fail.
                 if fvalue < n:
-                    logger.info('Reduced to %d units.' % len(subsets[fvalue]))
-                    logger.debug('New config: %s.' % subsets[fvalue])
+                    logger.info('Reduced to %d units.', len(subsets[fvalue]))
+                    logger.debug('New config: %r.', subsets[fvalue])
 
                     next_config = subsets[fvalue]
                     next_n = 2
@@ -101,8 +101,8 @@ class CombinedParallelDD(AbstractParallelDD):
                 else:
                     j = int((fvalue - n + complement_offset) % n)
                     complement = self.minus(config, subsets[j])
-                    logger.info('Reduced to %d units.' % len(complement))
-                    logger.debug('New config: %s.' % complement)
+                    logger.info('Reduced to %d units.', len(complement))
+                    logger.debug('New config: %r.', complement)
 
                     next_config = complement
                     next_n = max(n - 1, 2)
@@ -112,7 +112,7 @@ class CombinedParallelDD(AbstractParallelDD):
             else:
                 next_config = config
                 next_n = min(len(config), n * 2)
-                logger.info('Increase granularity to %d.' % next_n)
+                logger.info('Increase granularity to %d.', next_n)
                 complement_offset = (complement_offset * next_n) / n
 
             # Minimization ends if no interesting configuration was found by the finest splitting or

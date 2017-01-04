@@ -64,7 +64,7 @@ class ParallelDD(AbstractParallelDD):
 
             subsets = self._split(config, n)
 
-            logger.info('Run #%d: trying %s.' % (run, ' + '.join([str(len(subsets[i])) for i in range(n)])))
+            logger.info('Run #%d: trying %s.', run, ' + '.join([str(len(subsets[i])) for i in range(n)]))
 
             # Reset fail index.
             self._fail_index.value = -1
@@ -77,7 +77,7 @@ class ParallelDD(AbstractParallelDD):
             if self._fail_index.value == -1:
                 next_config = config
                 next_n = min(len(config), n * 2)
-                logger.info('Increase granularity to %d.' % next_n)
+                logger.info('Increase granularity to %d.', next_n)
                 complement_offset = (complement_offset * next_n) / n
 
             # Minimization ends if no interesting configuration was found by the finest splitting or
@@ -130,8 +130,8 @@ class ParallelDD(AbstractParallelDD):
 
         fvalue = self._fail_index.value
         if fvalue != -1:
-            logger.info('Reduced to %d units.' % len(subsets[fvalue]))
-            logger.debug('New config: %s.' % subsets[fvalue])
+            logger.info('Reduced to %d units.', len(subsets[fvalue]))
+            logger.debug('New config: %r.', subsets[fvalue])
 
             return subsets[fvalue], 2, 0
 
@@ -174,8 +174,8 @@ class ParallelDD(AbstractParallelDD):
         fvalue = self._fail_index.value
         if fvalue != -1:
             complement = self.minus(config, subsets[fvalue])
-            logging.info('Reduced to %d units.' % len(complement))
-            logging.debug('New config: %s.' % complement)
+            logger.info('Reduced to %d units.', len(complement))
+            logger.debug('New config: %r.', complement)
 
             # In next run, start removing the following subset.
             return complement, max(n - 1, 2), fvalue

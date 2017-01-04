@@ -60,7 +60,7 @@ class LightDD(AbstractDD):
 
             subsets = self._split(config, n)
 
-            logger.info('Run #%d: trying %s.' % (run, ' + '.join([str(len(subsets[i])) for i in range(n)])))
+            logger.info('Run #%d: trying %s.', run, ' + '.join([str(len(subsets[i])) for i in range(n)]))
 
             next_config, next_n, complement_offset = first_test(n, run, config, subsets, complement_offset)
             if next_config is None:
@@ -70,7 +70,7 @@ class LightDD(AbstractDD):
             if not failed:
                 next_config = config
                 next_n = min(len(config), n * 2)
-                logger.info('Increase granularity to %s.' % next_n)
+                logger.info('Increase granularity to %d.', next_n)
                 complement_offset = (complement_offset * next_n) / n
 
             # Minimization ends if no interesting configuration was found by the finest splitting or
@@ -111,8 +111,8 @@ class LightDD(AbstractDD):
             outcome = self.lookup_cache(subsets[i], config_id) or self.test(subsets[i], config_id)
             if outcome == self.FAIL:
                 # Interesting subset is found.
-                logger.info('Reduced to %d units.' % (len(subsets[i])))
-                logger.debug('New config: %s.' % subsets[i])
+                logger.info('Reduced to %d units.', len(subsets[i]))
+                logger.debug('New config: %r.', subsets[i])
 
                 return subsets[i], 2, 0
 
@@ -141,8 +141,8 @@ class LightDD(AbstractDD):
             outcome = self.lookup_cache(complement, config_id) or self.test(complement, config_id)
             if outcome == self.FAIL:
                 # Interesting complement is found.
-                logger.info('Reduced to %d units.' % (len(complement)))
-                logger.debug('New config: %s.' % complement)
+                logger.info('Reduced to %d units.', len(complement))
+                logger.debug('New config: %r.', complement)
 
                 # In next run, start removing the following subset
                 return complement, max(n - 1, 2), i

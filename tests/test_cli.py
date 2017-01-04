@@ -49,6 +49,7 @@ class TestCli:
         out_dir = '%s' % tmpdir
         cmd = (sys.executable, '-m', 'picire') \
               + ('--test=' + test, '--input=' + inp, '--out=' + out_dir) \
+              + ('--log-level=DEBUG', ) \
               + args
         proc = subprocess.Popen(cmd, cwd=resources_dir)
         proc.communicate()

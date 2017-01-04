@@ -5,6 +5,7 @@
 # This file may not be copied, modified, or distributed except
 # according to those terms.
 
+import logging
 import pytest
 
 import picire
@@ -109,6 +110,9 @@ class TestApi:
 
         if dd != picire.LightDD:
             cache = picire.shared_cache_decorator(cache)
+
+        logging.basicConfig(format='%(message)s')
+        logging.getLogger('picire').setLevel(logging.DEBUG)
 
         dd_obj = dd(CaseTest(case.interesting, case.config),
                     split=split,

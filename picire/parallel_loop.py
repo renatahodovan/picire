@@ -1,4 +1,4 @@
-# Copyright (c) 2016 Renata Hodovan, Akos Kiss.
+# Copyright (c) 2016-2017 Renata Hodovan, Akos Kiss.
 #
 # Licensed under the BSD 3-Clause License
 # <LICENSE.rst or https://opensource.org/licenses/BSD-3-Clause>.
@@ -39,24 +39,6 @@ class Loop(object):
         self._slots = multiprocessing.sharedctypes.Array('i', j, lock=False)
         psutil.cpu_percent(None)
 
-    @staticmethod
-    def _kill_all(pid):
-        """
-        Terminate a process with the given PID.
-
-        :param pid: The PID of the process to be killed.
-        """
-        try:
-            os.killpg(pid, signal.SIGTERM)
-        except ProcessLookupError:
-            # If the process with pid did not have time to become a process group leader,
-            # then pgid does not exist and os.killpg could not kill the process,
-            # so re-try kill the process only.
-            try:
-                os.kill(pid, signal.SIGTERM)
-            except ProcessLookupError:
-                pass
-
     # Beware! this is running in a new process now. state is shared with fork,
     # but only changes to shared objects will be visible in parent.
     def _body(self, i, target, args):
@@ -81,11 +63,28 @@ class Loop(object):
             self._lock.notify()
 
     def _abort(self):
-        """Terminate all alive jobs."""
+        """Terminate all live jobs."""
         for i, pid in enumerate(self._slots):
             if pid != 0:
-                self._kill_all(pid)
-                self._slots[i] = 0
+                try:
+                    os.killpg(pid, signal.SIGTERM)
+                except OSError:
+                    # If the process with pid did not have time to become a process group leader,
+                    # then pgid does not exist and os.killpg could not kill the process,
+                    # so re-try kill the process only.
+                    try:
+                        os.kill(pid, signal.SIGTERM)
+                    except OSError:
+                        pass
+            self._slots[i] = 0
+
+    def _cleanup_slots(self):
+        for i, pid in enumerate(self._slots):
+            if pid != 0:
+                try:
+                    os.kill(pid, 0)
+                except OSError:
+                    self._slots[i] = 0
 
     # Target is expected to return True if loop shall continue and False if it
     # should break.
@@ -106,6 +105,7 @@ class Loop(object):
         i = None
         while True:
             if psutil.cpu_percent(None) <= self._max_utilization:
+                self._cleanup_slots()
                 i = next((x for x in range(self._j) if self._slots[x] == 0), None)
                 if i is not None:
                     break
@@ -129,8 +129,9 @@ class Loop(object):
             return
 
         while True:
-            # Return if all the jobs are done, that's there are no not 0 entry in self._slots.
-            if not [x for x in range(self._j) if self._slots[x] != 0]:
+            self._cleanup_slots()
+            # Return if all the jobs are done, that's there isn't any non-zero value in self._slots.
+            if not any(self._slots):
                 return
 
             with self._lock:

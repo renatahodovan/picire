@@ -120,8 +120,11 @@ class ContentCache(OutcomeCache):
     Class that can cache the outcome of test cases by their content.
     """
 
-    def __init__(self, test_builder):
+    def __init__(self):
         self.container = dict()
+        self.test_builder = None
+
+    def set_test_builder(self, test_builder):
         self.test_builder = test_builder
 
     def add(self, config, result):

@@ -5,6 +5,7 @@
 # This file may not be copied, modified, or distributed except
 # according to those terms.
 
+import argparse
 import chardet
 import codecs
 import logging
@@ -12,7 +13,6 @@ import os
 import pkgutil
 import time
 
-from argparse import ArgumentParser
 from functools import reduce
 from os.path import abspath, basename, exists, join, relpath
 from shutil import rmtree
@@ -30,7 +30,7 @@ __version__ = pkgutil.get_data(__package__, 'VERSION').decode('ascii').strip()
 
 
 def create_parser():
-    parser = ArgumentParser(description='Command line interface of the "picire" test case reducer')
+    parser = argparse.ArgumentParser(description='Command line interface of the "picire" test case reducer')
     parser.add_argument('-i', '--input', metavar='FILE', required=True,
                         help='test case to be reduced')
 
@@ -68,8 +68,12 @@ def create_parser():
 
     # Additional settings.
     parser.add_argument('-l', '--log-level', metavar='LEVEL',
-                        choices=['DEBUG', 'INFO', 'WARNING', 'ERROR'], default='INFO',
+                        choices=['DEBUG', 'INFO', 'WARNING', 'ERROR', 'CRITICAL', 'DISABLE'], default='INFO',
                         help='verbosity level of diagnostic messages (%(choices)s; default: %(default)s)')
+    parser.add_argument('-v', dest='log_level', action='store_const', const='DEBUG', default=argparse.SUPPRESS,
+                        help='verbose mode (alias for -l %(const)s)')
+    parser.add_argument('-q', dest='log_level', action='store_const', const='DISABLE', default=argparse.SUPPRESS,
+                        help='quiet mode (alias for -l %(const)s)')
     parser.add_argument('-o', '--out', metavar='DIR',
                         help='working directory (default: input.timestamp)')
     parser.add_argument('--disable-cleanup', dest='cleanup', default=True, action='store_false',
@@ -78,6 +82,9 @@ def create_parser():
 
 
 def process_args(parser, args):
+    if args.log_level == 'DISABLE':
+        args.log_level = logging.CRITICAL + 1
+
     args.input = abspath(relpath(args.input))
     if not exists(args.input):
         parser.error('Input file does not exits: %s' % args.input)
@@ -218,11 +225,10 @@ def execute():
     parser.add_argument('--version', action='version', version='%(prog)s {version}'.format(version=__version__))
 
     args = parser.parse_args()
+    process_args(parser, args)
 
     logging.basicConfig(format='%(message)s')
     logger.setLevel(args.log_level)
-
-    process_args(parser, args)
 
     call(reduce_class=args.reduce_class,
          reduce_config=args.reduce_config,

@@ -9,9 +9,7 @@ import logging
 import multiprocessing
 import os
 import psutil
-import traceback
 import signal
-import sys
 
 logger = logging.getLogger(__name__)
 
@@ -54,7 +52,7 @@ class Loop(object):
             if not target(*args):
                 self._break.value = 1
         except:
-            logger.warning(''.join(traceback.format_exception(*sys.exc_info())))
+            logger.warning('', exc_info=True)
             self._break.value = 1
 
         self._slots[i] = 0

@@ -11,6 +11,8 @@ import pytest
 import subprocess
 import sys
 
+from common import pytest_mark_skipif_windows, script_ext
+
 
 tests_dir = os.path.dirname(os.path.abspath(__file__))
 resources_dir = os.path.join(tests_dir, 'resources')
@@ -18,8 +20,8 @@ resources_dir = os.path.join(tests_dir, 'resources')
 
 @pytest.mark.parametrize('args_parallel', [
     (),
-    ('--parallel', ),
-    ('--parallel', '--combine-loops', ),
+    pytest_mark_skipif_windows(('--parallel', )),
+    pytest_mark_skipif_windows(('--parallel', '--combine-loops', )),
 ])
 @pytest.mark.parametrize('args_split', [
     ('--split=balanced', ),
@@ -48,7 +50,7 @@ class TestCli:
     def _run_picire(self, test, inp, exp, tmpdir, args):
         out_dir = '%s' % tmpdir
         cmd = (sys.executable, '-m', 'picire') \
-              + ('--test=' + test, '--input=' + inp, '--out=' + out_dir) \
+              + ('--test=' + test + script_ext, '--input=' + inp, '--out=' + out_dir) \
               + ('--log-level=DEBUG', ) \
               + args
         proc = subprocess.Popen(cmd, cwd=resources_dir)
@@ -57,16 +59,16 @@ class TestCli:
         assert filecmp.cmp(os.path.join(out_dir, inp), os.path.join(resources_dir, exp))
 
     @pytest.mark.parametrize('test, inp, exp', [
-        ('test-json-extra-comma.sh', 'inp-extra-comma.json', 'exp-extra-comma.json'),
-        ('test-sumprod10-sum.sh', 'inp-sumprod10.py', 'exp-sumprod10-sum.py'),
-        ('test-sumprod10-prod.sh', 'inp-sumprod10.py', 'exp-sumprod10-prod.py'),
+        ('test-json-extra-comma', 'inp-extra-comma.json', 'exp-extra-comma.json'),
+        ('test-sumprod10-sum', 'inp-sumprod10.py', 'exp-sumprod10-sum.py'),
+        ('test-sumprod10-prod', 'inp-sumprod10.py', 'exp-sumprod10-prod.py'),
     ])
     def test_line(self, test, inp, exp, tmpdir, args_parallel, args_split, args_first, args_subsit, args_complit, args_cache):
         self._run_picire(test, inp, exp, tmpdir,
                          ('--atom=line', ) + args_parallel + args_split + args_first + args_subsit + args_complit + args_cache)
 
     @pytest.mark.parametrize('test, inp, exp', [
-        ('test-json-invalid-escape.sh', 'inp-invalid-escape.json', 'exp-invalid-escape.json'),
+        ('test-json-invalid-escape', 'inp-invalid-escape.json', 'exp-invalid-escape.json'),
     ])
     def test_char(self, test, inp, exp, tmpdir, args_parallel, args_split, args_first, args_subsit, args_complit, args_cache):
         self._run_picire(test, inp, exp, tmpdir,

@@ -1,4 +1,4 @@
-# Copyright (c) 2016 Renata Hodovan, Akos Kiss.
+# Copyright (c) 2016-2017 Renata Hodovan, Akos Kiss.
 #
 # Licensed under the BSD 3-Clause License
 # <LICENSE.rst or https://opensource.org/licenses/BSD-3-Clause>.
@@ -8,6 +8,7 @@
 import codecs
 import os
 import shlex
+import sys
 
 from subprocess import Popen
 
@@ -52,7 +53,9 @@ class SubprocessTest(object):
         with codecs.open(test_path, 'w', encoding=self.encoding, errors='ignore') as f:
             f.write(self.test_builder(config))
 
-        with Popen(shlex.split(self.command_pattern % test_path), cwd=test_dir) as proc:
+        with Popen(shlex.split(self.command_pattern % test_path,
+                               posix=not sys.platform.startswith('win32')),
+                   cwd=test_dir) as proc:
             proc.wait()
 
         # Determine outcome.

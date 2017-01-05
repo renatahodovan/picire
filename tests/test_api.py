@@ -10,6 +10,8 @@ import pytest
 
 import picire
 
+from common import pytest_mark_skipif_windows
+
 
 class CaseA(object):
 
@@ -65,8 +67,8 @@ class CaseTest:
 
 @pytest.mark.parametrize('dd', [
     picire.LightDD,
-    picire.ParallelDD,
-    picire.CombinedParallelDD,
+    pytest_mark_skipif_windows(picire.ParallelDD, dummy=True), # cannot skip single class parameter without a dummy kwarg
+    pytest_mark_skipif_windows(picire.CombinedParallelDD, dummy=True), # cannot skip single class parameter without a dummy kwarg
 ])
 @pytest.mark.parametrize('split', [
     picire.config_splitters.balanced,

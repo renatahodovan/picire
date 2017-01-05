@@ -13,7 +13,6 @@ import os
 import pkgutil
 import time
 
-from functools import reduce
 from os.path import abspath, basename, exists, join, relpath
 from shutil import rmtree
 
@@ -169,10 +168,12 @@ def call(*,
     :return: The path to the minimal test case.
     """
 
-    # Get the parameters in a dictionary so that they can be pretty-printed later
+    # Get the parameters in a dictionary so that they can be pretty-printed
     # (minus src, as that parameter can be arbitrarily large)
     args = locals().copy()
     del args['src']
+    logger.info('Reduce session starts for %s\n%s',
+                input, ''.join(['\t%s: %s\n' % (k, v) for k, v in sorted(args.items())]))
 
     tests_dir = join(out, 'tests')
     os.makedirs(tests_dir, exist_ok=True)
@@ -182,9 +183,6 @@ def call(*,
         content = src.decode(encoding).splitlines(keepends=True)
     elif atom == 'char':
         content = src.decode(encoding)
-
-    logger.info('Reduce session starts for %s\n%s',
-                input, reduce(lambda x, y: x + y, ['\t%s: %s\n' % (k, v) for k, v in sorted(args.items())], ''))
     logger.info('Initial test contains %d %ss', len(content), atom)
 
     test_builder = ConcatTestBuilder(content)

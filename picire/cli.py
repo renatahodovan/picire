@@ -7,7 +7,6 @@
 
 import chardet
 import codecs
-import inspect
 import logging
 import os
 import pkgutil
@@ -182,8 +181,9 @@ def call(*,
     logger.info('Initial test contains %d %ss', len(content), atom)
 
     test_builder = ConcatTestBuilder(content)
-    cache_config = {'test_builder': test_builder} if 'test_builder' in inspect.getfullargspec(cache_class)[0] else {}
-    cache = cache_class(**cache_config) if cache_class else None
+    cache = cache_class() if cache_class else None
+    if hasattr(cache, 'set_test_builder'):
+        cache.set_test_builder(test_builder)
 
     dd = reduce_class(tester_class(test_builder=test_builder,
                                    test_pattern=join(tests_dir, '%s', basename(input)),

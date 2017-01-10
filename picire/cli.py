@@ -69,9 +69,9 @@ def create_parser():
     parser.add_argument('-l', '--log-level', metavar='LEVEL',
                         choices=['DEBUG', 'INFO', 'WARNING', 'ERROR', 'CRITICAL', 'DISABLE'], default='INFO',
                         help='verbosity level of diagnostic messages (%(choices)s; default: %(default)s)')
-    parser.add_argument('-v', dest='log_level', action='store_const', const='DEBUG', default=argparse.SUPPRESS,
+    parser.add_argument('-v', '--verbose', dest='log_level', action='store_const', const='DEBUG', default=argparse.SUPPRESS,
                         help='verbose mode (alias for -l %(const)s)')
-    parser.add_argument('-q', dest='log_level', action='store_const', const='DISABLE', default=argparse.SUPPRESS,
+    parser.add_argument('-q', '--quiet', dest='log_level', action='store_const', const='DISABLE', default=argparse.SUPPRESS,
                         help='quiet mode (alias for -l %(const)s)')
     parser.add_argument('-o', '--out', metavar='DIR',
                         help='working directory (default: input.timestamp)')

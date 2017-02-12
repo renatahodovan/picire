@@ -33,24 +33,26 @@ class AbstractDD(object):
         self._cache = cache or OutcomeCache()
 
     @staticmethod
-    def config_id(run, dir, i):
+    def config_id(*args):
         """
-        Create identifier for the current task.
+        Create a task identifier from the arguments. The arguments are typically
+        in the form of (run, dir, i), where run is the index of the current
+        iteration, dir is direction of reduce (either s(ubest) or c(omplement)),
+        and i is the index of the current test in the iteration. Alternatively,
+        arguments can also be in the form of (run, 'assert') for double checking
+        the input at the start of an iteration.
 
-        :param run: The index of the current iteration.
-        :param dir: The direction of reduce: either s(ubest) or c(omplement).
-        :param i: The index of the current test in the iteration.
-        :return: Config id in (run)_(dir)_(i) format.
+        :return: Config ID by concatenating the arguments with underscores.
         """
-        return '%d_%s_%d' % (run, dir, i)
+        return '_'.join([str(arg) for arg in args])
 
     @staticmethod
     def pretty_config_id(config_id):
         """
         Create beautified identifier for the current task.
 
-        :param config_id: Config ID in form (run)_(dir)_(i).
-        :return: Config ID in form (run) / (dir) / (i).
+        :param config_id: Config ID as returned by config_id.
+        :return: Config ID separated by slashes, e.g., "(run) / (dir) / (i)".
         """
         return config_id.replace('_', ' / ')
 
@@ -119,7 +121,7 @@ class AbstractDD(object):
 
         logger.debug('\t[ %s ]: test = %r', AbstractDD.pretty_config_id(config_id), outcome)
 
-        if config_id != 'assert':
+        if 'assert' not in config_id:
             self._cache.add(config, outcome)
 
         return outcome

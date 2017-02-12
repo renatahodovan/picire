@@ -49,7 +49,7 @@ class CombinedParallelDD(AbstractParallelDD):
         complement_offset = 0
 
         while True:
-            assert self.test(config, 'assert') == self.FAIL
+            assert self.test(config, AbstractDD.config_id(run, 'assert')) == self.FAIL
 
             subsets = self._split(config, n)
 

@@ -133,7 +133,8 @@ def process_args(parser, args):
 
         if args.combine_loops:
             args.reduce_class = CombinedParallelDD
-            args.reduce_config['config_iterator'] = CombinedIterator(args.subset_first, subset_iterator,
+            args.reduce_config['config_iterator'] = CombinedIterator(args.subset_first,
+                                                                     subset_iterator,
                                                                      complement_iterator)
         else:
             args.reduce_class = ParallelDD
@@ -148,7 +149,7 @@ def call(*,
          reduce_class, reduce_config,
          tester_class, tester_config,
          input, src, encoding, out,
-         atom,
+         atom='line',
          cache_class=None, cleanup=True):
     """
     Execute picire as if invoked from command line, however, control its
@@ -162,7 +163,7 @@ def call(*,
     :param src: Contents of the test case to reduce.
     :param encoding: Encoding of the input test case.
     :param out: Path to the output directory.
-    :param atom: Input granularity to work with during reduce ('char' or 'line').
+    :param atom: Input granularity to work with during reduce ('char' or 'line'; default: 'line').
     :param cache_class: Reference to the cache class to use.
     :param cleanup: Binary flag denoting whether removing auxiliary files at the end is enabled (default: True).
     :return: The path to the minimal test case.
@@ -202,7 +203,7 @@ def call(*,
 
     out_file = join(out, basename(input))
     with codecs.open(out_file, 'w', encoding=encoding, errors='ignore') as f:
-        f.write(ConcatTestBuilder(content)(min_set))
+        f.write(test_builder(min_set))
     logger.info('Result is saved to %s.', out_file)
 
     if cleanup:

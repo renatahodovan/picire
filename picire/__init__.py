@@ -1,4 +1,4 @@
-# Copyright (c) 2016-2017 Renata Hodovan, Akos Kiss.
+# Copyright (c) 2016-2018 Renata Hodovan, Akos Kiss.
 #
 # Licensed under the BSD 3-Clause License
 # <LICENSE.rst or https://opensource.org/licenses/BSD-3-Clause>.
@@ -31,6 +31,7 @@ __all__ = [
     'config_splitters',
     'ContentCache',
     'LightDD',
+    'logging',
     'OutcomeCache',
     'ParallelDD',
     'shared_cache_decorator',

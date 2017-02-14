@@ -1,4 +1,4 @@
-# Copyright (c) 2016-2017 Renata Hodovan, Akos Kiss.
+# Copyright (c) 2016-2018 Renata Hodovan, Akos Kiss.
 #
 # Licensed under the BSD 3-Clause License
 # <LICENSE.rst or https://opensource.org/licenses/BSD-3-Clause>.
@@ -8,7 +8,6 @@
 import argparse
 import chardet
 import codecs
-import logging
 import os
 import pkgutil
 import time
@@ -17,6 +16,7 @@ from os.path import abspath, basename, exists, join, relpath
 from shutil import rmtree
 
 from . import config_splitters, config_iterators, outcome_cache
+from . import logging
 from .combined_iterator import CombinedIterator
 from .combined_parallel_dd import CombinedParallelDD
 from .light_dd import LightDD
@@ -69,7 +69,7 @@ def create_parser():
 
     # Additional settings.
     parser.add_argument('-l', '--log-level', metavar='LEVEL',
-                        choices=['DEBUG', 'INFO', 'WARNING', 'ERROR', 'CRITICAL', 'DISABLE'], default='INFO',
+                        choices=sorted(logging.levels.keys(), key=lambda k: logging.levels[k]), default='INFO',
                         help='verbosity level of diagnostic messages (%(choices)s; default: %(default)s)')
     parser.add_argument('-v', '--verbose', dest='log_level', action='store_const', const='DEBUG', default=argparse.SUPPRESS,
                         help='verbose mode (alias for -l %(const)s)')
@@ -83,8 +83,7 @@ def create_parser():
 
 
 def process_args(parser, args):
-    if args.log_level == 'DISABLE':
-        args.log_level = logging.CRITICAL + 1
+    args.log_level = logging.levels[args.log_level]
 
     args.input = abspath(relpath(args.input))
     if not exists(args.input):
@@ -202,7 +201,7 @@ def call(*,
                       **reduce_config)
     min_set = dd.ddmin(list(range(len(content))), n=granularity)
 
-    logger.debug('The cached results are: %s', cache)
+    logger.trace('The cached results are: %s', cache)
     logger.debug('A minimal config is: %r', min_set)
 
     out_file = join(out, basename(input))

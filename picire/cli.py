@@ -163,7 +163,7 @@ def call(*,
     :param src: Contents of the test case to reduce.
     :param encoding: Encoding of the input test case.
     :param out: Path to the output directory.
-    :param atom: Input granularity to work with during reduce ('char' or 'line'; default: 'line').
+    :param atom: Input granularity to work with during reduce ('char', 'line', or 'both'; default: 'line').
     :param cache_class: Reference to the cache class to use.
     :param cleanup: Binary flag denoting whether removing auxiliary files at the end is enabled (default: True).
     :return: The path to the minimal test case.
@@ -177,13 +177,14 @@ def call(*,
                 input, ''.join(['\t%s: %s\n' % (k, v) for k, v in sorted(args.items())]))
 
     tests_dir = join(out, 'tests')
-    os.makedirs(tests_dir, exist_ok=True)
-
     # Split source to the chosen atoms.
-    if atom == 'line':
+    if atom in ['line', 'both']:
         content = src.decode(encoding).splitlines(keepends=True)
+        tests_dir = join(tests_dir, 'line')
     elif atom == 'char':
         content = src.decode(encoding)
+        tests_dir = join(tests_dir, 'char')
+    os.makedirs(tests_dir, exist_ok=True)
     logger.info('Initial test contains %d %ss', len(content), atom)
 
     test_builder = ConcatTestBuilder(content)
@@ -202,12 +203,20 @@ def call(*,
     logger.debug('A minimal config is: %r', min_set)
 
     out_file = join(out, basename(input))
+    out_src = test_builder(min_set)
     with codecs.open(out_file, 'w', encoding=encoding, errors='ignore') as f:
-        f.write(test_builder(min_set))
+        f.write(out_src)
     logger.info('Result is saved to %s.', out_file)
 
     if cleanup:
         rmtree(tests_dir)
+
+    if atom == 'both':
+        out_file = call(reduce_class=reduce_class, reduce_config=reduce_config,
+                        tester_class=tester_class, tester_config=tester_config,
+                        input=out_file, src=out_src.encode(encoding=encoding), encoding=encoding, out=out,
+                        atom='char',
+                        cache_class=cache_class, cleanup=cleanup)
 
     return out_file
 
@@ -219,7 +228,7 @@ def execute():
 
     parser = create_parser()
     # Implementation specific CLI options that are not needed to be part of the core parser.
-    parser.add_argument('-a', '--atom', metavar='NAME', choices=['char', 'line'], default='line',
+    parser.add_argument('-a', '--atom', metavar='NAME', choices=['char', 'line', 'both'], default='line',
                         help='atom (i.e., granularity) of input (%(choices)s; default: %(default)s)')
     parser.add_argument('--version', action='version', version='%(prog)s {version}'.format(version=__version__))
 

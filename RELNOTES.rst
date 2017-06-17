@@ -2,6 +2,18 @@
 *Picire* Release Notes
 ======================
 
+17.6
+====
+
+Summary of changes:
+
+* Added CLI support for running character-based reduction after line-based
+  reduction.
+* Improved the testing infrastructure (support for Python 3.6 and code coverage
+  measurement).
+* Minor bug fixes and improvements.
+
+
 17.1
 ====
 

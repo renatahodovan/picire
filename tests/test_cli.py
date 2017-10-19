@@ -11,39 +11,35 @@ import pytest
 import subprocess
 import sys
 
-from common import pytest_mark_skipif_windows, script_ext
 
+is_windows = sys.platform.startswith('win32')
+script_ext = '.bat' if is_windows else '.sh'
 
 tests_dir = os.path.dirname(os.path.abspath(__file__))
 resources_dir = os.path.join(tests_dir, 'resources')
 
 
-@pytest.mark.parametrize('args_parallel', [
-    (),
-    pytest_mark_skipif_windows(('--parallel', )),
-    pytest_mark_skipif_windows(('--parallel', '--combine-loops', )),
-])
-@pytest.mark.parametrize('args_split', [
-    ('--split=balanced', ),
-    ('--split=zeller', ),
-])
-@pytest.mark.parametrize('args_first', [
-    (),
-    ('--complement-first', ),
-])
-@pytest.mark.parametrize('args_subsit', [
-    ('--subset-iterator=forward', ),
-    ('--subset-iterator=backward', ),
-    ('--subset-iterator=skip', ),
-])
-@pytest.mark.parametrize('args_complit', [
-    ('--complement-iterator=forward', ),
-    ('--complement-iterator=backward', ),
-])
-@pytest.mark.parametrize('args_cache', [
-    ('--cache=none', ),
-    ('--cache=config', ),
-    ('--cache=content', ),
+iterator_parameters_combined = [
+    ('--subset-iterator=forward', '--complement-iterator=forward'),
+    ('--subset-iterator=forward', '--complement-iterator=backward'),
+    ('--subset-iterator=backward', '--complement-iterator=forward'),
+    ('--subset-iterator=backward', '--complement-iterator=backward'),
+    ('--complement-first', '--subset-iterator=forward', '--complement-iterator=forward'),
+    ('--complement-first', '--subset-iterator=forward', '--complement-iterator=backward'),
+    ('--complement-first', '--subset-iterator=backward', '--complement-iterator=forward'),
+    ('--complement-first', '--subset-iterator=backward', '--complement-iterator=backward'),
+]
+iterator_parameters_noncombined = [
+    ('--subset-iterator=skip', '--complement-iterator=forward'),
+    ('--subset-iterator=skip', '--complement-iterator=backward'),
+]
+
+
+@pytest.mark.parametrize('test, inp, exp, args_atom', [
+    ('test-json-extra-comma', 'inp-extra-comma.json', 'exp-extra-comma.json', ('--atom=line', )),
+    ('test-sumprod10-sum', 'inp-sumprod10.py', 'exp-sumprod10-sum.py', ('--atom=line', )),
+    ('test-sumprod10-prod', 'inp-sumprod10.py', 'exp-sumprod10-prod.py', ('--atom=line', )),
+    ('test-json-invalid-escape', 'inp-invalid-escape.json', 'exp-invalid-escape.json', ('--atom=char', )),
 ])
 class TestCli:
 
@@ -58,18 +54,55 @@ class TestCli:
         assert proc.returncode == 0
         assert filecmp.cmp(os.path.join(out_dir, inp), os.path.join(resources_dir, exp))
 
-    @pytest.mark.parametrize('test, inp, exp', [
-        ('test-json-extra-comma', 'inp-extra-comma.json', 'exp-extra-comma.json'),
-        ('test-sumprod10-sum', 'inp-sumprod10.py', 'exp-sumprod10-sum.py'),
-        ('test-sumprod10-prod', 'inp-sumprod10.py', 'exp-sumprod10-prod.py'),
+    @pytest.mark.parametrize('args_parallel', [
+        (),
     ])
-    def test_line(self, test, inp, exp, tmpdir, args_parallel, args_split, args_first, args_subsit, args_complit, args_cache):
+    @pytest.mark.parametrize('args_split', [
+        ('--split=balanced', ),
+        ('--split=zeller', ),
+    ])
+    @pytest.mark.parametrize('args_it',
+        iterator_parameters_combined + iterator_parameters_noncombined
+    )
+    @pytest.mark.parametrize('args_cache', [
+        ('--cache=none', ),
+        ('--cache=config', ),
+        ('--cache=content', ),
+    ])
+    def test_light(self, test, inp, exp, tmpdir, args_atom, args_parallel, args_split, args_it, args_cache):
         self._run_picire(test, inp, exp, tmpdir,
-                         ('--atom=line', ) + args_parallel + args_split + args_first + args_subsit + args_complit + args_cache)
+                         args_atom + args_parallel + args_split + args_it + args_cache)
 
-    @pytest.mark.parametrize('test, inp, exp', [
-        ('test-json-invalid-escape', 'inp-invalid-escape.json', 'exp-invalid-escape.json'),
+    @pytest.mark.parametrize('args_parallel', [
+        ('--parallel', ),
     ])
-    def test_char(self, test, inp, exp, tmpdir, args_parallel, args_split, args_first, args_subsit, args_complit, args_cache):
+    @pytest.mark.parametrize('args_split', [
+        ('--split=zeller', ),
+    ])
+    @pytest.mark.parametrize('args_it',
+        iterator_parameters_combined + iterator_parameters_noncombined
+    )
+    @pytest.mark.parametrize('args_cache', [
+        ('--cache=none', ),
+        ('--cache=config', ),
+        ('--cache=content', ),
+    ])
+    def test_parallel(self, test, inp, exp, tmpdir, args_atom, args_parallel, args_split, args_it, args_cache):
         self._run_picire(test, inp, exp, tmpdir,
-                         ('--atom=char', ) + args_parallel + args_split + args_first + args_subsit + args_complit + args_cache)
+                         args_atom + args_parallel + args_split + args_it + args_cache)
+
+    @pytest.mark.parametrize('args_parallel', [
+        ('--parallel', '--combine-loops', ),
+    ])
+    @pytest.mark.parametrize('args_split', [
+        ('--split=zeller', ),
+    ])
+    @pytest.mark.parametrize('args_it',
+        iterator_parameters_combined
+    )
+    @pytest.mark.parametrize('args_cache', [
+        ('--cache=config', ),
+    ])
+    def test_combined(self, test, inp, exp, tmpdir, args_atom, args_parallel, args_split, args_it, args_cache):
+        self._run_picire(test, inp, exp, tmpdir,
+                         args_atom + args_parallel + args_split + args_it + args_cache)

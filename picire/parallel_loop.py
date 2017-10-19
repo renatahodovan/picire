@@ -10,8 +10,10 @@ import multiprocessing
 import os
 import psutil
 import signal
+import sys
 
 logger = logging.getLogger(__name__)
+is_windows = sys.platform.startswith('win32')
 
 
 class Loop(object):
@@ -41,13 +43,16 @@ class Loop(object):
     # but only changes to shared objects will be visible in parent.
     def _body(self, i, target, args):
         """
-        Executes the given function in its own process group.
+        Executes the given function in its own process group (on Windows: in
+        its own process).
 
         :param i: The index of the current configuration.
         :param target: The function to run in parallel.
         :param args: The arguments that the target should run with.
         """
-        os.setpgrp()
+        if not is_windows:
+            os.setpgrp()
+
         try:
             if not target(*args):
                 self._break.value = 1
@@ -64,24 +69,36 @@ class Loop(object):
         """Terminate all live jobs."""
         for i, pid in enumerate(self._slots):
             if pid != 0:
-                try:
-                    os.killpg(pid, signal.SIGTERM)
-                except OSError:
-                    # If the process with pid did not have time to become a process group leader,
-                    # then pgid does not exist and os.killpg could not kill the process,
-                    # so re-try kill the process only.
+                if not is_windows:
                     try:
-                        os.kill(pid, signal.SIGTERM)
+                        os.killpg(pid, signal.SIGTERM)
                     except OSError:
-                        pass
+                        # If the process with pid did not have time to become a process group leader,
+                        # then pgid does not exist and os.killpg could not kill the process,
+                        # so re-try kill the process only.
+                        try:
+                            os.kill(pid, signal.SIGTERM)
+                        except OSError:
+                            pass
+                else:
+                    root_proc = psutil.Process(pid)
+                    children = root_proc.children(recursive=True) + [root_proc]
+                    for proc in children:
+                        try:
+                            # Would be easier to use proc.terminate() here but psutils
+                            # (up to version 5.4.0) on Windows terminates processes with
+                            # the 0 signal/code, making the outcome of the terminated
+                            # process indistinguishable from a successful execution.
+                            os.kill(proc.pid, signal.SIGTERM)
+                        except OSError:
+                            pass
+                    psutil.wait_procs(children, timeout=1)
             self._slots[i] = 0
 
     def _cleanup_slots(self):
         for i, pid in enumerate(self._slots):
             if pid != 0:
-                try:
-                    os.kill(pid, 0)
-                except OSError:
+                if not psutil.pid_exists(pid):
                     self._slots[i] = 0
 
     # Target is expected to return True if loop shall continue and False if it

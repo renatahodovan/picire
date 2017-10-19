@@ -143,7 +143,7 @@ Compatibility
 
 * Linux (Ubuntu 14.04 / 15.10 / 16.04)
 * Mac OS X (El Capitan 10.11 / Sierra 10.12)
-* Windows (Server 2012 R2) - partial: without parallelization
+* Windows (Server 2012 R2 / Windows 10)
 
 
 Acknowledgement and Citations

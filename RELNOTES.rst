@@ -2,6 +2,15 @@
 *Picire* Release Notes
 ======================
 
+17.10
+=====
+
+Summary of changes:
+
+* Windows became a first-class citizen: both sequential and parallel ddmin
+  implementations are supported on the platform.
+
+
 17.6
 ====
 

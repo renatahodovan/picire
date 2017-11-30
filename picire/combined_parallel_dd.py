@@ -36,15 +36,15 @@ class CombinedParallelDD(AbstractParallelDD):
 
         self._config_iterator = config_iterator
 
-    def _dd(self, config):
+    def _dd(self, config, *, n):
         """
         Calculates a 1-minimal subset of the config that is still interesting using multiple processes.
         Subset and complement based blocks are mixed and don't wait for each other.
 
         :param config: The input configuration.
+        :param n: The number of sets that the config is initially split to.
         :return: A minimal subset of the current configuration what is still interesting (if any).
         """
-        n = 2
         run = 1
         complement_offset = 0
 

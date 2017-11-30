@@ -76,23 +76,26 @@ class AbstractDD(object):
         c2 = set(c2)
         return [c for c in c1 if c not in c2]
 
-    def _dd(self, config):
+    def _dd(self, config, *, n):
         """
         To be overridden by subclasses.
 
         :param config: The input configuration.
+        :param n: The number of sets that the config is initially split to.
         :return: A minimal subset of the current configuration what is still interesting (if any).
         """
         pass
 
-    def ddmin(self, config):
+    def ddmin(self, config, *, n=2):
         """
         Return a 1-minimal failing subset of the initial configuration.
 
         :param config: The initial configuration that will be reduced.
+        :param n: The number of sets that the config is initially split to.
         :return: 1-minimal failing configuration.
         """
 
+        n = min(len(config), n)
         if len(config) < 2:
             assert self.test(config, 'assert') == self.FAIL
             logger.info('Test case is minimal already.')
@@ -100,7 +103,7 @@ class AbstractDD(object):
 
         logger.debug('dd(%r) ...', config)
 
-        outcome = self._dd(config)
+        outcome = self._dd(config, n=n)
 
         logger.debug('dd(%r) = %r', config, outcome)
 

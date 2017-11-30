@@ -40,15 +40,15 @@ class ParallelDD(AbstractParallelDD):
         self._subset_iterator = subset_iterator
         self._complement_iterator = complement_iterator
 
-    def _dd(self, config):
+    def _dd(self, config, *, n):
         """
         Calculates an 1-minimal subset of the config that is still interesting using multiple processes.
         Subset and complement based blocks are executed sequentially.
 
         :param config: The input configuration.
+        :param n: The number of sets that the config is initially split to.
         :return: A minimal subset of the current configuration what is still interesting (if any).
         """
-        n = 2
         run = 1
         complement_offset = 0
 

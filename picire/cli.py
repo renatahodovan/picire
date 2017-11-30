@@ -42,6 +42,8 @@ def create_parser():
                         help='split algorithm (%(choices)s; default: %(default)s)')
     parser.add_argument('--test', metavar='FILE', required=True,
                         help='test command that decides about interestingness of an input')
+    parser.add_argument('--granularity', type=int, default=2,
+                        help='initial splitting granularity (default: %(default)d).')
     parser.add_argument('--encoding', metavar='NAME',
                         help='test case encoding (default: autodetect)')
 
@@ -149,7 +151,7 @@ def call(*,
          reduce_class, reduce_config,
          tester_class, tester_config,
          input, src, encoding, out,
-         atom='line',
+         atom='line', granularity=2,
          cache_class=None, cleanup=True):
     """
     Execute picire as if invoked from command line, however, control its
@@ -164,6 +166,7 @@ def call(*,
     :param encoding: Encoding of the input test case.
     :param out: Path to the output directory.
     :param atom: Input granularity to work with during reduce ('char', 'line', or 'both'; default: 'line').
+    :param granularity: Initial granularity (default: 2).
     :param cache_class: Reference to the cache class to use.
     :param cleanup: Binary flag denoting whether removing auxiliary files at the end is enabled (default: True).
     :return: The path to the minimal test case.
@@ -197,7 +200,7 @@ def call(*,
                                    **tester_config),
                       cache=cache,
                       **reduce_config)
-    min_set = dd.ddmin(list(range(len(content))))
+    min_set = dd.ddmin(list(range(len(content))), n=granularity)
 
     logger.debug('The cached results are: %s', cache)
     logger.debug('A minimal config is: %r', min_set)
@@ -247,5 +250,6 @@ def execute():
          encoding=args.encoding,
          out=args.out,
          atom=args.atom,
+         granularity=args.granularity,
          cache_class=args.cache,
          cleanup=args.cleanup)

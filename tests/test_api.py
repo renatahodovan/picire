@@ -1,4 +1,4 @@
-# Copyright (c) 2016-2017 Renata Hodovan, Akos Kiss.
+# Copyright (c) 2016-2018 Renata Hodovan, Akos Kiss.
 #
 # Licensed under the BSD 3-Clause License
 # <LICENSE.rst or https://opensource.org/licenses/BSD-3-Clause>.
@@ -75,9 +75,13 @@ iterator_parameters_noncombined = [
     (interesting_b, config_b, expect_b),
     (interesting_c, config_c, expect_c),
 ])
+@pytest.mark.parametrize('granularity', [
+    2,
+    float('inf'),
+])
 class TestApi:
 
-    def _run_picire(self, interesting, config, expect, dd, split, subset_first, subset_iterator, complement_iterator, cache):
+    def _run_picire(self, interesting, config, expect, granularity, dd, split, subset_first, subset_iterator, complement_iterator, cache):
         if dd != picire.CombinedParallelDD:
             it_kwargs = {
                 'subset_first': subset_first,
@@ -99,7 +103,7 @@ class TestApi:
                     split=split,
                     cache=cache(),
                     **it_kwargs)
-        output = [config[x] for x in dd_obj.ddmin(list(range(len(config))))]
+        output = [config[x] for x in dd_obj.ddmin(list(range(len(config))), n=granularity)]
 
         assert output == expect
 
@@ -117,8 +121,8 @@ class TestApi:
         picire.OutcomeCache,
         picire.ConfigCache,
     ])
-    def test_light(self, interesting, config, expect, dd, split, subset_first, subset_iterator, complement_iterator, cache):
-        self._run_picire(interesting, config, expect, dd, split, subset_first, subset_iterator, complement_iterator, cache)
+    def test_light(self, interesting, config, expect, granularity, dd, split, subset_first, subset_iterator, complement_iterator, cache):
+        self._run_picire(interesting, config, expect, granularity, dd, split, subset_first, subset_iterator, complement_iterator, cache)
 
     @pytest.mark.parametrize('dd', [
         picire.ParallelDD,
@@ -133,8 +137,8 @@ class TestApi:
         picire.OutcomeCache,
         picire.ConfigCache,
     ])
-    def test_parallel(self, interesting, config, expect, dd, split, subset_first, subset_iterator, complement_iterator, cache):
-        self._run_picire(interesting, config, expect, dd, split, subset_first, subset_iterator, complement_iterator, cache)
+    def test_parallel(self, interesting, config, expect, granularity, dd, split, subset_first, subset_iterator, complement_iterator, cache):
+        self._run_picire(interesting, config, expect, granularity, dd, split, subset_first, subset_iterator, complement_iterator, cache)
 
     @pytest.mark.parametrize('dd', [
         picire.CombinedParallelDD,
@@ -148,5 +152,5 @@ class TestApi:
     @pytest.mark.parametrize('cache', [
         picire.ConfigCache,
     ])
-    def test_combined(self, interesting, config, expect, dd, split, subset_first, subset_iterator, complement_iterator, cache):
-        self._run_picire(interesting, config, expect, dd, split, subset_first, subset_iterator, complement_iterator, cache)
+    def test_combined(self, interesting, config, expect, granularity, dd, split, subset_first, subset_iterator, complement_iterator, cache):
+        self._run_picire(interesting, config, expect, granularity, dd, split, subset_first, subset_iterator, complement_iterator, cache)

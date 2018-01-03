@@ -9,6 +9,9 @@ Picire
    :target: https://travis-ci.org/renatahodovan/picire
 .. image:: https://ci.appveyor.com/api/projects/status/my0fospjoyns9lm4/branch/master?svg=true
    :target: https://ci.appveyor.com/project/renatahodovan/picire/branch/master
+.. image:: https://coveralls.io/repos/github/renatahodovan/picire/badge.svg?branch=master
+   :target: https://coveralls.io/github/renatahodovan/picire?branch=master
+
 
 Picire (pronounced as /pitsirE/) is a Python 3 implementation of the
 `Delta Debugging`_ algorithm supporting parallelization and further

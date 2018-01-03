@@ -2,6 +2,17 @@
 *Picire* Release Notes
 ======================
 
+18.1
+====
+
+Summary of changes:
+
+* Added support for custom initial granularity.
+* Improved logging (added support for filtering out really high volume logs by
+  introducing a new log level).
+* Improved the testing infrastructure (by using the Coveralls online service).
+
+
 17.10
 =====
 

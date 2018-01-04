@@ -144,8 +144,8 @@ Compatibility
 
 *picire* was tested on:
 
-* Linux (Ubuntu 14.04 / 15.10 / 16.04)
-* Mac OS X (El Capitan 10.11 / Sierra 10.12)
+* Linux (Ubuntu 14.04 / 15.10 / 16.04 / 17.10)
+* Mac OS X (El Capitan 10.11 / Sierra 10.12 / High Sierra 10.13)
 * Windows (Server 2012 R2 / Windows 10)
 
 
@@ -157,12 +157,14 @@ This software uses the delta debugging algorithm as described in (A. Zeller:
 "Simplifying failure-inducing input", ISSTA 2000).
 
 Further improvements are described in (R. Hodovan, A. Kiss: "Practical
-Improvements to the Minimizing Delta Debugging Algorithm", ICSOFT-EA 2016).
+Improvements to the Minimizing Delta Debugging Algorithm", ICSOFT-EA 2016)
+and (R. Hodovan, A. Kiss, T. Gyimothy: "Tree Preprocessing and Test Outcome
+Caching for Efficient Hierarchical Delta Debugging", AST 2017).
 
 
 Copyright and Licensing
 =======================
 
-See LICENSE_.
+Licensed under the BSD 3-Clause License_.
 
-.. _LICENSE: LICENSE.rst
+.. _License: LICENSE.rst

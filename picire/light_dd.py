@@ -1,4 +1,4 @@
-# Copyright (c) 2016-2017 Renata Hodovan, Akos Kiss.
+# Copyright (c) 2016-2018 Renata Hodovan, Akos Kiss.
 #
 # Licensed under the BSD 3-Clause License
 # <LICENSE.rst or https://opensource.org/licenses/BSD-3-Clause>.
@@ -62,9 +62,9 @@ class LightDD(AbstractDD):
 
             logger.info('Run #%d: trying %s.', run, ' + '.join([str(len(subsets[i])) for i in range(n)]))
 
-            next_config, next_n, complement_offset = first_test(n, run, config, subsets, complement_offset)
+            next_config, next_n, complement_offset = first_test(run, config, subsets, complement_offset)
             if next_config is None:
-                next_config, next_n, complement_offset = second_test(n, run, config, subsets, complement_offset)
+                next_config, next_n, complement_offset = second_test(run, config, subsets, complement_offset)
             failed = next_config is not None
 
             if not failed:
@@ -89,11 +89,10 @@ class LightDD(AbstractDD):
             n = next_n
             run += 1
 
-    def _test_subsets(self, n, run, config, subsets, complement_offset):
+    def _test_subsets(self, run, config, subsets, complement_offset):
         """
         Perform a subset based reduce task.
 
-        :param n: The number of sets that the config is split to.
         :param run: The index of the current iteration.
         :param config: The current configuration under testing.
         :param subsets: List of sets that the current configuration is split to.
@@ -101,6 +100,7 @@ class LightDD(AbstractDD):
                of the first unchecked complement (optimization purpose only).
         :return: Tuple: (failing config or None, next n or None, next complement_offset).
         """
+        n = len(subsets)
         for i in self._subset_iterator(n):
             if i is None:
                 continue
@@ -118,11 +118,10 @@ class LightDD(AbstractDD):
 
         return None, None, complement_offset
 
-    def _test_complements(self, n, run, config, subsets, complement_offset):
+    def _test_complements(self, run, config, subsets, complement_offset):
         """
         Perform a complement based reduce task.
 
-        :param n: The number of sets that the config is split to.
         :param run: The index of the current iteration.
         :param config: The current configuration under testing.
         :param subsets: List of sets that the current configuration is split to.
@@ -130,6 +129,7 @@ class LightDD(AbstractDD):
                of the first unchecked complement (optimization purpose only).
         :return: Tuple: (failing config or None, next n or None, next complement_offset).
         """
+        n = len(subsets)
         for j in self._complement_iterator(n):
             if j is None:
                 continue

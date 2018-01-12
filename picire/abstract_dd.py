@@ -1,4 +1,4 @@
-# Copyright (c) 2016-2017 Renata Hodovan, Akos Kiss.
+# Copyright (c) 2016-2018 Renata Hodovan, Akos Kiss.
 #
 # Licensed under the BSD 3-Clause License
 # <LICENSE.rst or https://opensource.org/licenses/BSD-3-Clause>.
@@ -33,28 +33,20 @@ class AbstractDD(object):
         self._cache = cache or OutcomeCache()
 
     @staticmethod
-    def config_id(*args):
-        """
-        Create a task identifier from the arguments. The arguments are typically
-        in the form of (run, dir, i), where run is the index of the current
-        iteration, dir is direction of reduce (either s(ubest) or c(omplement)),
-        and i is the index of the current test in the iteration. Alternatively,
-        arguments can also be in the form of (run, 'assert') for double checking
-        the input at the start of an iteration.
-
-        :return: Config ID by concatenating the arguments with underscores.
-        """
-        return '_'.join([str(arg) for arg in args])
-
-    @staticmethod
     def pretty_config_id(config_id):
         """
-        Create beautified identifier for the current task.
+        Create beautified identifier for the current task from the argument.
+        The argument is typically a tuple in the form of (run, dir, i), where
+        run is the index of the current iteration, dir is direction of reduce
+        (either s(ubset) or c(omplement)), and i is the index of the current
+        test in the iteration. Alternatively, argument can also be in the form
+        of (run, 'assert') for double checking the input at the start of an
+        iteration.
 
-        :param config_id: Config ID as returned by config_id.
-        :return: Config ID separated by slashes, e.g., "(run) / (dir) / (i)".
+        :param config_id: Config ID tuple.
+        :return: Concatenating the arguments with slashes, e.g., "(run) / (dir) / (i)".
         """
-        return config_id.replace('_', ' / ')
+        return ' / '.join(str(i) for i in config_id)
 
     def lookup_cache(self, config, config_id):
         """
@@ -66,7 +58,7 @@ class AbstractDD(object):
         """
         cached_result = self._cache.lookup(config)
         if cached_result is not None:
-            logger.debug('\t[ %s ]: cache = %r', AbstractDD.pretty_config_id(config_id), cached_result)
+            logger.debug('\t[ %s ]: cache = %r', self.pretty_config_id(config_id), cached_result)
 
         return cached_result
 
@@ -97,7 +89,7 @@ class AbstractDD(object):
 
         n = min(len(config), n)
         if len(config) < 2:
-            assert self.test(config, 'assert') == self.FAIL
+            assert self.test(config, ('assert',)) == self.FAIL
             logger.info('Test case is minimal already.')
             return config
 
@@ -118,11 +110,11 @@ class AbstractDD(object):
         :return: PASS or FAIL
         """
 
-        logger.debug('\t[ %s ]: test...', AbstractDD.pretty_config_id(config_id))
+        logger.debug('\t[ %s ]: test...', self.pretty_config_id(config_id))
 
         outcome = self._test(config, config_id)
 
-        logger.debug('\t[ %s ]: test = %r', AbstractDD.pretty_config_id(config_id), outcome)
+        logger.debug('\t[ %s ]: test = %r', self.pretty_config_id(config_id), outcome)
 
         if 'assert' not in config_id:
             self._cache.add(config, outcome)

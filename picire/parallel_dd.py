@@ -60,7 +60,7 @@ class ParallelDD(AbstractParallelDD):
             second_test = self._test_subsets
 
         while True:
-            assert self.test(config, AbstractDD.config_id(run, 'assert')) == self.FAIL
+            assert self.test(config, (run, 'assert')) == self.FAIL
 
             subsets = self._split(config, n)
 
@@ -113,7 +113,7 @@ class ParallelDD(AbstractParallelDD):
         for i in self._subset_iterator(n):
             if i is None:
                 continue
-            config_id = AbstractDD.config_id(run, 's', i)
+            config_id = (run, 's', i)
 
             # If we had this test before, return the saved result.
             outcome = self.lookup_cache(subsets[i], config_id)
@@ -156,7 +156,7 @@ class ParallelDD(AbstractParallelDD):
 
             i = int((j + complement_offset) % n)
             complement = self.minus(config, subsets[i])
-            config_id = AbstractDD.config_id(run, 'c', i)
+            config_id = (run, 'c', i)
 
             # If we had this test before, return its result
             outcome = self.lookup_cache(complement, config_id)

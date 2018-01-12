@@ -56,7 +56,7 @@ class LightDD(AbstractDD):
             second_test = self._test_subsets
 
         while True:
-            assert self.test(config, AbstractDD.config_id(run, 'assert')) == self.FAIL
+            assert self.test(config, (run, 'assert')) == self.FAIL
 
             subsets = self._split(config, n)
 
@@ -105,7 +105,7 @@ class LightDD(AbstractDD):
             if i is None:
                 continue
 
-            config_id = AbstractDD.config_id(run, 's', i)
+            config_id = (run, 's', i)
 
             # Get the outcome either from cache or by testing it.
             outcome = self.lookup_cache(subsets[i], config_id) or self.test(subsets[i], config_id)
@@ -135,7 +135,7 @@ class LightDD(AbstractDD):
                 continue
 
             i = int((j + complement_offset) % n)
-            config_id = AbstractDD.config_id(run, 'c', i)
+            config_id = (run, 'c', i)
             complement = self.minus(config, subsets[i])
 
             outcome = self.lookup_cache(complement, config_id) or self.test(complement, config_id)

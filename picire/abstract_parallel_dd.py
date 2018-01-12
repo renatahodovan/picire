@@ -1,4 +1,4 @@
-# Copyright (c) 2016-2017 Renata Hodovan, Akos Kiss.
+# Copyright (c) 2016-2018 Renata Hodovan, Akos Kiss.
 #
 # Licensed under the BSD 3-Clause License
 # <LICENSE.rst or https://opensource.org/licenses/BSD-3-Clause>.
@@ -42,7 +42,7 @@ class AbstractParallelDD(AbstractDD):
 
         :param config: The list of entries of the current configuration.
         :param index: The index of the current configuration.
-        :param config_id: The string representation of the current configuration.
+        :param config_id: The unique ID of the current configuration.
         :return: True if the test is not interesting, False otherwise.
         """
         if self.test(config, config_id) == self.FAIL:

@@ -1,4 +1,4 @@
-# Copyright (c) 2016-2017 Renata Hodovan, Akos Kiss.
+# Copyright (c) 2016-2018 Renata Hodovan, Akos Kiss.
 #
 # Licensed under the BSD 3-Clause License
 # <LICENSE.rst or https://opensource.org/licenses/BSD-3-Clause>.
@@ -45,7 +45,7 @@ class SubprocessTest(object):
         :return: The evaluation of the current test. It's either FAIL or PASS.
         """
 
-        test_path = self.test_pattern % config_id
+        test_path = self.test_pattern % '_'.join(str(i) for i in config_id)
         test_dir = os.path.dirname(test_path)
 
         os.makedirs(test_dir, exist_ok=True)

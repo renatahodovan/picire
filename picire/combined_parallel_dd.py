@@ -1,4 +1,4 @@
-# Copyright (c) 2016-2017 Renata Hodovan, Akos Kiss.
+# Copyright (c) 2016-2018 Renata Hodovan, Akos Kiss.
 #
 # Licensed under the BSD 3-Clause License
 # <LICENSE.rst or https://opensource.org/licenses/BSD-3-Clause>.
@@ -49,7 +49,7 @@ class CombinedParallelDD(AbstractParallelDD):
         complement_offset = 0
 
         while True:
-            assert self.test(config, AbstractDD.config_id(run, 'assert')) == self.FAIL
+            assert self.test(config, (run, 'assert')) == self.FAIL
 
             subsets = self._split(config, n)
 
@@ -64,11 +64,11 @@ class CombinedParallelDD(AbstractParallelDD):
                     continue
 
                 if i < n:
-                    config_id = AbstractDD.config_id(run, 's', i)
+                    config_id = (run, 's', i)
                     config_set = subsets[i]
                 else:
                     j = int((i - n + complement_offset) % n)
-                    config_id = AbstractDD.config_id(run, 'c', j)
+                    config_id = (run, 'c', j)
                     config_set = self.minus(config, subsets[j])
 
                 # If we checked this test before, return its result

@@ -26,7 +26,7 @@ class LightDD(AbstractDD):
         :param test: A callable tester object.
         :param cache: Cache object to use.
         :param split: Splitter method to break a configuration up to n parts.
-        :param subset_first: Boolean value denoting whether the reduce has to start with the subset based approach or not.
+        :param subset_first: Boolean value denoting whether the reduce has to start with the subset-based approach or not.
         :param subset_iterator: Reference to a generator function that provides config indices in an arbitrary order.
         :param complement_iterator: Reference to a generator function that provides config indices in an arbitrary order.
         """
@@ -65,25 +65,27 @@ class LightDD(AbstractDD):
             next_config, next_n, complement_offset = first_test(run, config, subsets, complement_offset)
             if next_config is None:
                 next_config, next_n, complement_offset = second_test(run, config, subsets, complement_offset)
-            failed = next_config is not None
 
-            if not failed:
+            if next_config is None:
+                # Minimization ends if no interesting configuration was found by the finest splitting.
+                if n == len(config):
+                    logger.info('Done.')
+                    return config
+
                 next_config = config
                 next_n = min(len(config), n * 2)
-                logger.info('Increase granularity to %d.', next_n)
                 complement_offset = (complement_offset * next_n) / n
+                logger.info('Increase granularity to %d.', next_n)
 
-            # Minimization ends if no interesting configuration was found by the finest splitting or
-            # if the configuration is already reduced to a single unit.
-            if not failed and n == len(config):
-                # No further minimizing
-                logger.info('Done.')
-                return config
+            else:
+                # Interesting configuration is found.
+                logger.info('Reduced to %d units.', len(next_config))
+                logger.debug('New config: %r.', next_config)
 
-            if failed and len(next_config) == 1:
-                # No further minimizing
-                logger.info('Done.')
-                return next_config
+                # Minimization ends if the configuration is already reduced to a single unit.
+                if len(next_config) == 1:
+                    logger.info('Done.')
+                    return next_config
 
             config = next_config
             n = next_n
@@ -91,12 +93,12 @@ class LightDD(AbstractDD):
 
     def _test_subsets(self, run, config, subsets, complement_offset):
         """
-        Perform a subset based reduce task.
+        Perform a subset-based reduce task.
 
         :param run: The index of the current iteration.
         :param config: The current configuration under testing.
         :param subsets: List of sets that the current configuration is split to.
-        :param complement_offset: A compensation offset need to calculate the index
+        :param complement_offset: A compensation offset needed to calculate the index
                of the first unchecked complement (optimization purpose only).
         :return: Tuple: (failing config or None, next n or None, next complement_offset).
         """
@@ -111,21 +113,18 @@ class LightDD(AbstractDD):
             outcome = self.lookup_cache(subsets[i], config_id) or self.test(subsets[i], config_id)
             if outcome == self.FAIL:
                 # Interesting subset is found.
-                logger.info('Reduced to %d units.', len(subsets[i]))
-                logger.debug('New config: %r.', subsets[i])
-
                 return subsets[i], 2, 0
 
         return None, None, complement_offset
 
     def _test_complements(self, run, config, subsets, complement_offset):
         """
-        Perform a complement based reduce task.
+        Perform a complement-based reduce task.
 
         :param run: The index of the current iteration.
         :param config: The current configuration under testing.
         :param subsets: List of sets that the current configuration is split to.
-        :param complement_offset: A compensation offset need to calculate the index
+        :param complement_offset: A compensation offset needed to calculate the index
                of the first unchecked complement (optimization purpose only).
         :return: Tuple: (failing config or None, next n or None, next complement_offset).
         """
@@ -141,9 +140,6 @@ class LightDD(AbstractDD):
             outcome = self.lookup_cache(complement, config_id) or self.test(complement, config_id)
             if outcome == self.FAIL:
                 # Interesting complement is found.
-                logger.info('Reduced to %d units.', len(complement))
-                logger.debug('New config: %r.', complement)
-
                 # In next run, start removing the following subset
                 return complement, max(n - 1, 2), i
 

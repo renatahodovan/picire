@@ -30,7 +30,7 @@ class ParallelDD(AbstractParallelDD):
         :param split: Splitter method to break a configuration up to n part.
         :param proc_num: The level of parallelization.
         :param max_utilization: The maximum CPU utilization accepted.
-        :param subset_first: Boolean value denoting whether the reduce has to start with the subset based approach or not.
+        :param subset_first: Boolean value denoting whether the reduce has to start with the subset-based approach or not.
         :param subset_iterator: Reference to a generator function that provides config indices in an arbitrary order.
         :param complement_iterator: Reference to a generator function that provides config indices in an arbitrary order.
         """
@@ -42,8 +42,8 @@ class ParallelDD(AbstractParallelDD):
 
     def _dd(self, config, *, n):
         """
-        Calculates an 1-minimal subset of the config that is still interesting using multiple processes.
-        Subset and complement based blocks are executed sequentially.
+        Calculates a 1-minimal subset of the config that is still interesting using multiple processes.
+        Subset- and complement-based blocks are executed sequentially.
 
         :param config: The input configuration.
         :param n: The number of sets that the config is initially split to.
@@ -66,31 +66,30 @@ class ParallelDD(AbstractParallelDD):
 
             logger.info('Run #%d: trying %s.', run, ' + '.join([str(len(subsets[i])) for i in range(n)]))
 
-            # Reset fail index.
-            self._fail_index.value = -1
-
             next_config, next_n, complement_offset = first_test(run, config, subsets, complement_offset)
-            if self._fail_index.value == -1:
+            if next_config is None:
                 next_config, next_n, complement_offset = second_test(run, config, subsets, complement_offset)
 
-            # If findex is still -1 then no interesting configuration was found in either loops.
-            if self._fail_index.value == -1:
+            if next_config is None:
+                # Minimization ends if no interesting configuration was found by the finest splitting.
+                if n == len(config):
+                    logger.info('Done.')
+                    return config
+
                 next_config = config
                 next_n = min(len(config), n * 2)
-                logger.info('Increase granularity to %d.', next_n)
                 complement_offset = (complement_offset * next_n) / n
+                logger.info('Increase granularity to %d.', next_n)
 
-            # Minimization ends if no interesting configuration was found by the finest splitting or
-            # if the configuration is already reduced to a single unit.
-            if self._fail_index.value == -1 and n == len(config):
-                # No further minimizing.
-                logger.info('Done.')
-                return config
+            else:
+                # Interesting configuration is found.
+                logger.info('Reduced to %d units.', len(next_config))
+                logger.debug('New config: %r.', next_config)
 
-            if self._fail_index.value != -1 and len(next_config) == 1:
-                # No further minimizing.
-                logger.info('Done.')
-                return next_config
+                # Minimization ends if the configuration is already reduced to a single unit.
+                if len(next_config) == 1:
+                    logger.info('Done.')
+                    return next_config
 
             config = next_config
             n = next_n
@@ -98,17 +97,18 @@ class ParallelDD(AbstractParallelDD):
 
     def _test_subsets(self, run, config, subsets, complement_offset):
         """
-        Perform a subset based reduce task.
+        Perform a subset-based reduce task.
 
         :param run: The index of the current iteration.
         :param config: The current configuration under testing.
         :param subsets: List of sets that the current configuration is split to.
-        :param complement_offset: A compensation offset need to calculate the index
+        :param complement_offset: A compensation offset needed to calculate the index
                of the first unchecked complement (optimization purpose only).
         :return: Tuple: (failing config or None, next n or None, next complement_offset).
         """
         # Looping through the subsets.
         n = len(subsets)
+        self._fail_index.value = -1
         ploop = parallel_loop.Loop(self._proc_num, self._max_utilization)
         for i in self._subset_iterator(n):
             if i is None:
@@ -130,25 +130,23 @@ class ParallelDD(AbstractParallelDD):
 
         fvalue = self._fail_index.value
         if fvalue != -1:
-            logger.info('Reduced to %d units.', len(subsets[fvalue]))
-            logger.debug('New config: %r.', subsets[fvalue])
-
             return subsets[fvalue], 2, 0
 
         return None, None, complement_offset
 
     def _test_complements(self, run, config, subsets, complement_offset):
         """
-        Perform a complement based reduce task.
+        Perform a complement-based reduce task.
 
         :param run: The index of the current iteration.
         :param config: The current configuration under testing.
         :param subsets: List of sets that the current configuration is split to.
-        :param complement_offset: A compensation offset need to calculate the index
+        :param complement_offset: A compensation offset needed to calculate the index
                of the first unchecked complement (optimization purpose only).
         :return: Tuple: (failing config or None, next n or None, next complement_offset).
         """
         n = len(subsets)
+        self._fail_index.value = -1
         ploop = parallel_loop.Loop(self._proc_num, self._max_utilization)
         for j in self._complement_iterator(n):
             if j is None:
@@ -174,9 +172,6 @@ class ParallelDD(AbstractParallelDD):
         fvalue = self._fail_index.value
         if fvalue != -1:
             complement = self.minus(config, subsets[fvalue])
-            logger.info('Reduced to %d units.', len(complement))
-            logger.debug('New config: %r.', complement)
-
             # In next run, start removing the following subset.
             return complement, max(n - 1, 2), fvalue
 

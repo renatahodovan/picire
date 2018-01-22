@@ -37,61 +37,29 @@ class LightDD(AbstractDD):
         self._subset_iterator = subset_iterator
         self._complement_iterator = complement_iterator
 
-    def _dd(self, config, *, n):
+    def _reduce_config(self, run, config, subsets, complement_offset):
         """
-        Calculates a 1-minimal subset of the config that is still interesting in single process mode.
+        Perform the reduce task in single process mode.
 
-        :param config: The input configuration.
-        :param n: The number of sets that the config is initially split to.
-        :return: A minimal subset of the current configuration what is still interesting (if any).
+        :param run: The index of the current iteration.
+        :param config: The current configuration under testing.
+        :param subsets: List of sets that the current configuration is split to.
+        :param complement_offset: A compensation offset needed to calculate the index
+               of the first unchecked complement (optimization purpose only).
+        :return: Tuple: (failing config or None, next n or None, next complement_offset).
         """
-        run = 1
-        complement_offset = 0
-
         if self._subset_first:
-            first_test = self._test_subsets
-            second_test = self._test_complements
+            first_reduce, second_reduce = self._reduce_to_subset, self._reduce_to_complement
         else:
-            first_test = self._test_complements
-            second_test = self._test_subsets
+            first_reduce, second_reduce = self._reduce_to_complement, self._reduce_to_subset
 
-        while True:
-            assert self.test(config, (run, 'assert')) == self.FAIL
+        next_config, next_n, complement_offset = first_reduce(run, config, subsets, complement_offset)
+        if next_config is None:
+            next_config, next_n, complement_offset = second_reduce(run, config, subsets, complement_offset)
 
-            subsets = self._split(config, n)
+        return next_config, next_n, complement_offset
 
-            logger.info('Run #%d: trying %s.', run, ' + '.join([str(len(subsets[i])) for i in range(n)]))
-
-            next_config, next_n, complement_offset = first_test(run, config, subsets, complement_offset)
-            if next_config is None:
-                next_config, next_n, complement_offset = second_test(run, config, subsets, complement_offset)
-
-            if next_config is None:
-                # Minimization ends if no interesting configuration was found by the finest splitting.
-                if n == len(config):
-                    logger.info('Done.')
-                    return config
-
-                next_config = config
-                next_n = min(len(config), n * 2)
-                complement_offset = (complement_offset * next_n) / n
-                logger.info('Increase granularity to %d.', next_n)
-
-            else:
-                # Interesting configuration is found.
-                logger.info('Reduced to %d units.', len(next_config))
-                logger.debug('New config: %r.', next_config)
-
-                # Minimization ends if the configuration is already reduced to a single unit.
-                if len(next_config) == 1:
-                    logger.info('Done.')
-                    return next_config
-
-            config = next_config
-            n = next_n
-            run += 1
-
-    def _test_subsets(self, run, config, subsets, complement_offset):
+    def _reduce_to_subset(self, run, config, subsets, complement_offset):
         """
         Perform a subset-based reduce task.
 
@@ -117,7 +85,7 @@ class LightDD(AbstractDD):
 
         return None, None, complement_offset
 
-    def _test_complements(self, run, config, subsets, complement_offset):
+    def _reduce_to_complement(self, run, config, subsets, complement_offset):
         """
         Perform a complement-based reduce task.
 

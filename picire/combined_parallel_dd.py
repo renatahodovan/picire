@@ -36,55 +36,10 @@ class CombinedParallelDD(AbstractParallelDD):
 
         self._config_iterator = config_iterator
 
-    def _dd(self, config, *, n):
+    def _reduce_config(self, run, config, subsets, complement_offset):
         """
-        Calculates a 1-minimal subset of the config that is still interesting using multiple processes.
-        Subset- and complement-based blocks are mixed and don't wait for each other.
-
-        :param config: The input configuration.
-        :param n: The number of sets that the config is initially split to.
-        :return: A minimal subset of the current configuration what is still interesting (if any).
-        """
-        run = 1
-        complement_offset = 0
-
-        while True:
-            assert self.test(config, (run, 'assert')) == self.FAIL
-
-            subsets = self._split(config, n)
-
-            logger.info('Run #%d: trying %s.', run, ' + '.join([str(len(subsets[i])) for i in range(n)]))
-
-            next_config, next_n, complement_offset = self._test_combined(run, config, subsets, complement_offset)
-
-            if next_config is None:
-                # Minimization ends if no interesting configuration was found by the finest splitting.
-                if n == len(config):
-                    logger.info('Done.')
-                    return config
-
-                next_config = config
-                next_n = min(len(config), n * 2)
-                complement_offset = (complement_offset * next_n) / n
-                logger.info('Increase granularity to %d.', next_n)
-
-            else:
-                # Interesting configuration is found.
-                logger.info('Reduced to %d units.', len(next_config))
-                logger.debug('New config: %r.', next_config)
-
-                # Minimization ends if the configuration is already reduced to a single unit.
-                if len(next_config) == 1:
-                    logger.info('Done.')
-                    return next_config
-
-            config = next_config
-            n = next_n
-            run += 1
-
-    def _test_combined(self, run, config, subsets, complement_offset):
-        """
-        Perform a combined subset- and complement-based reduce task.
+        Perform the reduce task using multiple processes.
+        Subset and complement set tests are mixed and don't wait for each other.
 
         :param run: The index of the current iteration.
         :param config: The current configuration under testing.

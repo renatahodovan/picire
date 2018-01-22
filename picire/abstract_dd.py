@@ -68,16 +68,6 @@ class AbstractDD(object):
         c2 = set(c2)
         return [c for c in c1 if c not in c2]
 
-    def _dd(self, config, *, n):
-        """
-        To be overridden by subclasses.
-
-        :param config: The input configuration.
-        :param n: The number of sets that the config is initially split to.
-        :return: A minimal subset of the current configuration what is still interesting (if any).
-        """
-        pass
-
     def ddmin(self, config, *, n=2):
         """
         Return a 1-minimal failing subset of the initial configuration.
@@ -86,20 +76,61 @@ class AbstractDD(object):
         :param n: The number of sets that the config is initially split to.
         :return: 1-minimal failing configuration.
         """
-
-        n = min(len(config), n)
         if len(config) < 2:
             assert self.test(config, ('assert',)) == self.FAIL
             logger.info('Test case is minimal already.')
             return config
 
-        logger.debug('dd(%r) ...', config)
+        run = 1
+        n = min(len(config), n)
+        complement_offset = 0
 
-        outcome = self._dd(config, n=n)
+        while True:
+            assert self.test(config, (run, 'assert')) == self.FAIL
 
-        logger.debug('dd(%r) = %r', config, outcome)
+            subsets = self._split(config, n)
 
-        return outcome
+            logger.info('Run #%d: trying %s.', run, ' + '.join([str(len(subsets[i])) for i in range(n)]))
+
+            next_config, next_n, complement_offset = self._reduce_config(run, config, subsets, complement_offset)
+
+            if next_config is None:
+                # Minimization ends if no interesting configuration was found by the finest splitting.
+                if n == len(config):
+                    logger.info('Done.')
+                    return config
+
+                next_config = config
+                next_n = min(len(config), n * 2)
+                complement_offset = (complement_offset * next_n) / n
+                logger.info('Increase granularity to %d.', next_n)
+
+            else:
+                # Interesting configuration is found.
+                logger.info('Reduced to %d units.', len(next_config))
+                logger.debug('New config: %r.', next_config)
+
+                # Minimization ends if the configuration is already reduced to a single unit.
+                if len(next_config) == 1:
+                    logger.info('Done.')
+                    return next_config
+
+            config = next_config
+            n = next_n
+            run += 1
+
+    def _reduce_config(self, run, config, subsets, complement_offset):
+        """
+        Perform the reduce task of ddmin. To be overridden by subclasses.
+
+        :param run: The index of the current iteration.
+        :param config: The current configuration under testing.
+        :param subsets: List of sets that the current configuration is split to.
+        :param complement_offset: A compensation offset needed to calculate the index
+               of the first unchecked complement (optimization purpose only).
+        :return: Tuple: (failing config or None, next n or None, next complement_offset).
+        """
+        pass
 
     def test(self, config, config_id):
         """

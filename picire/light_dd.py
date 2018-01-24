@@ -97,11 +97,11 @@ class LightDD(AbstractDD):
         :return: Tuple: (failing config or None, next n or None, next complement_offset).
         """
         n = len(subsets)
-        for j in self._complement_iterator(n):
-            if j is None:
+        for i in self._complement_iterator(n):
+            if i is None:
                 continue
+            i = int((i + complement_offset) % n)
 
-            i = int((j + complement_offset) % n)
             config_id = (run, 'c', i)
             complement = self.minus(config, subsets[i])
 

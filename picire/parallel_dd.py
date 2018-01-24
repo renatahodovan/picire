@@ -81,6 +81,7 @@ class ParallelDD(AbstractParallelDD):
         for i in self._subset_iterator(n):
             if i is None:
                 continue
+
             config_id = (run, 's', i)
 
             # If we had this test before, return the saved result.
@@ -116,11 +117,11 @@ class ParallelDD(AbstractParallelDD):
         n = len(subsets)
         self._fail_index.value = -1
         ploop = parallel_loop.Loop(self._proc_num, self._max_utilization)
-        for j in self._complement_iterator(n):
-            if j is None:
+        for i in self._complement_iterator(n):
+            if i is None:
                 continue
+            i = int((i + complement_offset) % n)
 
-            i = int((j + complement_offset) % n)
             complement = self.minus(config, subsets[i])
             config_id = (run, 'c', i)
 
@@ -139,8 +140,7 @@ class ParallelDD(AbstractParallelDD):
 
         fvalue = self._fail_index.value
         if fvalue != -1:
-            complement = self.minus(config, subsets[fvalue])
             # In next run, start removing the following subset.
-            return complement, max(n - 1, 2), fvalue
+            return self.minus(config, subsets[fvalue]), max(n - 1, 2), fvalue
 
         return None, None, complement_offset

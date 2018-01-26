@@ -32,42 +32,6 @@ class AbstractDD(object):
         self._split = split
         self._cache = cache or OutcomeCache()
 
-    @staticmethod
-    def pretty_config_id(config_id):
-        """
-        Create beautified identifier for the current task from the argument.
-        The argument is typically a tuple in the form of (run, dir, i), where
-        run is the index of the current iteration, dir is direction of reduce
-        (either s(ubset) or c(omplement)), and i is the index of the current
-        test in the iteration. Alternatively, argument can also be in the form
-        of (run, 'assert') for double checking the input at the start of an
-        iteration.
-
-        :param config_id: Config ID tuple.
-        :return: Concatenating the arguments with slashes, e.g., "(run) / (dir) / (i)".
-        """
-        return ' / '.join(str(i) for i in config_id)
-
-    def lookup_cache(self, config, config_id):
-        """
-        Perform a cache lookup if caching is enabled.
-
-        :param config: The configuration we are looking for.
-        :param config_id: The ID describing the configuration (only for debug message).
-        :return: None if caching is disabled, PASS or FAIL otherwise.
-        """
-        cached_result = self._cache.lookup(config)
-        if cached_result is not None:
-            logger.debug('\t[ %s ]: cache = %r', self.pretty_config_id(config_id), cached_result)
-
-        return cached_result
-
-    @staticmethod
-    def minus(c1, c2):
-        """Return a list of all elements of C1 that are not in C2."""
-        c2 = set(c2)
-        return [c for c in c1 if c not in c2]
-
     def ddmin(self, config, *, n=2):
         """
         Return a 1-minimal failing subset of the initial configuration.
@@ -77,7 +41,7 @@ class AbstractDD(object):
         :return: 1-minimal failing configuration.
         """
         if len(config) < 2:
-            assert self.test(config, ('assert',)) == self.FAIL
+            assert self._test_config(config, ('assert',)) == self.FAIL
             logger.info('Test case is minimal already.')
             return config
 
@@ -86,7 +50,7 @@ class AbstractDD(object):
         complement_offset = 0
 
         while True:
-            assert self.test(config, (run, 'assert')) == self.FAIL
+            assert self._test_config(config, (run, 'assert')) == self.FAIL
 
             subsets = self._split(config, n)
 
@@ -132,7 +96,21 @@ class AbstractDD(object):
         """
         pass
 
-    def test(self, config, config_id):
+    def _lookup_cache(self, config, config_id):
+        """
+        Perform a cache lookup if caching is enabled.
+
+        :param config: The configuration we are looking for.
+        :param config_id: The ID describing the configuration (only for debug message).
+        :return: None if outcome is not found for config in cache or if caching is disabled, PASS or FAIL otherwise.
+        """
+        cached_result = self._cache.lookup(config)
+        if cached_result is not None:
+            logger.debug('\t[ %s ]: cache = %r', self._pretty_config_id(config_id), cached_result)
+
+        return cached_result
+
+    def _test_config(self, config, config_id):
         """
         Test a single configuration and save the result in cache.
 
@@ -141,13 +119,35 @@ class AbstractDD(object):
         :return: PASS or FAIL
         """
 
-        logger.debug('\t[ %s ]: test...', self.pretty_config_id(config_id))
+        logger.debug('\t[ %s ]: test...', self._pretty_config_id(config_id))
 
         outcome = self._test(config, config_id)
 
-        logger.debug('\t[ %s ]: test = %r', self.pretty_config_id(config_id), outcome)
+        logger.debug('\t[ %s ]: test = %r', self._pretty_config_id(config_id), outcome)
 
         if 'assert' not in config_id:
             self._cache.add(config, outcome)
 
         return outcome
+
+    @staticmethod
+    def _pretty_config_id(config_id):
+        """
+        Create beautified identifier for the current task from the argument.
+        The argument is typically a tuple in the form of (run, dir, i), where
+        run is the index of the current iteration, dir is direction of reduce
+        (either s(ubset) or c(omplement)), and i is the index of the current
+        test in the iteration. Alternatively, argument can also be in the form
+        of (run, 'assert') for double checking the input at the start of an
+        iteration.
+
+        :param config_id: Config ID tuple.
+        :return: Concatenating the arguments with slashes, e.g., "(run) / (dir) / (i)".
+        """
+        return ' / '.join(str(i) for i in config_id)
+
+    @staticmethod
+    def _minus(c1, c2):
+        """Return a list of all elements of C1 that are not in C2."""
+        c2 = set(c2)
+        return [c for c in c1 if c not in c2]

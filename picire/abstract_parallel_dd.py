@@ -45,7 +45,7 @@ class AbstractParallelDD(AbstractDD):
         :param config_id: The unique ID of the current configuration.
         :return: True if the test is not interesting, False otherwise.
         """
-        if self.test(config, config_id) == self.FAIL:
+        if self._test_config(config, config_id) == self.FAIL:
             self._fail_index.value = index
             return False
 

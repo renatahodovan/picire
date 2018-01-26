@@ -85,7 +85,7 @@ class ParallelDD(AbstractParallelDD):
             config_id = (run, 's', i)
 
             # If we had this test before, return the saved result.
-            outcome = self.lookup_cache(subsets[i], config_id)
+            outcome = self._lookup_cache(subsets[i], config_id)
             if outcome == self.PASS:
                 continue
             elif outcome == self.FAIL:
@@ -122,11 +122,11 @@ class ParallelDD(AbstractParallelDD):
                 continue
             i = int((i + complement_offset) % n)
 
-            complement = self.minus(config, subsets[i])
+            complement = self._minus(config, subsets[i])
             config_id = (run, 'c', i)
 
             # If we had this test before, return its result
-            outcome = self.lookup_cache(complement, config_id)
+            outcome = self._lookup_cache(complement, config_id)
             if outcome == self.PASS:
                 continue
             elif outcome == self.FAIL:
@@ -141,6 +141,6 @@ class ParallelDD(AbstractParallelDD):
         fvalue = self._fail_index.value
         if fvalue != -1:
             # In next run, start removing the following subset.
-            return self.minus(config, subsets[fvalue]), max(n - 1, 2), fvalue
+            return self._minus(config, subsets[fvalue]), max(n - 1, 2), fvalue
 
         return None, None, complement_offset

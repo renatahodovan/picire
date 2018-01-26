@@ -61,10 +61,10 @@ class CombinedParallelDD(AbstractParallelDD):
             else:
                 i = int((i - n + complement_offset) % n) + n
                 config_id = (run, 'c', i - n)
-                config_set = self.minus(config, subsets[i - n])
+                config_set = self._minus(config, subsets[i - n])
 
             # If we checked this test before, return its result
-            outcome = self.lookup_cache(config_set, config_id)
+            outcome = self._lookup_cache(config_set, config_id)
             if outcome == self.PASS:
                 continue
             elif outcome == self.FAIL:
@@ -86,6 +86,6 @@ class CombinedParallelDD(AbstractParallelDD):
                 return subsets[fvalue], 2, 0
             # Complement fail.
             else:
-                return self.minus(config, subsets[fvalue - n]), max(n - 1, 2), fvalue - n
+                return self._minus(config, subsets[fvalue - n]), max(n - 1, 2), fvalue - n
 
         return None, None, complement_offset

@@ -78,7 +78,7 @@ class LightDD(AbstractDD):
             config_id = (run, 's', i)
 
             # Get the outcome either from cache or by testing it.
-            outcome = self.lookup_cache(subsets[i], config_id) or self.test(subsets[i], config_id)
+            outcome = self._lookup_cache(subsets[i], config_id) or self._test_config(subsets[i], config_id)
             if outcome == self.FAIL:
                 # Interesting subset is found.
                 return subsets[i], 2, 0
@@ -103,9 +103,9 @@ class LightDD(AbstractDD):
             i = int((i + complement_offset) % n)
 
             config_id = (run, 'c', i)
-            complement = self.minus(config, subsets[i])
+            complement = self._minus(config, subsets[i])
 
-            outcome = self.lookup_cache(complement, config_id) or self.test(complement, config_id)
+            outcome = self._lookup_cache(complement, config_id) or self._test_config(complement, config_id)
             if outcome == self.FAIL:
                 # Interesting complement is found.
                 # In next run, start removing the following subset

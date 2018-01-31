@@ -19,7 +19,7 @@ logger = logging.getLogger(__name__)
 class AbstractParallelDD(AbstractDD):
     """Abstract super-class of the various parallel DD implementations."""
 
-    def __init__(self, test, split, proc_num, max_utilization, *, cache=None):
+    def __init__(self, test, split, proc_num, max_utilization, *, cache=None, id_prefix=()):
         """
         Initialize an AbstractParallelDD object.
 
@@ -28,9 +28,10 @@ class AbstractParallelDD(AbstractDD):
         :param proc_num: The level of parallelization.
         :param max_utilization: The maximum CPU utilization accepted.
         :param cache: Cache object to use.
+        :param id_prefix: Tuple to prepend to config IDs during tests.
         """
         cache = cache or shared_cache_decorator(ConfigCache)()
-        AbstractDD.__init__(self, test, split, cache=cache)
+        AbstractDD.__init__(self, test, split, cache=cache, id_prefix=id_prefix)
 
         self._proc_num = proc_num
         self._max_utilization = max_utilization

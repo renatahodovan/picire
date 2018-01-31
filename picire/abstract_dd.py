@@ -19,7 +19,7 @@ class AbstractDD(object):
     PASS = 'PASS'
     FAIL = 'FAIL'
 
-    def __init__(self, test, split, *, cache=None):
+    def __init__(self, test, split, *, cache=None, id_prefix=()):
         """
         Initialise an abstract DD class. Not to be called directly,
         only by super calls in subclass initializers.
@@ -27,10 +27,12 @@ class AbstractDD(object):
         :param test: A callable tester object.
         :param split: Splitter method to break a configuration up to n parts.
         :param cache: Cache object to use.
+        :param id_prefix: Tuple to prepend to config IDs during tests.
         """
         self._test = test
         self._split = split
         self._cache = cache or OutcomeCache()
+        self._id_prefix = id_prefix
 
     def ddmin(self, config, *, n=2):
         """
@@ -50,7 +52,7 @@ class AbstractDD(object):
         complement_offset = 0
 
         while True:
-            assert self._test_config(config, (run, 'assert')) == self.FAIL
+            assert self._test_config(config, ('r%d' % run, 'assert')) == self.FAIL
 
             subsets = self._split(config, n)
 
@@ -106,7 +108,7 @@ class AbstractDD(object):
         """
         cached_result = self._cache.lookup(config)
         if cached_result is not None:
-            logger.debug('\t[ %s ]: cache = %r', self._pretty_config_id(config_id), cached_result)
+            logger.debug('\t[ %s ]: cache = %r', self._pretty_config_id(self._id_prefix + config_id), cached_result)
 
         return cached_result
 
@@ -118,11 +120,10 @@ class AbstractDD(object):
         :param config_id: Unique ID that will be used to save tests to easily identifiable directories.
         :return: PASS or FAIL
         """
+        config_id = self._id_prefix + config_id
 
         logger.debug('\t[ %s ]: test...', self._pretty_config_id(config_id))
-
         outcome = self._test(config, config_id)
-
         logger.debug('\t[ %s ]: test = %r', self._pretty_config_id(config_id), outcome)
 
         if 'assert' not in config_id:
@@ -134,15 +135,15 @@ class AbstractDD(object):
     def _pretty_config_id(config_id):
         """
         Create beautified identifier for the current task from the argument.
-        The argument is typically a tuple in the form of (run, dir, i), where
-        run is the index of the current iteration, dir is direction of reduce
-        (either s(ubset) or c(omplement)), and i is the index of the current
-        test in the iteration. Alternatively, argument can also be in the form
-        of (run, 'assert') for double checking the input at the start of an
+        The argument is typically a tuple in the form of ('rN', 'DM'), where N
+        is the index of the current iteration, D is direction of reduce (either
+        s(ubset) or c(omplement)), and M is the index of the current test in the
+        iteration. Alternatively, argument can also be in the form of
+        (rN, 'assert') for double checking the input at the start of an
         iteration.
 
         :param config_id: Config ID tuple.
-        :return: Concatenating the arguments with slashes, e.g., "(run) / (dir) / (i)".
+        :return: Concatenating the arguments with slashes, e.g., "rN / DM".
         """
         return ' / '.join(str(i) for i in config_id)
 

@@ -19,7 +19,7 @@ logger = logging.getLogger(__name__)
 
 class CombinedParallelDD(AbstractParallelDD):
 
-    def __init__(self, test, *, cache=None, split=config_splitters.zeller,
+    def __init__(self, test, *, cache=None, id_prefix=(), split=config_splitters.zeller,
                  proc_num=os.cpu_count(), max_utilization=100,
                  config_iterator=config_iterators.forward):
         """
@@ -27,12 +27,13 @@ class CombinedParallelDD(AbstractParallelDD):
 
         :param test: A callable tester object.
         :param cache: Cache object to use.
+        :param id_prefix: Tuple to prepend to config IDs during tests.
         :param split: Splitter method to break a configuration up to n part.
         :param proc_num: The level of parallelization.
         :param max_utilization: The maximum CPU utilization accepted.
         :param config_iterator: Reference to a generator function that provides config indices in an arbitrary order.
         """
-        AbstractParallelDD.__init__(self, test, split, proc_num, max_utilization, cache=cache)
+        AbstractParallelDD.__init__(self, test, split, proc_num, max_utilization, cache=cache, id_prefix=id_prefix)
 
         self._config_iterator = config_iterator
 
@@ -56,11 +57,11 @@ class CombinedParallelDD(AbstractParallelDD):
                 continue
 
             if i < n:
-                config_id = (run, 's', i)
+                config_id = ('r%d' % run, 's%d' % i)
                 config_set = subsets[i]
             else:
                 i = int((i - n + complement_offset) % n) + n
-                config_id = (run, 'c', i - n)
+                config_id = ('r%d' % run, 'c%d' % (i - n))
                 config_set = self._minus(config, subsets[i - n])
 
             # If we checked this test before, return its result

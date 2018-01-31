@@ -19,7 +19,7 @@ logger = logging.getLogger(__name__)
 
 class ParallelDD(AbstractParallelDD):
 
-    def __init__(self, test, *, cache=None, split=config_splitters.zeller,
+    def __init__(self, test, *, cache=None, id_prefix=(), split=config_splitters.zeller,
                  proc_num=os.cpu_count(), max_utilization=100,
                  subset_first=True, subset_iterator=config_iterators.forward, complement_iterator=config_iterators.forward):
         """
@@ -27,6 +27,7 @@ class ParallelDD(AbstractParallelDD):
 
         :param test: A callable tester object.
         :param cache: Cache object to use.
+        :param id_prefix: Tuple to prepend to config IDs during tests.
         :param split: Splitter method to break a configuration up to n part.
         :param proc_num: The level of parallelization.
         :param max_utilization: The maximum CPU utilization accepted.
@@ -34,7 +35,7 @@ class ParallelDD(AbstractParallelDD):
         :param subset_iterator: Reference to a generator function that provides config indices in an arbitrary order.
         :param complement_iterator: Reference to a generator function that provides config indices in an arbitrary order.
         """
-        AbstractParallelDD.__init__(self, test, split, proc_num, max_utilization, cache=cache)
+        AbstractParallelDD.__init__(self, test, split, proc_num, max_utilization, cache=cache, id_prefix=id_prefix)
 
         self._subset_first = subset_first
         self._subset_iterator = subset_iterator
@@ -82,7 +83,7 @@ class ParallelDD(AbstractParallelDD):
             if i is None:
                 continue
 
-            config_id = (run, 's', i)
+            config_id = ('r%d' % run, 's%d' % i)
 
             # If we had this test before, return the saved result.
             outcome = self._lookup_cache(subsets[i], config_id)
@@ -123,7 +124,7 @@ class ParallelDD(AbstractParallelDD):
             i = int((i + complement_offset) % n)
 
             complement = self._minus(config, subsets[i])
-            config_id = (run, 'c', i)
+            config_id = ('r%d' % run, 'c%d' % i)
 
             # If we had this test before, return its result
             outcome = self._lookup_cache(complement, config_id)

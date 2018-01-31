@@ -18,20 +18,21 @@ logger = logging.getLogger(__name__)
 class LightDD(AbstractDD):
     """Single process version of the Delta Debugging algorithm."""
 
-    def __init__(self, test, *, cache=None, split=config_splitters.zeller,
+    def __init__(self, test, *, cache=None, id_prefix=(), split=config_splitters.zeller,
                  subset_first=True, subset_iterator=config_iterators.forward, complement_iterator=config_iterators.forward):
         """
         Initialize a LightDD object.
 
         :param test: A callable tester object.
         :param cache: Cache object to use.
+        :param id_prefix: Tuple to prepend to config IDs during tests.
         :param split: Splitter method to break a configuration up to n parts.
         :param subset_first: Boolean value denoting whether the reduce has to start with the subset-based approach or not.
         :param subset_iterator: Reference to a generator function that provides config indices in an arbitrary order.
         :param complement_iterator: Reference to a generator function that provides config indices in an arbitrary order.
         """
         cache = cache or ConfigCache()
-        AbstractDD.__init__(self, test, split, cache=cache)
+        AbstractDD.__init__(self, test, split, cache=cache, id_prefix=id_prefix)
 
         self._subset_first = subset_first
         self._subset_iterator = subset_iterator
@@ -75,7 +76,7 @@ class LightDD(AbstractDD):
             if i is None:
                 continue
 
-            config_id = (run, 's', i)
+            config_id = ('r%d' % run, 's%d' % i)
 
             # Get the outcome either from cache or by testing it.
             outcome = self._lookup_cache(subsets[i], config_id) or self._test_config(subsets[i], config_id)
@@ -102,7 +103,7 @@ class LightDD(AbstractDD):
                 continue
             i = int((i + complement_offset) % n)
 
-            config_id = (run, 'c', i)
+            config_id = ('r%d' % run, 'c%d' % i)
             complement = self._minus(config, subsets[i])
 
             outcome = self._lookup_cache(complement, config_id) or self._test_config(complement, config_id)

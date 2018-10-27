@@ -2,6 +2,18 @@
 *Picire* Release Notes
 ======================
 
+18.10
+=====
+
+Summary of changes:
+
+* Changed test configuration IDs from strings to tuples, changed how config IDs
+  encode DD execution information, and extended API to enable prefixing of
+  config IDs (resulting changes both in API and in working directory layout).
+* Better separation of public and subclass APIs.
+* Various internal refactorings.
+
+
 18.1
 ====
 

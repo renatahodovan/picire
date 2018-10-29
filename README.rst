@@ -144,8 +144,8 @@ Compatibility
 
 *picire* was tested on:
 
-* Linux (Ubuntu 14.04 / 15.10 / 16.04 / 17.10)
-* Mac OS X (El Capitan 10.11 / Sierra 10.12 / High Sierra 10.13)
+* Linux (Ubuntu 14.04 / 16.04 / 18.04)
+* Mac OS X (El Capitan 10.11 / Sierra 10.12 / High Sierra 10.13 / Mojave 10.14)
 * Windows (Server 2012 R2 / Windows 10)
 
 

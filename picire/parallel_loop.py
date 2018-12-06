@@ -16,6 +16,40 @@ logger = logging.getLogger(__name__)
 is_windows = sys.platform.startswith('win32')
 
 
+# Beware! this is running in a new process now. state is shared with fork,
+# but only changes to shared objects will be visible in parent.
+def loop_body(shared_break, shared_slots, shared_lock, i, target, args):
+    """
+    Executes the given function in its own process group (on Windows: in
+    its own process).
+
+    :param shared_break: Loop-wide shared integer. Should be set to 1 if
+                         the whole loop should be terminated.
+    :param shared_slots: Loop-wide shared array of slots to keep track of
+                         status of loop bodies. The slot corresponding to a
+                         loop body should be set to 0 once it has finished.
+    :param shared_lock: Loop-wide shared lock. Should be notified when a loop
+                         body has finished.
+    :param i: The index of the current slot.
+    :param target: The function to run in parallel.
+    :param args: The arguments that the target should run with.
+    """
+    if not is_windows:
+        os.setpgrp()
+
+    try:
+        if not target(*args):
+            shared_break.value = 1
+    except:
+        logger.warning('', exc_info=True)
+        shared_break.value = 1
+
+    shared_slots[i] = 0
+
+    with shared_lock:
+        shared_lock.notify()
+
+
 class Loop(object):
     """Parallel loop implementation based on multiprocessing module."""
 
@@ -37,69 +71,46 @@ class Loop(object):
         self._break = multiprocessing.sharedctypes.Value('i', 0, lock=False)
         self._lock = multiprocessing.Condition()
         self._slots = multiprocessing.sharedctypes.Array('i', j, lock=False)
+        self._procs = [None] * j
         psutil.cpu_percent(None)
-
-    # Beware! this is running in a new process now. state is shared with fork,
-    # but only changes to shared objects will be visible in parent.
-    def _body(self, i, target, args):
-        """
-        Executes the given function in its own process group (on Windows: in
-        its own process).
-
-        :param i: The index of the current configuration.
-        :param target: The function to run in parallel.
-        :param args: The arguments that the target should run with.
-        """
-        if not is_windows:
-            os.setpgrp()
-
-        try:
-            if not target(*args):
-                self._break.value = 1
-        except:
-            logger.warning('', exc_info=True)
-            self._break.value = 1
-
-        self._slots[i] = 0
-
-        with self._lock:
-            self._lock.notify()
 
     def _abort(self):
         """Terminate all live jobs."""
-        for i, pid in enumerate(self._slots):
-            if pid != 0:
+        for i, (slot, proc) in enumerate(zip(self._slots, self._procs)):
+            if slot:
                 if not is_windows:
                     try:
-                        os.killpg(pid, signal.SIGTERM)
+                        os.killpg(proc.pid, signal.SIGTERM)
                     except OSError:
                         # If the process with pid did not have time to become a process group leader,
                         # then pgid does not exist and os.killpg could not kill the process,
                         # so re-try kill the process only.
                         try:
-                            os.kill(pid, signal.SIGTERM)
+                            os.kill(proc.pid, signal.SIGTERM)
                         except OSError:
                             pass
                 else:
-                    root_proc = psutil.Process(pid)
+                    root_proc = psutil.Process(proc.pid)
                     children = root_proc.children(recursive=True) + [root_proc]
-                    for proc in children:
+                    for child_proc in children:
                         try:
                             # Would be easier to use proc.terminate() here but psutils
                             # (up to version 5.4.0) on Windows terminates processes with
                             # the 0 signal/code, making the outcome of the terminated
                             # process indistinguishable from a successful execution.
-                            os.kill(proc.pid, signal.SIGTERM)
+                            os.kill(child_proc.pid, signal.SIGTERM)
                         except OSError:
                             pass
                     psutil.wait_procs(children, timeout=1)
-            self._slots[i] = 0
+            self._slots[i], self._procs[i] = 0, None
 
     def _cleanup_slots(self):
-        for i, pid in enumerate(self._slots):
-            if pid != 0:
-                if not psutil.pid_exists(pid):
-                    self._slots[i] = 0
+        for i, (slot, proc) in enumerate(zip(self._slots, self._procs)):
+            if slot:
+                if not self._procs[i].is_alive() or not psutil.pid_exists(proc.pid):
+                    self._slots[i], self._procs[i] = 0, None
+            else:
+                self._procs[i] = None
 
     # Target is expected to return True if loop shall continue and False if it
     # should break.
@@ -121,7 +132,7 @@ class Loop(object):
         while True:
             if psutil.cpu_percent(None) <= self._max_utilization:
                 self._cleanup_slots()
-                i = next((x for x in range(self._j) if self._slots[x] == 0), None)
+                i = next((x for x, slot in enumerate(self._slots) if not slot), None)
                 if i is not None:
                     break
             with self._lock:
@@ -131,9 +142,9 @@ class Loop(object):
             self._abort()
             return False
 
-        proc = multiprocessing.Process(target=self._body, args=(i, target, args))
+        proc = multiprocessing.Process(target=loop_body, args=(self._break, self._slots, self._lock, i, target, args))
         proc.start()
-        self._slots[i] = proc.pid
+        self._slots[i], self._procs[i] = 1, proc
 
         return True
 

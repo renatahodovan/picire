@@ -13,7 +13,7 @@ Picire
    :target: https://coveralls.io/github/renatahodovan/picire?branch=master
 
 
-Picire (pronounced as /pitsirE/) is a Python 3 implementation of the
+Picire (pronounced as /pitsirE/) is a Python implementation of the
 `Delta Debugging`_ algorithm supporting parallelization and further
 configuration options. It can be used either as a command line tool
 or as a library.
@@ -38,7 +38,7 @@ test is **1-minimal**).
 Requirements
 ============
 
-* Python_ >= 3.4
+* Python_ ~= 2.7 or >= 3.4
 * pip_ and setuptools Python packages (the latter is automatically installed by
   pip).
 

@@ -1,4 +1,4 @@
-# Copyright (c) 2016-2018 Renata Hodovan, Akos Kiss.
+# Copyright (c) 2016-2019 Renata Hodovan, Akos Kiss.
 #
 # Licensed under the BSD 3-Clause License
 # <LICENSE.rst or https://opensource.org/licenses/BSD-3-Clause>.
@@ -19,7 +19,7 @@ logger = logging.getLogger(__name__)
 class AbstractParallelDD(AbstractDD):
     """Abstract super-class of the various parallel DD implementations."""
 
-    def __init__(self, test, split, proc_num, max_utilization, *, cache=None, id_prefix=()):
+    def __init__(self, test, split, proc_num, max_utilization, cache=None, id_prefix=()):
         """
         Initialize an AbstractParallelDD object.
 

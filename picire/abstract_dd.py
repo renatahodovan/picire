@@ -1,4 +1,4 @@
-# Copyright (c) 2016-2018 Renata Hodovan, Akos Kiss.
+# Copyright (c) 2016-2019 Renata Hodovan, Akos Kiss.
 #
 # Licensed under the BSD 3-Clause License
 # <LICENSE.rst or https://opensource.org/licenses/BSD-3-Clause>.
@@ -19,7 +19,7 @@ class AbstractDD(object):
     PASS = 'PASS'
     FAIL = 'FAIL'
 
-    def __init__(self, test, split, *, cache=None, id_prefix=()):
+    def __init__(self, test, split, cache=None, id_prefix=()):
         """
         Initialise an abstract DD class. Not to be called directly,
         only by super calls in subclass initializers.
@@ -34,7 +34,7 @@ class AbstractDD(object):
         self._cache = cache or OutcomeCache()
         self._id_prefix = id_prefix
 
-    def ddmin(self, config, *, n=2):
+    def ddmin(self, config, n=2):
         """
         Return a 1-minimal failing subset of the initial configuration.
 

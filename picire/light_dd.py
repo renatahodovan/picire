@@ -1,4 +1,4 @@
-# Copyright (c) 2016-2018 Renata Hodovan, Akos Kiss.
+# Copyright (c) 2016-2019 Renata Hodovan, Akos Kiss.
 #
 # Licensed under the BSD 3-Clause License
 # <LICENSE.rst or https://opensource.org/licenses/BSD-3-Clause>.
@@ -18,7 +18,7 @@ logger = logging.getLogger(__name__)
 class LightDD(AbstractDD):
     """Single process version of the Delta Debugging algorithm."""
 
-    def __init__(self, test, *, cache=None, id_prefix=(), split=config_splitters.zeller,
+    def __init__(self, test, cache=None, id_prefix=(), split=config_splitters.zeller,
                  subset_first=True, subset_iterator=config_iterators.forward, complement_iterator=config_iterators.forward):
         """
         Initialize a LightDD object.

@@ -1,4 +1,4 @@
-# Copyright (c) 2016-2017 Renata Hodovan, Akos Kiss.
+# Copyright (c) 2016-2019 Renata Hodovan, Akos Kiss.
 #
 # Licensed under the BSD 3-Clause License
 # <LICENSE.rst or https://opensource.org/licenses/BSD-3-Clause>.
@@ -37,7 +37,7 @@ class SharedCache(object):
         self._cache = cache
         self._lock = Lock()
 
-        for fn, _ in inspect.getmembers(cache.__class__, lambda m: inspect.isfunction(m) and m.__name__ != '__init__'):
+        for fn, _ in inspect.getmembers(cache.__class__, lambda m: (inspect.isfunction(m) or inspect.ismethod(m)) and m.__name__ != '__init__'):
             setattr(self, fn, SharedCacheTrampoline(self, fn))
 
 
@@ -56,8 +56,11 @@ def shared_cache_decorator(cache_class):
 
     if cache_class not in shared_cache_class_store:
         SharedDataManager.register(cache_class.__name__, SharedCacheConstructor(cache_class), None,
-                                   [fn for fn, _ in inspect.getmembers(cache_class, lambda m: inspect.isfunction(m) and m.__name__ != '__init__')])
-        getattr(SharedDataManager, cache_class.__name__).__signature__ = inspect.signature(cache_class)
+                                   [fn for fn, _ in inspect.getmembers(cache_class, lambda m: (inspect.isfunction(m) or inspect.ismethod(m)) and m.__name__ != '__init__')])
+        try:
+            getattr(SharedDataManager, cache_class.__name__).__signature__ = inspect.signature(cache_class)
+        except AttributeError:
+            pass # no signatures in Python < 3.3
 
         data_manager = SharedDataManager()
         data_manager.start()

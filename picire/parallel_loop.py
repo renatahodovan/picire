@@ -1,4 +1,4 @@
-# Copyright (c) 2016-2017 Renata Hodovan, Akos Kiss.
+# Copyright (c) 2016-2019 Renata Hodovan, Akos Kiss.
 #
 # Licensed under the BSD 3-Clause License
 # <LICENSE.rst or https://opensource.org/licenses/BSD-3-Clause>.
@@ -22,7 +22,7 @@ class Loop(object):
     # TODO: could be None if we trusted that wait for infinity would not hang
     _timeout = 1
 
-    def __init__(self, j=os.cpu_count(), max_utilization=100):
+    def __init__(self, j=multiprocessing.cpu_count(), max_utilization=100):
         """
         Initialize a parallel loop object.
 

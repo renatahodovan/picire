@@ -8,6 +8,7 @@
 import argparse
 import chardet
 import codecs
+import multiprocessing
 import os
 import pkgutil
 import time
@@ -60,7 +61,7 @@ def create_parser():
                         help='run DD in parallel')
     parser.add_argument('-c', '--combine-loops', action='store_true', default=False,
                         help='combine subset and complement check loops for more parallelization (has effect in parallel mode only)')
-    parser.add_argument('-j', '--jobs', metavar='N', type=int, default=os.cpu_count(),
+    parser.add_argument('-j', '--jobs', metavar='N', type=int, default=multiprocessing.cpu_count(),
                         help='maximum number of test commands to execute in parallel (has effect in parallel mode only; default: %(default)s)')
     parser.add_argument('-u', '--max-utilization', metavar='N', type=int, default=100,
                         help='maximum CPU utilization allowed; don\'t start new parallel jobs until utilization is higher (has effect in parallel mode only; default: %(default)s)')
@@ -154,8 +155,7 @@ def process_args(parser, args):
     args.out = abspath(relpath(args.out if args.out else '%s.%s' % (args.input, time.strftime('%Y%m%d_%H%M%S'))))
 
 
-def call(*,
-         reduce_class, reduce_config,
+def call(reduce_class, reduce_config,
          tester_class, tester_config,
          input, src, encoding, out,
          atom='line', granularity=2,
@@ -189,12 +189,14 @@ def call(*,
     tests_dir = join(out, 'tests')
     # Split source to the chosen atoms.
     if atom in ['line', 'both']:
-        content = src.decode(encoding).splitlines(keepends=True)
+        content = src.decode(encoding).splitlines(True)
         tests_dir = join(tests_dir, 'line')
     elif atom == 'char':
         content = src.decode(encoding)
         tests_dir = join(tests_dir, 'char')
-    os.makedirs(tests_dir, exist_ok=True)
+
+    if not os.path.isdir(tests_dir):
+        os.makedirs(tests_dir)
     logger.info('Initial test contains %d %ss', len(content), atom if atom != 'both' else 'line')
 
     test_builder = ConcatTestBuilder(content)

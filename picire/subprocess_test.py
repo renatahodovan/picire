@@ -1,4 +1,4 @@
-# Copyright (c) 2016-2018 Renata Hodovan, Akos Kiss.
+# Copyright (c) 2016-2019 Renata Hodovan, Akos Kiss.
 #
 # Licensed under the BSD 3-Clause License
 # <LICENSE.rst or https://opensource.org/licenses/BSD-3-Clause>.
@@ -48,15 +48,16 @@ class SubprocessTest(object):
         test_path = self.test_pattern % '_'.join(str(i) for i in config_id)
         test_dir = os.path.dirname(test_path)
 
-        os.makedirs(test_dir, exist_ok=True)
+        if not os.path.isdir(test_dir):
+            os.makedirs(test_dir)
 
         with codecs.open(test_path, 'w', encoding=self.encoding, errors='ignore') as f:
             f.write(self.test_builder(config))
 
-        with Popen(shlex.split(self.command_pattern % test_path,
-                               posix=not sys.platform.startswith('win32')),
-                   cwd=test_dir) as proc:
-            proc.wait()
+        proc = Popen(shlex.split(self.command_pattern % test_path,
+                                 posix=not sys.platform.startswith('win32')),
+                     cwd=test_dir)
+        proc.wait()
 
         # Determine outcome.
         if proc.returncode == 0:

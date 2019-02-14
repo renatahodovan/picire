@@ -95,7 +95,7 @@ def process_args(parser, args):
 
     args.input = abspath(relpath(args.input))
     if not exists(args.input):
-        parser.error('Input file does not exist: %s' % args.input)
+        parser.error('Test case does not exist: %s' % args.input)
 
     with open(args.input, 'rb') as f:
         args.src = f.read()
@@ -108,7 +108,7 @@ def process_args(parser, args):
     else:
         args.encoding = chardet.detect(args.src)['encoding']
         if not args.encoding:
-            parser.error('The encoding of the input file is not recognized. '
+            parser.error('The encoding of the test case is not recognized. '
                          'Please define it with the --encoding command line option.')
 
     args.test = abspath(relpath(args.test))

@@ -2,6 +2,18 @@
 *Picire* Release Notes
 ======================
 
+19.3
+====
+
+Summary of changes:
+
+* Made code Python 2 compatible.
+* Fixed diagnostic messages.
+* Improved parallelism internals.
+* Improved the testing infrastructure (testing Python 2.7 and 3.7 on Travis CI;
+  maintenance changes to various CI configurations).
+
+
 18.10
 =====
 

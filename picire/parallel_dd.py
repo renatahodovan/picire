@@ -37,9 +37,13 @@ class ParallelDD(AbstractParallelDD):
         """
         AbstractParallelDD.__init__(self, test, split, proc_num, max_utilization, cache=cache, id_prefix=id_prefix)
 
-        self._subset_first = subset_first
         self._subset_iterator = subset_iterator
         self._complement_iterator = complement_iterator
+
+        if subset_first:
+            self._first_reduce, self._second_reduce = self._reduce_to_subset, self._reduce_to_complement
+        else:
+            self._first_reduce, self._second_reduce = self._reduce_to_complement, self._reduce_to_subset
 
     def _reduce_config(self, run, config, subsets, complement_offset):
         """
@@ -53,14 +57,9 @@ class ParallelDD(AbstractParallelDD):
                of the first unchecked complement (optimization purpose only).
         :return: Tuple: (failing config or None, next n or None, next complement_offset).
         """
-        if self._subset_first:
-            first_reduce, second_reduce = self._reduce_to_subset, self._reduce_to_complement
-        else:
-            first_reduce, second_reduce = self._reduce_to_complement, self._reduce_to_subset
-
-        next_config, next_n, complement_offset = first_reduce(run, config, subsets, complement_offset)
+        next_config, next_n, complement_offset = self._first_reduce(run, config, subsets, complement_offset)
         if next_config is None:
-            next_config, next_n, complement_offset = second_reduce(run, config, subsets, complement_offset)
+            next_config, next_n, complement_offset = self._second_reduce(run, config, subsets, complement_offset)
 
         return next_config, next_n, complement_offset
 

@@ -31,7 +31,8 @@ class CombinedParallelDD(AbstractParallelDD):
         :param split: Splitter method to break a configuration up to n part.
         :param proc_num: The level of parallelization.
         :param max_utilization: The maximum CPU utilization accepted.
-        :param config_iterator: Reference to a generator function that provides config indices in an arbitrary order.
+        :param config_iterator: Reference to a generator function that provides
+            config indices in an arbitrary order.
         """
         AbstractParallelDD.__init__(self, test, split, proc_num, max_utilization, cache=cache, id_prefix=id_prefix)
 
@@ -39,15 +40,16 @@ class CombinedParallelDD(AbstractParallelDD):
 
     def _reduce_config(self, run, config, subsets, complement_offset):
         """
-        Perform the reduce task using multiple processes.
-        Subset and complement set tests are mixed and don't wait for each other.
+        Perform the reduce task using multiple processes. Subset and complement
+        set tests are mixed and don't wait for each other.
 
         :param run: The index of the current iteration.
         :param config: The current configuration under testing.
         :param subsets: List of sets that the current configuration is split to.
-        :param complement_offset: A compensation offset needed to calculate the index
-               of the first unchecked complement (optimization purpose only).
-        :return: Tuple: (failing config or None, next n or None, next complement_offset).
+        :param complement_offset: A compensation offset needed to calculate the
+            index of the first unchecked complement (optimization purpose only).
+        :return: Tuple: (failing config or None, next n or None, next
+            complement_offset).
         """
         n = len(subsets)
         self._fail_index.value = -1

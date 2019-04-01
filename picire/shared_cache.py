@@ -14,12 +14,16 @@ shared_cache_class_store = dict()
 
 
 class SharedDataManager(BaseManager):
-    """Data manager to share the cache object between parallel processes."""
+    """
+    Data manager to share the cache object between parallel processes.
+    """
     pass
 
 
 class SharedCacheTrampoline(object):
-    """Thread-safe wrapper for SharedCache methods."""
+    """
+    Thread-safe wrapper for SharedCache methods.
+    """
 
     def __init__(self, shared_cache, fn):
         self._shared_cache = shared_cache
@@ -31,7 +35,10 @@ class SharedCacheTrampoline(object):
 
 
 class SharedCache(object):
-    """Thread-safe cache representation that stores the evaluated configurations and their outcome."""
+    """
+    Thread-safe cache representation that stores the evaluated configurations
+    and their outcome.
+    """
 
     def __init__(self, cache):
         self._cache = cache
@@ -42,7 +49,9 @@ class SharedCache(object):
 
 
 class SharedCacheConstructor(object):
-    """Wrapper for cache classes to instantiate them as shared."""
+    """
+    Wrapper for cache classes to instantiate them as shared.
+    """
 
     def __init__(self, cache_class):
         self._cache_class = cache_class

@@ -165,17 +165,23 @@ def call(reduce_class, reduce_config,
     behaviour not via command line arguments but function parameters.
 
     :param reduce_class: Reference to the reducer class.
-    :param reduce_config: Dictionary containing information to initialize the reduce_class.
-    :param tester_class: Reference to a runnable class that can decide about the interestingness of a test case.
-    :param tester_config: Dictionary containing information to initialize the tester_class.
-    :param input: Path to the test case to reduce (only used to determine the name of the output file).
+    :param reduce_config: Dictionary containing information to initialize the
+        reduce_class.
+    :param tester_class: Reference to a runnable class that can decide about the
+        interestingness of a test case.
+    :param tester_config: Dictionary containing information to initialize the
+        tester_class.
+    :param input: Path to the test case to reduce (only used to determine the
+        name of the output file).
     :param src: Contents of the test case to reduce.
     :param encoding: Encoding of the input test case.
     :param out: Path to the output directory.
-    :param atom: Input granularity to work with during reduce ('char', 'line', or 'both'; default: 'line').
+    :param atom: Input granularity to work with during reduce ('char', 'line',
+        or 'both'; default: 'line').
     :param granularity: Initial granularity (default: 2).
     :param cache_class: Reference to the cache class to use.
-    :param cleanup: Binary flag denoting whether removing auxiliary files at the end is enabled (default: True).
+    :param cleanup: Binary flag denoting whether removing auxiliary files at the
+        end is enabled (default: True).
     :return: The path to the minimal test case.
     """
 

@@ -31,9 +31,12 @@ class ParallelDD(AbstractParallelDD):
         :param split: Splitter method to break a configuration up to n part.
         :param proc_num: The level of parallelization.
         :param max_utilization: The maximum CPU utilization accepted.
-        :param subset_first: Boolean value denoting whether the reduce has to start with the subset-based approach or not.
-        :param subset_iterator: Reference to a generator function that provides config indices in an arbitrary order.
-        :param complement_iterator: Reference to a generator function that provides config indices in an arbitrary order.
+        :param subset_first: Boolean value denoting whether the reduce has to
+            start with the subset-based approach or not.
+        :param subset_iterator: Reference to a generator function that provides
+            config indices in an arbitrary order.
+        :param complement_iterator: Reference to a generator function that
+            provides config indices in an arbitrary order.
         """
         AbstractParallelDD.__init__(self, test, split, proc_num, max_utilization, cache=cache, id_prefix=id_prefix)
 
@@ -53,9 +56,10 @@ class ParallelDD(AbstractParallelDD):
         :param run: The index of the current iteration.
         :param config: The current configuration under testing.
         :param subsets: List of sets that the current configuration is split to.
-        :param complement_offset: A compensation offset needed to calculate the index
-               of the first unchecked complement (optimization purpose only).
-        :return: Tuple: (failing config or None, next n or None, next complement_offset).
+        :param complement_offset: A compensation offset needed to calculate the
+            index of the first unchecked complement (optimization purpose only).
+        :return: Tuple: (failing config or None, next n or None, next
+            complement_offset).
         """
         next_config, next_n, complement_offset = self._first_reduce(run, config, subsets, complement_offset)
         if next_config is None:
@@ -70,9 +74,10 @@ class ParallelDD(AbstractParallelDD):
         :param run: The index of the current iteration.
         :param config: The current configuration under testing.
         :param subsets: List of sets that the current configuration is split to.
-        :param complement_offset: A compensation offset needed to calculate the index
-               of the first unchecked complement (optimization purpose only).
-        :return: Tuple: (failing config or None, next n or None, next complement_offset).
+        :param complement_offset: A compensation offset needed to calculate the
+            index of the first unchecked complement (optimization purpose only).
+        :return: Tuple: (failing config or None, next n or None, next
+            complement_offset).
         """
         # Looping through the subsets.
         n = len(subsets)
@@ -110,9 +115,10 @@ class ParallelDD(AbstractParallelDD):
         :param run: The index of the current iteration.
         :param config: The current configuration under testing.
         :param subsets: List of sets that the current configuration is split to.
-        :param complement_offset: A compensation offset needed to calculate the index
-               of the first unchecked complement (optimization purpose only).
-        :return: Tuple: (failing config or None, next n or None, next complement_offset).
+        :param complement_offset: A compensation offset needed to calculate the
+            index of the first unchecked complement (optimization purpose only).
+        :return: Tuple: (failing config or None, next n or None, next
+            complement_offset).
         """
         n = len(subsets)
         self._fail_index.value = -1

@@ -13,7 +13,9 @@ logger = logging.getLogger(__name__)
 
 
 class AbstractDD(object):
-    """Abstract super-class of the parallel and non-parallel DD classes."""
+    """
+    Abstract super-class of the parallel and non-parallel DD classes.
+    """
 
     # Test outcomes.
     PASS = 'PASS'
@@ -21,8 +23,8 @@ class AbstractDD(object):
 
     def __init__(self, test, split, cache=None, id_prefix=()):
         """
-        Initialise an abstract DD class. Not to be called directly,
-        only by super calls in subclass initializers.
+        Initialise an abstract DD class. Not to be called directly, only by
+        super calls in subclass initializers.
 
         :param test: A callable tester object.
         :param split: Splitter method to break a configuration up to n parts.
@@ -92,9 +94,10 @@ class AbstractDD(object):
         :param run: The index of the current iteration.
         :param config: The current configuration under testing.
         :param subsets: List of sets that the current configuration is split to.
-        :param complement_offset: A compensation offset needed to calculate the index
-               of the first unchecked complement (optimization purpose only).
-        :return: Tuple: (failing config or None, next n or None, next complement_offset).
+        :param complement_offset: A compensation offset needed to calculate the
+            index of the first unchecked complement (optimization purpose only).
+        :return: Tuple: (failing config or None, next n or None, next
+            complement_offset).
         """
         pass
 
@@ -103,8 +106,10 @@ class AbstractDD(object):
         Perform a cache lookup if caching is enabled.
 
         :param config: The configuration we are looking for.
-        :param config_id: The ID describing the configuration (only for debug message).
-        :return: None if outcome is not found for config in cache or if caching is disabled, PASS or FAIL otherwise.
+        :param config_id: The ID describing the configuration (only for debug
+            message).
+        :return: None if outcome is not found for config in cache or if caching
+            is disabled, PASS or FAIL otherwise.
         """
         cached_result = self._cache.lookup(config)
         if cached_result is not None:
@@ -117,7 +122,8 @@ class AbstractDD(object):
         Test a single configuration and save the result in cache.
 
         :param config: The current configuration to test.
-        :param config_id: Unique ID that will be used to save tests to easily identifiable directories.
+        :param config_id: Unique ID that will be used to save tests to easily
+            identifiable directories.
         :return: PASS or FAIL
         """
         config_id = self._id_prefix + config_id
@@ -149,6 +155,8 @@ class AbstractDD(object):
 
     @staticmethod
     def _minus(c1, c2):
-        """Return a list of all elements of C1 that are not in C2."""
+        """
+        Return a list of all elements of C1 that are not in C2.
+        """
         c2 = set(c2)
         return [c for c in c1 if c not in c2]

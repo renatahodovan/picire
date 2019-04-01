@@ -21,9 +21,11 @@ def backward(n):
 
 def skip(n):
     """
-    Do not return anything. Used to skip subset (or, less often, complement) checks.
+    Do not return anything. Used to skip subset (or, less often, complement)
+    checks.
 
-    :param n: Anything. It won't ever be used. It's added only for consistency reasons.
+    :param n: Anything. It won't ever be used. It's added only for consistency
+        reasons.
     :return: None
     """
     for i in ():

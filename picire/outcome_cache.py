@@ -1,4 +1,4 @@
-# Copyright (c) 2016-2017 Renata Hodovan, Akos Kiss.
+# Copyright (c) 2016-2019 Renata Hodovan, Akos Kiss.
 #
 # Licensed under the BSD 3-Clause License
 # <LICENSE.rst or https://opensource.org/licenses/BSD-3-Clause>.
@@ -32,7 +32,9 @@ class OutcomeCache(object):
         return None
 
     def clear(self):
-        """Clear the cache."""
+        """
+        Clear the cache.
+        """
         pass
 
 
@@ -40,11 +42,11 @@ class ConfigCache(OutcomeCache):
 
     class _Entry(object):
         """
-        This class holds test outcomes for configurations. This avoids
-        running the same test twice.
+        This class holds test outcomes for configurations. This avoids running
+        the same test twice.
 
-        The outcome cache is implemented as a tree.  Each node points
-        to the outcome of the remaining list.
+        The outcome cache is implemented as a tree.  Each node points to the
+        outcome of the remaining list.
 
         Example: ([1, 2, 3], PASS), ([1, 2], FAIL), ([1, 4, 5], FAIL):
 

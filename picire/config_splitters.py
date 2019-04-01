@@ -1,4 +1,4 @@
-# Copyright (c) 2016 Renata Hodovan, Akos Kiss.
+# Copyright (c) 2016-2019 Renata Hodovan, Akos Kiss.
 #
 # Licensed under the BSD 3-Clause License
 # <LICENSE.rst or https://opensource.org/licenses/BSD-3-Clause>.
@@ -31,7 +31,8 @@ def balanced(config, n):
     """
     Slightly different version of Zeller's split. This version keeps the split
     balanced by distributing the residuals of the integer division among all
-    chunks. This way, the size of the chunks in the resulting split is not monotonous.
+    chunks. This way, the size of the chunks in the resulting split is not
+    monotonous.
 
     :param config: The configuration to split.
     :param n: The number of sets the configuration will be split up to.

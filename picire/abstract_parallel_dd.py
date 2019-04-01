@@ -17,7 +17,9 @@ logger = logging.getLogger(__name__)
 
 
 class AbstractParallelDD(AbstractDD):
-    """Abstract super-class of the various parallel DD implementations."""
+    """
+    Abstract super-class of the various parallel DD implementations.
+    """
 
     def __init__(self, test, split, proc_num, max_utilization, cache=None, id_prefix=()):
         """

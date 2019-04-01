@@ -22,11 +22,13 @@ class SubprocessTest(object):
         Wrapper around the script provided by the user. It decides about the
         interestingness based on the return code of executed script.
 
-        :param command_pattern: The command as the tester script should be ran. Except
-                                that the path of the test is substituted with %s.
-        :param test_builder: Callable object that creates test case from a configuration.
-        :param test_pattern: The patter of the test's path. It contains one %s part
-                             that will be replaced with the ID of the certain configurations.
+        :param command_pattern: The command as the tester script should be ran.
+            Except that the path of the test is substituted with %s.
+        :param test_builder: Callable object that creates test case from a
+            configuration.
+        :param test_pattern: The patter of the test's path. It contains one %s
+            part that will be replaced with the ID of the certain
+            configurations.
         :param encoding: The encoding that will be used to save the tests.
         """
         self.command_pattern = command_pattern
@@ -38,10 +40,10 @@ class SubprocessTest(object):
         """
         Saving and evaluating of the current configuration.
 
-        :param config: The list of units (chars or lines) that have to
-                       be compiled into a single test.
+        :param config: The list of units (chars or lines) that have to be
+            compiled into a single test.
         :param config_id: Unique ID of the current configuration. It's used to
-                          name the containing folder of the current test.
+            name the containing folder of the current test.
         :return: The evaluation of the current test. It's either FAIL or PASS.
         """
 
@@ -67,11 +69,14 @@ class SubprocessTest(object):
 
 
 class ConcatTestBuilder(object):
-    """Callable class that builds test case from a configuration."""
+    """
+    Callable class that builds test case from a configuration.
+    """
 
     def __init__(self, content):
         """
-        Initialize a test builder with the atoms (e.g. chars or lines) of the original test case.
+        Initialize a test builder with the atoms (e.g. chars or lines) of the
+        original test case.
 
         :param content: Atoms of the original test case.
         """

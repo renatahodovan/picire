@@ -16,7 +16,7 @@ import time
 from os.path import abspath, basename, exists, join, relpath
 from shutil import rmtree
 
-from . import config_splitters, config_iterators, outcome_cache
+from . import config_iterators, config_splitters, outcome_cache
 from . import logging
 from .combined_iterator import CombinedIterator
 from .combined_parallel_dd import CombinedParallelDD

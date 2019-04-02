@@ -1,4 +1,4 @@
-# Copyright (c) 2016 Renata Hodovan, Akos Kiss.
+# Copyright (c) 2016-2019 Renata Hodovan, Akos Kiss.
 #
 # Licensed under the BSD 3-Clause License
 # <LICENSE.rst or https://opensource.org/licenses/BSD-3-Clause>.
@@ -6,7 +6,7 @@
 # according to those terms.
 
 from os.path import dirname, join
-from setuptools import setup, find_packages
+from setuptools import find_packages, setup
 
 with open(join(dirname(__file__), 'picire/VERSION'), 'rb') as f:
     version = f.read().decode('ascii').strip()

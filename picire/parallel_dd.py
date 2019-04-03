@@ -11,7 +11,6 @@ import multiprocessing
 from . import config_iterators
 from . import config_splitters
 from . import parallel_loop
-from .abstract_dd import AbstractDD
 from .abstract_parallel_dd import AbstractParallelDD
 
 logger = logging.getLogger(__name__)

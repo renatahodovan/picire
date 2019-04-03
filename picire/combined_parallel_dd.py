@@ -11,7 +11,6 @@ import multiprocessing
 from . import config_iterators
 from . import config_splitters
 from . import parallel_loop
-from .abstract_dd import AbstractDD
 from .abstract_parallel_dd import AbstractParallelDD
 
 logger = logging.getLogger(__name__)
@@ -88,7 +87,6 @@ class CombinedParallelDD(AbstractParallelDD):
             if fvalue < n:
                 return subsets[fvalue], 2, 0
             # Complement fail.
-            else:
-                return self._minus(config, subsets[fvalue - n]), max(n - 1, 2), fvalue - n
+            return self._minus(config, subsets[fvalue - n]), max(n - 1, 2), fvalue - n
 
         return None, None, complement_offset

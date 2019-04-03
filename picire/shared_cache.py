@@ -61,15 +61,13 @@ class SharedCacheConstructor(object):
 
 
 def shared_cache_decorator(cache_class):
-    global shared_cache_class_store
-
     if cache_class not in shared_cache_class_store:
         SharedDataManager.register(cache_class.__name__, SharedCacheConstructor(cache_class), None,
                                    [fn for fn, _ in inspect.getmembers(cache_class, lambda m: (inspect.isfunction(m) or inspect.ismethod(m)) and m.__name__ != '__init__')])
         try:
             getattr(SharedDataManager, cache_class.__name__).__signature__ = inspect.signature(cache_class)
         except AttributeError:
-            pass # no signatures in Python < 3.3
+            pass  # no signatures in Python < 3.3
 
         data_manager = SharedDataManager()
         data_manager.start()

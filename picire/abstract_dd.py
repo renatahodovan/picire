@@ -99,7 +99,7 @@ class AbstractDD(object):
         :return: Tuple: (failing config or None, next n or None, next
             complement_offset).
         """
-        pass
+        raise NotImplementedError()
 
     def _lookup_cache(self, config, config_id):
         """

@@ -8,9 +8,10 @@
 import logging
 import multiprocessing
 import os
-import psutil
 import signal
 import sys
+
+import psutil
 
 logger = logging.getLogger(__name__)
 is_windows = sys.platform.startswith('win32')
@@ -40,8 +41,8 @@ def loop_body(shared_break, shared_slots, shared_lock, i, target, args):
     try:
         if not target(*args):
             shared_break.value = 1
-    except:
-        logger.warning('', exc_info=True)
+    except Exception as e:
+        logger.warning('', exc_info=e)
         shared_break.value = 1
 
     shared_slots[i] = 0

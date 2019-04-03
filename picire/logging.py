@@ -26,6 +26,8 @@ levels = {
 
 
 __getLogger = getLogger
+
+
 def getLogger(name=None):
     logger = __getLogger(name)
     logger.trace = lambda msg, *args, **kwargs: logger.log(TRACE, msg, *args, **kwargs)

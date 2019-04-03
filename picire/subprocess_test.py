@@ -62,10 +62,7 @@ class SubprocessTest(object):
         proc.wait()
 
         # Determine outcome.
-        if proc.returncode == 0:
-            return AbstractDD.FAIL
-        else:
-            return AbstractDD.PASS
+        return AbstractDD.FAIL if proc.returncode == 0 else AbstractDD.PASS
 
 
 class ConcatTestBuilder(object):

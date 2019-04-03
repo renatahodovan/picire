@@ -6,7 +6,6 @@
 # according to those terms.
 
 import argparse
-import chardet
 import codecs
 import multiprocessing
 import os
@@ -15,6 +14,8 @@ import time
 
 from os.path import abspath, basename, exists, join, relpath
 from shutil import rmtree
+
+import chardet
 
 from . import config_iterators, config_splitters, outcome_cache
 from . import logging

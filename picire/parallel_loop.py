@@ -112,7 +112,7 @@ class Loop(object):
     def _cleanup_slots(self):
         for i, (slot, proc) in enumerate(zip(self._slots, self._procs)):
             if slot:
-                if not self._procs[i].is_alive() or not psutil.pid_exists(proc.pid):
+                if not proc.is_alive() or not psutil.pid_exists(proc.pid):
                     self._slots[i], self._procs[i] = 0, None
             else:
                 self._procs[i] = None

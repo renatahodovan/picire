@@ -1,4 +1,4 @@
-# Copyright (c) 2016-2019 Renata Hodovan, Akos Kiss.
+# Copyright (c) 2016-2020 Renata Hodovan, Akos Kiss.
 #
 # Licensed under the BSD 3-Clause License
 # <LICENSE.rst or https://opensource.org/licenses/BSD-3-Clause>.
@@ -47,71 +47,75 @@ class LightDD(AbstractDD):
         else:
             self._first_reduce, self._second_reduce = self._reduce_to_complement, self._reduce_to_subset
 
-    def _reduce_config(self, run, config, subsets, complement_offset):
+    def _reduce_config(self, run, config, slices, complement_offset):
         """
         Perform the reduce task in single process mode.
 
         :param run: The index of the current iteration.
         :param config: The current configuration under testing.
-        :param subsets: List of sets that the current configuration is split to.
+        :param slices: List of slices marking the boundaries of the sets that
+            the current configuration is split to.
         :param complement_offset: A compensation offset needed to calculate the
             index of the first unchecked complement (optimization purpose only).
         :return: Tuple: (failing config or None, next n or None, next
             complement_offset).
         """
-        next_config, next_n, complement_offset = self._first_reduce(run, config, subsets, complement_offset)
+        next_config, next_n, complement_offset = self._first_reduce(run, config, slices, complement_offset)
         if next_config is None:
-            next_config, next_n, complement_offset = self._second_reduce(run, config, subsets, complement_offset)
+            next_config, next_n, complement_offset = self._second_reduce(run, config, slices, complement_offset)
 
         return next_config, next_n, complement_offset
 
-    def _reduce_to_subset(self, run, config, subsets, complement_offset):
+    def _reduce_to_subset(self, run, config, slices, complement_offset):
         """
         Perform a subset-based reduce task.
 
         :param run: The index of the current iteration.
         :param config: The current configuration under testing.
-        :param subsets: List of sets that the current configuration is split to.
+        :param slices: List of slices marking the boundaries of the sets that
+            the current configuration is split to.
         :param complement_offset: A compensation offset needed to calculate the
             index of the first unchecked complement (optimization purpose only).
         :return: Tuple: (failing config or None, next n or None, next
             complement_offset).
         """
-        n = len(subsets)
+        n = len(slices)
         for i in self._subset_iterator(n):
             if i is None:
                 continue
 
             config_id = ('r%d' % run, 's%d' % i)
+            subset = config[slices[i]]
 
             # Get the outcome either from cache or by testing it.
-            outcome = self._lookup_cache(subsets[i], config_id) or self._test_config(subsets[i], config_id)
+            outcome = self._lookup_cache(subset, config_id) or self._test_config(subset, config_id)
             if outcome == self.FAIL:
                 # Interesting subset is found.
-                return subsets[i], 2, 0
+                return subset, 2, 0
 
         return None, None, complement_offset
 
-    def _reduce_to_complement(self, run, config, subsets, complement_offset):
+    def _reduce_to_complement(self, run, config, slices, complement_offset):
         """
         Perform a complement-based reduce task.
 
         :param run: The index of the current iteration.
         :param config: The current configuration under testing.
-        :param subsets: List of sets that the current configuration is split to.
+        :param slices: List of slices marking the boundaries of the sets that
+            the current configuration is split to.
         :param complement_offset: A compensation offset needed to calculate the
             index of the first unchecked complement (optimization purpose only).
         :return: Tuple: (failing config or None, next n or None, next
             complement_offset).
         """
-        n = len(subsets)
+        n = len(slices)
         for i in self._complement_iterator(n):
             if i is None:
                 continue
             i = int((i + complement_offset) % n)
 
             config_id = ('r%d' % run, 'c%d' % i)
-            complement = self._minus(config, subsets[i])
+            complement = self._minus(config, config[slices[i]])
 
             outcome = self._lookup_cache(complement, config_id) or self._test_config(complement, config_id)
             if outcome == self.FAIL:

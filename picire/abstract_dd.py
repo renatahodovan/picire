@@ -56,11 +56,11 @@ class AbstractDD(object):
         while True:
             assert self._test_config(config, ('r%d' % run, 'assert')) == self.FAIL
 
-            subsets = self._split(config, n)
+            slices = self._split(len(config), n)
 
-            logger.info('Run #%d: trying %s.', run, ' + '.join(str(len(subsets[i])) for i in range(n)))
+            logger.info('Run #%d: trying %s.', run, ' + '.join(str(s.stop - s.start) for s in slices))
 
-            next_config, next_n, complement_offset = self._reduce_config(run, config, subsets, complement_offset)
+            next_config, next_n, complement_offset = self._reduce_config(run, config, slices, complement_offset)
 
             if next_config is None:
                 # Minimization ends if no interesting configuration was found by the finest splitting.
@@ -87,13 +87,14 @@ class AbstractDD(object):
             n = next_n
             run += 1
 
-    def _reduce_config(self, run, config, subsets, complement_offset):
+    def _reduce_config(self, run, config, slices, complement_offset):
         """
         Perform the reduce task of ddmin. To be overridden by subclasses.
 
         :param run: The index of the current iteration.
         :param config: The current configuration under testing.
-        :param subsets: List of sets that the current configuration is split to.
+        :param slices: List of slices marking the boundaries of the sets that
+            the current configuration is split to.
         :param complement_offset: A compensation offset needed to calculate the
             index of the first unchecked complement (optimization purpose only).
         :return: Tuple: (failing config or None, next n or None, next

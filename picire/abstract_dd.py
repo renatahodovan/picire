@@ -5,6 +5,7 @@
 # This file may not be copied, modified, or distributed except
 # according to those terms.
 
+import itertools
 import logging
 
 from .outcome_cache import OutcomeCache
@@ -44,17 +45,16 @@ class AbstractDD(object):
         :param n: The number of sets that the config is initially split to.
         :return: 1-minimal failing configuration.
         """
-        if len(config) < 2:
-            assert self._test_config(config, ('assert',)) == self.FAIL
-            logger.info('Test case is minimal already.')
-            return config
-
-        run = 1
         n = min(len(config), n)
         complement_offset = 0
 
-        while True:
+        for run in itertools.count():
             assert self._test_config(config, ('r%d' % run, 'assert')) == self.FAIL
+
+            # Minimization ends if the configuration is already reduced to a single unit.
+            if len(config) < 2:
+                logger.info('Done.')
+                return config
 
             slices = self._split(len(config), n)
 
@@ -62,30 +62,26 @@ class AbstractDD(object):
 
             next_config, next_n, complement_offset = self._reduce_config(run, config, slices, complement_offset)
 
-            if next_config is None:
-                # Minimization ends if no interesting configuration was found by the finest splitting.
-                if n == len(config):
-                    logger.info('Done.')
-                    return config
+            if next_config is not None:
+                # Interesting configuration is found, start new iteration.
+                config = next_config
+                n = next_n
 
-                next_config = config
+                logger.info('Reduced to %d units.', len(config))
+                logger.debug('New config: %r.', config)
+
+            elif n < len(config):
+                # No interesting configuration is found but it is still not the finest splitting, start new iteration.
                 next_n = min(len(config), n * 2)
                 complement_offset = (complement_offset * next_n) / n
-                logger.info('Increase granularity to %d.', next_n)
+                n = next_n
+
+                logger.info('Increase granularity to %d.', n)
 
             else:
-                # Interesting configuration is found.
-                logger.info('Reduced to %d units.', len(next_config))
-                logger.debug('New config: %r.', next_config)
-
-                # Minimization ends if the configuration is already reduced to a single unit.
-                if len(next_config) == 1:
-                    logger.info('Done.')
-                    return next_config
-
-            config = next_config
-            n = next_n
-            run += 1
+                # Minimization ends if no interesting configuration was found by the finest splitting.
+                logger.info('Done.')
+                return config
 
     def _reduce_config(self, run, config, slices, complement_offset):
         """

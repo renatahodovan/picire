@@ -9,13 +9,13 @@ import argparse
 import codecs
 import multiprocessing
 import os
-import pkgutil
 import time
 
 from os.path import abspath, basename, exists, join, relpath
 from shutil import rmtree
 
 import chardet
+import pkg_resources
 
 from . import config_iterators, config_splitters, outcome_cache
 from . import logging
@@ -27,7 +27,7 @@ from .shared_cache import shared_cache_decorator
 from .subprocess_test import ConcatTestBuilder, SubprocessTest
 
 logger = logging.getLogger('picire')
-__version__ = pkgutil.get_data(__package__, 'VERSION').decode('ascii').strip()
+__version__ = pkg_resources.get_distribution(__package__).version
 
 
 def create_parser():

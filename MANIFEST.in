@@ -2,6 +2,5 @@ include README.rst
 include LICENSE.rst
 include RELNOTES.rst
 include MANIFEST.in
-include picire/VERSION
 global-exclude __pycache__
 global-exclude *.py[co]

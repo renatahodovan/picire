@@ -51,18 +51,20 @@ class AbstractDD(object):
         complement_offset = 0
 
         for run in itertools.count():
+            logger.info('Run #%d', run)
+            logger.info('\tConfig size: %d', len(config))
+            logger.debug('\tConfig: %r', config)
             assert self._test_config(config, ('r%d' % run, 'assert')) == self.FAIL
 
             # Minimization ends if the configuration is already reduced to a single unit.
             if len(config) < 2:
-                logger.info('Done.')
+                logger.info('\tDone')
                 return config
 
             if len(slices) < 2:
                 # This could be len(slices) == 1 but then we would need to initialize slices = [slice(0:len(config))]
                 slices = self._split(len(config), min(len(config), n))
-
-            logger.info('Run #%d: trying %s.', run, ' + '.join(str(s.stop - s.start) for s in slices))
+            logger.info('\tGranularity: %d', len(slices))
 
             next_slices, complement_offset = self._reduce_config(run, config, slices, complement_offset)
 
@@ -76,8 +78,7 @@ class AbstractDD(object):
                     slices.append(slice(start, stop))
                     start = stop
 
-                logger.info('Reduced to %d units.', len(config))
-                logger.debug('New config: %r.', config)
+                logger.info('\tReduced')
 
             elif len(slices) < len(config):
                 # No interesting configuration is found but it is still not the finest splitting, start new iteration.
@@ -85,11 +86,11 @@ class AbstractDD(object):
                 complement_offset = (complement_offset * len(next_slices)) / len(slices)
                 slices = next_slices
 
-                logger.info('Increase granularity to %d.', len(slices))
+                logger.info('\tIncreased granularity')
 
             else:
                 # Minimization ends if no interesting configuration was found by the finest splitting.
-                logger.info('Done.')
+                logger.info('\tDone')
                 return config
 
     def _reduce_config(self, run, config, slices, complement_offset):

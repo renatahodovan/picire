@@ -57,14 +57,14 @@ class LightDD(AbstractDD):
             the current configuration is split to.
         :param complement_offset: A compensation offset needed to calculate the
             index of the first unchecked complement (optimization purpose only).
-        :return: Tuple: (failing config or None, next n or None, next
-            complement_offset).
+        :return: Tuple: (list of slices composing the failing config or None,
+            next complement_offset).
         """
-        next_config, next_n, complement_offset = self._first_reduce(run, config, slices, complement_offset)
-        if next_config is None:
-            next_config, next_n, complement_offset = self._second_reduce(run, config, slices, complement_offset)
+        next_slices, complement_offset = self._first_reduce(run, config, slices, complement_offset)
+        if next_slices is None:
+            next_slices, complement_offset = self._second_reduce(run, config, slices, complement_offset)
 
-        return next_config, next_n, complement_offset
+        return next_slices, complement_offset
 
     def _reduce_to_subset(self, run, config, slices, complement_offset):
         """
@@ -76,8 +76,8 @@ class LightDD(AbstractDD):
             the current configuration is split to.
         :param complement_offset: A compensation offset needed to calculate the
             index of the first unchecked complement (optimization purpose only).
-        :return: Tuple: (failing config or None, next n or None, next
-            complement_offset).
+        :return: Tuple: (list of slices composing the failing config or None,
+            next complement_offset).
         """
         n = len(slices)
         for i in self._subset_iterator(n):
@@ -91,9 +91,9 @@ class LightDD(AbstractDD):
             outcome = self._lookup_cache(subset, config_id) or self._test_config(subset, config_id)
             if outcome == self.FAIL:
                 # Interesting subset is found.
-                return subset, 2, 0
+                return [slices[i]], 0
 
-        return None, None, complement_offset
+        return None, complement_offset
 
     def _reduce_to_complement(self, run, config, slices, complement_offset):
         """
@@ -105,8 +105,8 @@ class LightDD(AbstractDD):
             the current configuration is split to.
         :param complement_offset: A compensation offset needed to calculate the
             index of the first unchecked complement (optimization purpose only).
-        :return: Tuple: (failing config or None, next n or None, next
-            complement_offset).
+        :return: Tuple: (list of slices composing the failing config or None,
+            next complement_offset).
         """
         n = len(slices)
         for i in self._complement_iterator(n):
@@ -121,6 +121,6 @@ class LightDD(AbstractDD):
             if outcome == self.FAIL:
                 # Interesting complement is found.
                 # In next run, start removing the following subset
-                return complement, max(n - 1, 2), i
+                return slices[:i] + slices[i + 1:], i
 
-        return None, None, complement_offset
+        return None, complement_offset

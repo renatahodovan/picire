@@ -42,10 +42,12 @@ class AbstractDD(object):
         Return a 1-minimal failing subset of the initial configuration.
 
         :param config: The initial configuration that will be reduced.
-        :param n: The number of sets that the config is initially split to.
+        :param n: The split ratio used to determine how many parts (subsets) the
+            config to split to (both initially and later on whenever config
+            subsets needs to be re-split).
         :return: 1-minimal failing configuration.
         """
-        n = min(len(config), n)
+        slices = []
         complement_offset = 0
 
         for run in itertools.count():
@@ -56,27 +58,34 @@ class AbstractDD(object):
                 logger.info('Done.')
                 return config
 
-            slices = self._split(len(config), n)
+            if len(slices) < 2:
+                # This could be len(slices) == 1 but then we would need to initialize slices = [slice(0:len(config))]
+                slices = self._split(len(config), min(len(config), n))
 
             logger.info('Run #%d: trying %s.', run, ' + '.join(str(s.stop - s.start) for s in slices))
 
-            next_config, next_n, complement_offset = self._reduce_config(run, config, slices, complement_offset)
+            next_slices, complement_offset = self._reduce_config(run, config, slices, complement_offset)
 
-            if next_config is not None:
+            if next_slices is not None:
                 # Interesting configuration is found, start new iteration.
-                config = next_config
-                n = next_n
+                config = [c for s in next_slices for c in config[s]]
+                slices = []
+                start = 0
+                for s in next_slices:
+                    stop = start + s.stop - s.start
+                    slices.append(slice(start, stop))
+                    start = stop
 
                 logger.info('Reduced to %d units.', len(config))
                 logger.debug('New config: %r.', config)
 
-            elif n < len(config):
+            elif len(slices) < len(config):
                 # No interesting configuration is found but it is still not the finest splitting, start new iteration.
-                next_n = min(len(config), n * 2)
-                complement_offset = (complement_offset * next_n) / n
-                n = next_n
+                next_slices = self._split(len(config), min(len(config), len(slices) * n))
+                complement_offset = (complement_offset * len(next_slices)) / len(slices)
+                slices = next_slices
 
-                logger.info('Increase granularity to %d.', n)
+                logger.info('Increase granularity to %d.', len(slices))
 
             else:
                 # Minimization ends if no interesting configuration was found by the finest splitting.
@@ -93,8 +102,8 @@ class AbstractDD(object):
             the current configuration is split to.
         :param complement_offset: A compensation offset needed to calculate the
             index of the first unchecked complement (optimization purpose only).
-        :return: Tuple: (failing config or None, next n or None, next
-            complement_offset).
+        :return: Tuple: (list of slices composing the failing config or None,
+            next complement_offset).
         """
         raise NotImplementedError()
 

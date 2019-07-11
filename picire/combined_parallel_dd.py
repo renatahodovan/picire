@@ -48,8 +48,8 @@ class CombinedParallelDD(AbstractParallelDD):
             the current configuration is split to.
         :param complement_offset: A compensation offset needed to calculate the
             index of the first unchecked complement (optimization purpose only).
-        :return: Tuple: (failing config or None, next n or None, next
-            complement_offset).
+        :return: Tuple: (list of slices composing the failing config or None,
+            next complement_offset).
         """
         n = len(slices)
         self._fail_index.value = -1
@@ -86,8 +86,8 @@ class CombinedParallelDD(AbstractParallelDD):
         if fvalue != -1:
             # Subset fail.
             if fvalue < n:
-                return config[slices[fvalue]], 2, 0
+                return [slices[fvalue]], 0
             # Complement fail.
-            return self._minus(config, config[slices[fvalue - n]]), max(n - 1, 2), fvalue - n
+            return slices[:fvalue - n] + slices[fvalue - n + 1:], fvalue - n
 
-        return None, None, complement_offset
+        return None, complement_offset

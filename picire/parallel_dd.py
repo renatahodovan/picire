@@ -58,14 +58,14 @@ class ParallelDD(AbstractParallelDD):
             the current configuration is split to.
         :param complement_offset: A compensation offset needed to calculate the
             index of the first unchecked complement (optimization purpose only).
-        :return: Tuple: (failing config or None, next n or None, next
-            complement_offset).
+        :return: Tuple: (list of slices composing the failing config or None,
+            next complement_offset).
         """
-        next_config, next_n, complement_offset = self._first_reduce(run, config, slices, complement_offset)
-        if next_config is None:
-            next_config, next_n, complement_offset = self._second_reduce(run, config, slices, complement_offset)
+        next_slices, complement_offset = self._first_reduce(run, config, slices, complement_offset)
+        if next_slices is None:
+            next_slices, complement_offset = self._second_reduce(run, config, slices, complement_offset)
 
-        return next_config, next_n, complement_offset
+        return next_slices, complement_offset
 
     def _reduce_to_subset(self, run, config, slices, complement_offset):
         """
@@ -77,8 +77,8 @@ class ParallelDD(AbstractParallelDD):
             the current configuration is split to.
         :param complement_offset: A compensation offset needed to calculate the
             index of the first unchecked complement (optimization purpose only).
-        :return: Tuple: (failing config or None, next n or None, next
-            complement_offset).
+        :return: Tuple: (list of slices composing the failing config or None,
+            next complement_offset).
         """
         # Looping through the subsets.
         n = len(slices)
@@ -106,9 +106,9 @@ class ParallelDD(AbstractParallelDD):
 
         fvalue = self._fail_index.value
         if fvalue != -1:
-            return config[slices[fvalue]], 2, 0
+            return [slices[fvalue]], 0
 
-        return None, None, complement_offset
+        return None, complement_offset
 
     def _reduce_to_complement(self, run, config, slices, complement_offset):
         """
@@ -120,8 +120,8 @@ class ParallelDD(AbstractParallelDD):
             the current configuration is split to.
         :param complement_offset: A compensation offset needed to calculate the
             index of the first unchecked complement (optimization purpose only).
-        :return: Tuple: (failing config or None, next n or None, next
-            complement_offset).
+        :return: Tuple: (list of slices composing the failing config or None,
+            next complement_offset).
         """
         n = len(slices)
         self._fail_index.value = -1
@@ -150,6 +150,6 @@ class ParallelDD(AbstractParallelDD):
         fvalue = self._fail_index.value
         if fvalue != -1:
             # In next run, start removing the following subset.
-            return self._minus(config, config[slices[fvalue]]), max(n - 1, 2), fvalue
+            return slices[:fvalue] + slices[fvalue + 1:], fvalue
 
-        return None, None, complement_offset
+        return None, complement_offset

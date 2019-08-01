@@ -52,8 +52,8 @@ def create_parser():
                         help='split algorithm (%(choices)s; default: %(default)s)')
     parser.add_argument('--test', metavar='FILE', required=True,
                         help='test command that decides about interestingness of an input')
-    parser.add_argument('--granularity', type=int_or_inf, default=2,
-                        help='initial splitting granularity (integer or \'inf\'; default: %(default)d).')
+    parser.add_argument('--granularity', metavar='N', type=int_or_inf, default=2,
+                        help='initial granularity and split factor (integer or \'inf\'; default: %(default)d)')
     parser.add_argument('--encoding', metavar='NAME',
                         help='test case encoding (default: autodetect)')
 

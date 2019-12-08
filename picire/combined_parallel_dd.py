@@ -69,7 +69,7 @@ class CombinedParallelDD(AbstractParallelDD):
             outcome = self._lookup_cache(config_set, config_id)
             if outcome == self.PASS:
                 continue
-            elif outcome == self.FAIL:
+            if outcome == self.FAIL:
                 self._fail_index.value = i
                 break
 

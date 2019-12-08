@@ -92,7 +92,7 @@ class ParallelDD(AbstractParallelDD):
             outcome = self._lookup_cache(subsets[i], config_id)
             if outcome == self.PASS:
                 continue
-            elif outcome == self.FAIL:
+            if outcome == self.FAIL:
                 self._fail_index.value = i
                 break
 
@@ -134,7 +134,7 @@ class ParallelDD(AbstractParallelDD):
             outcome = self._lookup_cache(complement, config_id)
             if outcome == self.PASS:
                 continue
-            elif outcome == self.FAIL:
+            if outcome == self.FAIL:
                 self._fail_index.value = i
                 break
 

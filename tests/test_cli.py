@@ -1,4 +1,4 @@
-# Copyright (c) 2016-2017 Renata Hodovan, Akos Kiss.
+# Copyright (c) 2016-2020 Renata Hodovan, Akos Kiss.
 #
 # Licensed under the BSD 3-Clause License
 # <LICENSE.rst or https://opensource.org/licenses/BSD-3-Clause>.
@@ -17,22 +17,6 @@ script_ext = '.bat' if is_windows else '.sh'
 
 tests_dir = os.path.dirname(os.path.abspath(__file__))
 resources_dir = os.path.join(tests_dir, 'resources')
-
-
-iterator_parameters_combined = [
-    ('--subset-iterator=forward', '--complement-iterator=forward'),
-    ('--subset-iterator=forward', '--complement-iterator=backward'),
-    ('--subset-iterator=backward', '--complement-iterator=forward'),
-    ('--subset-iterator=backward', '--complement-iterator=backward'),
-    ('--complement-first', '--subset-iterator=forward', '--complement-iterator=forward'),
-    ('--complement-first', '--subset-iterator=forward', '--complement-iterator=backward'),
-    ('--complement-first', '--subset-iterator=backward', '--complement-iterator=forward'),
-    ('--complement-first', '--subset-iterator=backward', '--complement-iterator=backward'),
-]
-iterator_parameters_noncombined = [
-    ('--subset-iterator=skip', '--complement-iterator=forward'),
-    ('--subset-iterator=skip', '--complement-iterator=backward'),
-]
 
 
 @pytest.mark.parametrize('test, inp, exp, args_atom', [
@@ -54,55 +38,33 @@ class TestCli:
         assert proc.returncode == 0
         assert filecmp.cmp(os.path.join(out_dir, inp), os.path.join(resources_dir, exp))
 
-    @pytest.mark.parametrize('args_parallel', [
-        (),
+    @pytest.mark.parametrize('args', [
+        ('--split=balanced', '--subset-iterator=forward', '--complement-iterator=forward', '--cache=none'),
+        ('--split=zeller', '--subset-iterator=forward', '--complement-iterator=backward', '--cache=config'),
+        ('--split=balanced', '--complement-first', '--subset-iterator=backward', '--complement-iterator=forward', '--cache=content'),
+        ('--split=zeller', '--complement-first', '--subset-iterator=backward', '--complement-iterator=backward', '--cache=none'),
+        ('--split=balanced', '--subset-iterator=skip', '--complement-iterator=forward', '--cache=config'),
+        ('--split=zeller', '--subset-iterator=skip', '--complement-iterator=backward', '--cache=content'),
     ])
-    @pytest.mark.parametrize('args_split', [
-        ('--split=balanced', ),
-        ('--split=zeller', ),
-    ])
-    @pytest.mark.parametrize('args_it',
-        iterator_parameters_combined + iterator_parameters_noncombined
-    )
-    @pytest.mark.parametrize('args_cache', [
-        ('--cache=none', ),
-        ('--cache=config', ),
-        ('--cache=content', ),
-    ])
-    def test_light(self, test, inp, exp, tmpdir, args_atom, args_parallel, args_split, args_it, args_cache):
-        self._run_picire(test, inp, exp, tmpdir,
-                         args_atom + args_parallel + args_split + args_it + args_cache)
+    def test_light(self, test, inp, exp, tmpdir, args_atom, args):
+        self._run_picire(test, inp, exp, tmpdir, args_atom + args)
 
-    @pytest.mark.parametrize('args_parallel', [
-        ('--parallel', ),
+    @pytest.mark.parametrize('args', [
+        ('--split=zeller', '--complement-first', '--subset-iterator=forward', '--complement-iterator=forward', '--cache=config'),
+        ('--split=balanced', '--complement-first', '--subset-iterator=forward', '--complement-iterator=backward', '--cache=content'),
+        ('--split=zeller', '--subset-iterator=backward', '--complement-iterator=forward', '--cache=none'),
+        ('--split=balanced', '--subset-iterator=backward', '--complement-iterator=backward', '--cache=config'),
+        ('--split=zeller', '--subset-iterator=skip', '--complement-iterator=forward', '--cache=content'),
+        ('--split=balanced', '--subset-iterator=skip', '--complement-iterator=backward', '--cache=none'),
     ])
-    @pytest.mark.parametrize('args_split', [
-        ('--split=zeller', ),
-    ])
-    @pytest.mark.parametrize('args_it',
-        iterator_parameters_combined + iterator_parameters_noncombined
-    )
-    @pytest.mark.parametrize('args_cache', [
-        ('--cache=none', ),
-        ('--cache=config', ),
-        ('--cache=content', ),
-    ])
-    def test_parallel(self, test, inp, exp, tmpdir, args_atom, args_parallel, args_split, args_it, args_cache):
-        self._run_picire(test, inp, exp, tmpdir,
-                         args_atom + args_parallel + args_split + args_it + args_cache)
+    def test_parallel(self, test, inp, exp, tmpdir, args_atom, args):
+        self._run_picire(test, inp, exp, tmpdir, args_atom + ('--parallel', ) + args)
 
-    @pytest.mark.parametrize('args_parallel', [
-        ('--parallel', '--combine-loops', ),
+    @pytest.mark.parametrize('args', [
+        ('--split=zeller', '--subset-iterator=forward', '--complement-iterator=forward', '--cache=content'),
+        ('--split=balanced', '--subset-iterator=forward', '--complement-iterator=backward', '--cache=none'),
+        ('--split=zeller', '--complement-first', '--subset-iterator=backward', '--complement-iterator=forward', '--cache=config'),
+        ('--split=balanced', '--complement-first', '--subset-iterator=backward', '--complement-iterator=backward', '--cache=content'),
     ])
-    @pytest.mark.parametrize('args_split', [
-        ('--split=zeller', ),
-    ])
-    @pytest.mark.parametrize('args_it',
-        iterator_parameters_combined
-    )
-    @pytest.mark.parametrize('args_cache', [
-        ('--cache=config', ),
-    ])
-    def test_combined(self, test, inp, exp, tmpdir, args_atom, args_parallel, args_split, args_it, args_cache):
-        self._run_picire(test, inp, exp, tmpdir,
-                         args_atom + args_parallel + args_split + args_it + args_cache)
+    def test_combined(self, test, inp, exp, tmpdir, args_atom, args):
+        self._run_picire(test, inp, exp, tmpdir, args_atom + ('--parallel', '--combine-loops', ) + args)

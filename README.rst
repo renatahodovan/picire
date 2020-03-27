@@ -7,8 +7,6 @@ Picire
    :target: https://badge.fury.io/py/picire
 .. image:: https://travis-ci.org/renatahodovan/picire.svg?branch=master
    :target: https://travis-ci.org/renatahodovan/picire
-.. image:: https://ci.appveyor.com/api/projects/status/my0fospjoyns9lm4/branch/master?svg=true
-   :target: https://ci.appveyor.com/project/renatahodovan/picire/branch/master
 .. image:: https://coveralls.io/repos/github/renatahodovan/picire/badge.svg?branch=master
    :target: https://coveralls.io/github/renatahodovan/picire?branch=master
 
@@ -145,8 +143,8 @@ Compatibility
 *picire* was tested on:
 
 * Linux (Ubuntu 14.04 / 16.04 / 18.04)
-* Mac OS X (El Capitan 10.11 / Sierra 10.12 / High Sierra 10.13 / Mojave 10.14)
-* Windows (Server 2012 R2 / Windows 10)
+* Mac OS X (El Capitan 10.11 / Sierra 10.12 / High Sierra 10.13 / Mojave 10.14 / Catalina 10.15)
+* Windows (Server 2012 R2 / Server version 1809 / Windows 10)
 
 
 Acknowledgement and Citations

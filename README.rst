@@ -3,12 +3,14 @@ Picire
 ======
 *Parallel Delta Debugging Framework*
 
-.. image:: https://badge.fury.io/py/picire.svg
-   :target: https://badge.fury.io/py/picire
-.. image:: https://travis-ci.org/renatahodovan/picire.svg?branch=master
+.. image:: https://img.shields.io/pypi/v/picire?logo=python&logoColor=white
+   :target: https://pypi.org/project/picire/
+.. image:: https://img.shields.io/pypi/l/picire?logo=open-source-initiative&logoColor=white
+   :target: https://pypi.org/project/picire/
+.. image:: https://img.shields.io/travis/renatahodovan/picire/master?logo=travis&logoColor=white
    :target: https://travis-ci.org/renatahodovan/picire
-.. image:: https://coveralls.io/repos/github/renatahodovan/picire/badge.svg?branch=master
-   :target: https://coveralls.io/github/renatahodovan/picire?branch=master
+.. image:: https://img.shields.io/coveralls/github/renatahodovan/picire/master?logo=coveralls&logoColor=white
+   :target: https://coveralls.io/github/renatahodovan/picire
 
 
 Picire (pronounced as /pitsirE/) is a Python implementation of the

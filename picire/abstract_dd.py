@@ -1,4 +1,4 @@
-# Copyright (c) 2016-2019 Renata Hodovan, Akos Kiss.
+# Copyright (c) 2016-2020 Renata Hodovan, Akos Kiss.
 #
 # Licensed under the BSD 3-Clause License
 # <LICENSE.rst or https://opensource.org/licenses/BSD-3-Clause>.
@@ -58,7 +58,7 @@ class AbstractDD(object):
 
             subsets = self._split(config, n)
 
-            logger.info('Run #%d: trying %s.', run, ' + '.join([str(len(subsets[i])) for i in range(n)]))
+            logger.info('Run #%d: trying %s.', run, ' + '.join(str(len(subsets[i])) for i in range(n)))
 
             next_config, next_n, complement_offset = self._reduce_config(run, config, subsets, complement_offset)
 

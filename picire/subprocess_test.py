@@ -1,4 +1,4 @@
-# Copyright (c) 2016-2019 Renata Hodovan, Akos Kiss.
+# Copyright (c) 2016-2020 Renata Hodovan, Akos Kiss.
 #
 # Licensed under the BSD 3-Clause License
 # <LICENSE.rst or https://opensource.org/licenses/BSD-3-Clause>.
@@ -86,4 +86,4 @@ class ConcatTestBuilder(object):
         :param config: Configuration to build a test case from.
         :return: Test case described by the config.
         """
-        return ''.join([self._content[x] for x in config])
+        return ''.join(self._content[x] for x in config)

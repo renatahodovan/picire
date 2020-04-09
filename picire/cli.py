@@ -191,7 +191,7 @@ def call(reduce_class, reduce_config,
     args = locals().copy()
     del args['src']
     logger.info('Reduce session starts for %s\n%s',
-                input, ''.join(['\t%s: %s\n' % (k, v) for k, v in sorted(args.items())]))
+                input, ''.join('\t%s: %s\n' % (k, v) for k, v in sorted(args.items())))
 
     tests_dir = join(out, 'tests')
     # Split source to the chosen atoms.

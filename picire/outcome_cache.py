@@ -107,7 +107,7 @@ class ConfigCache(OutcomeCache):
             config = config or []
             s = ''
             if self.result is not None:
-                s += '\t[%s]: %r,\n' % (', '.join([repr(c) for c in config]), self.result)
+                s += '\t[%s]: %r,\n' % (', '.join(repr(c) for c in config), self.result)
             for c, e in sorted(self.tail.items()):
                 config.append(c)
                 s += e._str(config)

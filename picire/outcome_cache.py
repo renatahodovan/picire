@@ -47,6 +47,9 @@ class OutcomeCache(object):
         """
         pass
 
+    def __str__(self):
+        return '{}'
+
 
 class ConfigCache(OutcomeCache):
 
@@ -149,11 +152,7 @@ class ContentCache(OutcomeCache):
         pass
 
     def __str__(self):
-        from functools import reduce
-        return '{\n%s}' % reduce(lambda x, y: x + y,
-                                 ['\t%r: %r,\n' % (k, v)
-                                  for k, v in sorted(self.container.items())],
-                                 '')
+        return '{\n%s}' % ''.join('\t%r: %r,\n' % (k, v) for k, v in sorted(self.container.items()))
 
 
 # Aliases for cache classes to help their identification in CLI.

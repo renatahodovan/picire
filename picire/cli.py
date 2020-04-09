@@ -1,4 +1,4 @@
-# Copyright (c) 2016-2019 Renata Hodovan, Akos Kiss.
+# Copyright (c) 2016-2020 Renata Hodovan, Akos Kiss.
 #
 # Licensed under the BSD 3-Clause License
 # <LICENSE.rst or https://opensource.org/licenses/BSD-3-Clause>.
@@ -207,9 +207,11 @@ def call(reduce_class, reduce_config,
     logger.info('Initial test contains %d %ss', len(content), atom if atom != 'both' else 'line')
 
     test_builder = ConcatTestBuilder(content)
-    cache = cache_class() if cache_class else None
-    if hasattr(cache, 'set_test_builder'):
+    if cache_class:
+        cache = cache_class()
         cache.set_test_builder(test_builder)
+    else:
+        cache = None
 
     dd = reduce_class(tester_class(test_builder=test_builder,
                                    test_pattern=join(tests_dir, '%s', basename(input)),

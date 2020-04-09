@@ -1,4 +1,4 @@
-# Copyright (c) 2016-2019 Renata Hodovan, Akos Kiss.
+# Copyright (c) 2016-2020 Renata Hodovan, Akos Kiss.
 #
 # Licensed under the BSD 3-Clause License
 # <LICENSE.rst or https://opensource.org/licenses/BSD-3-Clause>.
@@ -12,6 +12,16 @@ class OutcomeCache(object):
     implement a caching strategy itself (or, it implements the disable-cache
     strategy) but leaves the implementation of real strategies to subclasses.
     """
+
+    def set_test_builder(self, test_builder):
+        """
+        Set the test builder for the cache.
+
+        :param test_builder: Callable object that creates test case from a
+            configuration. It must be identical to the test builder used by the
+            tester class.
+        """
+        pass
 
     def add(self, config, result):
         """

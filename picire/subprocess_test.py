@@ -8,6 +8,7 @@
 import codecs
 import os
 import shlex
+import shutil
 import sys
 
 from subprocess import Popen
@@ -17,7 +18,7 @@ from .abstract_dd import AbstractDD
 
 class SubprocessTest(object):
 
-    def __init__(self, command_pattern, test_builder, test_pattern, encoding):
+    def __init__(self, command_pattern, test_builder, test_pattern, encoding, cleanup):
         """
         Wrapper around the script provided by the user. It decides about the
         interestingness based on the return code of executed script.
@@ -30,11 +31,14 @@ class SubprocessTest(object):
             part that will be replaced with the ID of the certain
             configurations.
         :param encoding: The encoding that will be used to save the tests.
+        :param cleanup: Binary flag denoting whether the test directory should
+            be removed after test execution or not.
         """
         self.command_pattern = command_pattern
         self.encoding = encoding
         self.test_builder = test_builder
         self.test_pattern = test_pattern
+        self.cleanup = cleanup
 
     def __call__(self, config, config_id):
         """
@@ -60,6 +64,9 @@ class SubprocessTest(object):
                                  posix=not sys.platform.startswith('win32')),
                      cwd=test_dir)
         proc.wait()
+
+        if self.cleanup:
+            shutil.rmtree(test_dir)
 
         # Determine outcome.
         return AbstractDD.FAIL if proc.returncode == 0 else AbstractDD.PASS

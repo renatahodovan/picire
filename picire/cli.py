@@ -120,7 +120,8 @@ def process_args(parser, args):
     args.tester_class = SubprocessTest
     args.tester_config = {
         'encoding': args.encoding,
-        'command_pattern': '%s %%s' % args.test
+        'command_pattern': '%s %%s' % args.test,
+        'cleanup': args.cleanup,
     }
 
     args.cache = getattr(outcome_cache, args.cache)

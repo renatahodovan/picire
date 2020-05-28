@@ -118,6 +118,9 @@ below::
 
 **Remarks:**
 
+* The ``<path/to/the/target/application>`` should either be an absolute path to
+  the target application or the application should be on the search path (i.e.,
+  ``$PATH``).
 * ``$1`` is the single and mandatory command line argument containing the path
   of a test case.
 * If the target application is not guaranteed to exit, then it's worth running

@@ -47,8 +47,8 @@ def create_parser():
     parser.add_argument('--cache', metavar='NAME',
                         choices=[i for i in dir(outcome_cache) if not i.startswith('_') and i.islower()], default='config',
                         help='cache strategy (%(choices)s; default: %(default)s)')
-    parser.add_argument('--split', metavar='NAME', dest='split_method',
-                        choices=[i for i in dir(config_splitters) if not i.startswith('_')], default='zeller',
+    parser.add_argument('--split', metavar='NAME',
+                        choices=[i for i in dir(config_splitters) if not i.startswith('_') and i.islower()], default='zeller',
                         help='split algorithm (%(choices)s; default: %(default)s)')
     parser.add_argument('--test', metavar='FILE', required=True,
                         help='test command that decides about interestingness of an input')
@@ -128,12 +128,12 @@ def process_args(parser, args):
     if args.parallel:
         args.cache = shared_cache_decorator(args.cache)
 
-    split_method = getattr(config_splitters, args.split_method)
+    split_class = getattr(config_splitters, args.split)
     subset_iterator = getattr(config_iterators, args.subset_iterator)
     complement_iterator = getattr(config_iterators, args.complement_iterator)
 
     # Choose the reducer class that will be used and its configuration.
-    args.reduce_config = {'split': split_method}
+    args.reduce_config = {'split': split_class(n=args.granularity)}
     if not args.parallel:
         args.reduce_class = LightDD
         args.reduce_config['subset_iterator'] = subset_iterator
@@ -160,8 +160,7 @@ def process_args(parser, args):
 def call(reduce_class, reduce_config,
          tester_class, tester_config,
          input, src, encoding, out,
-         atom='line', granularity=2,
-         cache_class=None, cleanup=True):
+         atom='line', cache_class=None, cleanup=True):
     """
     Execute picire as if invoked from command line, however, control its
     behaviour not via command line arguments but function parameters.
@@ -180,7 +179,6 @@ def call(reduce_class, reduce_config,
     :param out: Path to the output directory.
     :param atom: Input granularity to work with during reduce ('char', 'line',
         or 'both'; default: 'line').
-    :param granularity: Initial granularity (default: 2).
     :param cache_class: Reference to the cache class to use.
     :param cleanup: Binary flag denoting whether removing auxiliary files at the
         end is enabled (default: True).
@@ -219,7 +217,7 @@ def call(reduce_class, reduce_config,
                                    **tester_config),
                       cache=cache,
                       **reduce_config)
-    min_set = dd.ddmin(list(range(len(content))), n=granularity)
+    min_set = dd.ddmin(list(range(len(content))))
 
     logger.trace('The cached results are: %s', cache)
     logger.debug('A minimal config is: %r', min_set)
@@ -269,6 +267,5 @@ def execute():
          encoding=args.encoding,
          out=args.out,
          atom=args.atom,
-         granularity=args.granularity,
          cache_class=args.cache,
          cleanup=args.cleanup)

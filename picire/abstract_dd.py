@@ -37,17 +37,14 @@ class AbstractDD(object):
         self._cache = cache or OutcomeCache()
         self._id_prefix = id_prefix
 
-    def ddmin(self, config, n=2):
+    def ddmin(self, config):
         """
         Return a 1-minimal failing subset of the initial configuration.
 
         :param config: The initial configuration that will be reduced.
-        :param n: The split ratio used to determine how many parts (subsets) the
-            config to split to (both initially and later on whenever config
-            subsets needs to be re-split).
         :return: 1-minimal failing configuration.
         """
-        slices = []
+        slices = [slice(0, len(config))]
         complement_offset = 0
 
         for run in itertools.count():
@@ -62,8 +59,8 @@ class AbstractDD(object):
                 return config
 
             if len(slices) < 2:
-                # This could be len(slices) == 1 but then we would need to initialize slices = [slice(0:len(config))]
-                slices = self._split(len(config), min(len(config), n))
+                assert len(slices) == 1
+                slices = self._split(slices)
             logger.info('\tGranularity: %d', len(slices))
 
             next_slices, complement_offset = self._reduce_config(run, config, slices, complement_offset)
@@ -82,7 +79,7 @@ class AbstractDD(object):
 
             elif len(slices) < len(config):
                 # No interesting configuration is found but it is still not the finest splitting, start new iteration.
-                next_slices = self._split(len(config), min(len(config), len(slices) * n))
+                next_slices = self._split(slices)
                 complement_offset = (complement_offset * len(next_slices)) / len(slices)
                 slices = next_slices
 

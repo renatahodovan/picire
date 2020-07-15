@@ -84,10 +84,10 @@ class TestApi:
         logging.getLogger('picire').setLevel(logging.DEBUG)
 
         dd_obj = dd(CaseTest(interesting, config),
-                    split=split,
+                    split=split(n=granularity),
                     cache=cache(),
                     **it_kwargs)
-        output = [config[x] for x in dd_obj.ddmin(list(range(len(config))), n=granularity)]
+        output = [config[x] for x in dd_obj.ddmin(list(range(len(config))))]
 
         assert output == expect
 

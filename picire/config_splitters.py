@@ -6,36 +6,69 @@
 # according to those terms.
 
 
-def zeller(length, n):
+class ZellerSplit(object):
     """
     Splits up the input config into n pieces as used by Zeller in the original
     reference implementation. The approach works iteratively in n steps, first
     slicing off a chunk sized 1/n-th of the original config, then slicing off
     1/(n-1)-th of the remainder, and so on, until the last piece is halved
     (always using integers division).
-
-    :param length: The length of the configuration to split.
-    :param n: The number of sets the configuration will be split up to.
-    :return: List of slices marking the boundaries of the split sets.
     """
-    slices = []
-    start = 0
-    for i in range(n):
-        stop = start + (length - start) // (n - i)
-        slices.append(slice(start, stop))
-        start = stop
-    return slices
+
+    def __init__(self, n=2):
+        """
+        :param n: The split ratio used to determine how many parts (subsets) the
+            config to split to (both initially and later on whenever config
+            subsets needs to be re-split).
+        """
+        self._n = n
+
+    def __call__(self, slices):
+        """
+        :param slices: List of slices marking the boundaries of the sets that
+            the current configuration is split to.
+        :return: List of slices marking the boundaries of the newly split sets.
+        """
+        length = sum(s.stop - s.start for s in slices)
+        n = min(length, len(slices) * self._n)
+
+        next_slices = []
+        start = 0
+        for i in range(n):
+            stop = start + (length - start) // (n - i)
+            next_slices.append(slice(start, stop))
+            start = stop
+        return next_slices
 
 
-def balanced(length, n):
+class BalancedSplit(object):
     """
     Slightly different version of Zeller's split. This version keeps the split
     balanced by distributing the residuals of the integer division among all
     chunks. This way, the size of the chunks in the resulting split is not
     monotonous.
-
-    :param length: The length of the configuration to split.
-    :param n: The number of sets the configuration will be split up to.
-    :return: List of slices marking the boundaries of the split sets.
     """
-    return [slice(length * i // n, length * (i + 1) // n) for i in range(n)]
+
+    def __init__(self, n=2):
+        """
+        :param n: The split ratio used to determine how many parts (subsets) the
+            config to split to (both initially and later on whenever config
+            subsets needs to be re-split).
+        """
+        self._n = n
+
+    def __call__(self, slices):
+        """
+        :param slices: List of slices marking the boundaries of the sets that
+            the current configuration is split to.
+        :return: List of slices marking the boundaries of the newly split sets.
+        """
+        length = sum(s.stop - s.start for s in slices)
+        n = min(length, len(slices) * self._n)
+
+        return [slice(length * i // n, length * (i + 1) // n) for i in range(n)]
+
+
+# Aliases for split classes to help their identification in CLI.
+zeller = ZellerSplit
+balanced = BalancedSplit

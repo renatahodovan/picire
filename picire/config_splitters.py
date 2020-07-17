@@ -23,22 +23,22 @@ class ZellerSplit(object):
         """
         self._n = n
 
-    def __call__(self, slices):
+    def __call__(self, subsets):
         """
-        :param slices: List of slices marking the boundaries of the sets that
-            the current configuration is split to.
-        :return: List of slices marking the boundaries of the newly split sets.
+        :param subsets: List of sets that the current configuration is split to.
+        :return: List of newly split sets.
         """
-        length = sum(s.stop - s.start for s in slices)
-        n = min(length, len(slices) * self._n)
+        config = [c for s in subsets for c in s]
+        length = len(config)
+        n = min(length, len(subsets) * self._n)
 
-        next_slices = []
+        next_subsets = []
         start = 0
         for i in range(n):
             stop = start + (length - start) // (n - i)
-            next_slices.append(slice(start, stop))
+            next_subsets.append(config[start:stop])
             start = stop
-        return next_slices
+        return next_subsets
 
 
 class BalancedSplit(object):
@@ -57,16 +57,16 @@ class BalancedSplit(object):
         """
         self._n = n
 
-    def __call__(self, slices):
+    def __call__(self, subsets):
         """
-        :param slices: List of slices marking the boundaries of the sets that
-            the current configuration is split to.
-        :return: List of slices marking the boundaries of the newly split sets.
+        :param subsets: List of sets that the current configuration is split to.
+        :return: List of newly split sets.
         """
-        length = sum(s.stop - s.start for s in slices)
-        n = min(length, len(slices) * self._n)
+        config = [c for s in subsets for c in s]
+        length = len(config)
+        n = min(length, len(subsets) * self._n)
 
-        return [slice(length * i // n, length * (i + 1) // n) for i in range(n)]
+        return [config[length * i // n:length * (i + 1) // n] for i in range(n)]
 
 
 # Aliases for split classes to help their identification in CLI.

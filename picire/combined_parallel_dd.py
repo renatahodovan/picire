@@ -37,21 +37,19 @@ class CombinedParallelDD(AbstractParallelDD):
 
         self._config_iterator = config_iterator
 
-    def _reduce_config(self, run, config, slices, complement_offset):
+    def _reduce_config(self, run, subsets, complement_offset):
         """
         Perform the reduce task using multiple processes. Subset and complement
         set tests are mixed and don't wait for each other.
 
         :param run: The index of the current iteration.
-        :param config: The current configuration under testing.
-        :param slices: List of slices marking the boundaries of the sets that
-            the current configuration is split to.
+        :param subsets: List of sets that the current configuration is split to.
         :param complement_offset: A compensation offset needed to calculate the
             index of the first unchecked complement (optimization purpose only).
-        :return: Tuple: (list of slices composing the failing config or None,
+        :return: Tuple: (list of subsets composing the failing config or None,
             next complement_offset).
         """
-        n = len(slices)
+        n = len(subsets)
         self._fail_index.value = -1
         ploop = parallel_loop.Loop(self._proc_num, self._max_utilization)
         for i in self._config_iterator(2 * n):
@@ -60,11 +58,11 @@ class CombinedParallelDD(AbstractParallelDD):
 
             if i < n:
                 config_id = ('r%d' % run, 's%d' % i)
-                config_set = config[slices[i]]
+                config_set = subsets[i]
             else:
                 i = int((i - n + complement_offset) % n) + n
                 config_id = ('r%d' % run, 'c%d' % (i - n))
-                config_set = self._minus(config, config[slices[i - n]])
+                config_set = [c for si, s in enumerate(subsets) for c in s if si != i - n]
 
             # If we checked this test before, return its result
             outcome = self._lookup_cache(config_set, config_id)
@@ -86,8 +84,8 @@ class CombinedParallelDD(AbstractParallelDD):
         if fvalue != -1:
             # Subset fail.
             if fvalue < n:
-                return [slices[fvalue]], 0
+                return [subsets[fvalue]], 0
             # Complement fail.
-            return slices[:fvalue - n] + slices[fvalue - n + 1:], fvalue - n
+            return subsets[:fvalue - n] + subsets[fvalue - n + 1:], fvalue - n
 
         return None, complement_offset

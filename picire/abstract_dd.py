@@ -44,7 +44,7 @@ class AbstractDD(object):
         :param config: The initial configuration that will be reduced.
         :return: 1-minimal failing configuration.
         """
-        slices = [slice(0, len(config))]
+        subsets = [config]
         complement_offset = 0
 
         for run in itertools.count():
@@ -58,30 +58,25 @@ class AbstractDD(object):
                 logger.info('\tDone')
                 return config
 
-            if len(slices) < 2:
-                assert len(slices) == 1
-                slices = self._split(slices)
-            logger.info('\tGranularity: %d', len(slices))
+            if len(subsets) < 2:
+                assert len(subsets) == 1
+                subsets = self._split(subsets)
+            logger.info('\tGranularity: %d', len(subsets))
 
-            next_slices, complement_offset = self._reduce_config(run, config, slices, complement_offset)
+            next_subsets, complement_offset = self._reduce_config(run, subsets, complement_offset)
 
-            if next_slices is not None:
+            if next_subsets is not None:
                 # Interesting configuration is found, start new iteration.
-                config = [c for s in next_slices for c in config[s]]
-                slices = []
-                start = 0
-                for s in next_slices:
-                    stop = start + s.stop - s.start
-                    slices.append(slice(start, stop))
-                    start = stop
+                subsets = next_subsets
+                config = [c for s in subsets for c in s]
 
                 logger.info('\tReduced')
 
-            elif len(slices) < len(config):
+            elif len(subsets) < len(config):
                 # No interesting configuration is found but it is still not the finest splitting, start new iteration.
-                next_slices = self._split(slices)
-                complement_offset = (complement_offset * len(next_slices)) / len(slices)
-                slices = next_slices
+                next_subsets = self._split(subsets)
+                complement_offset = (complement_offset * len(next_subsets)) / len(subsets)
+                subsets = next_subsets
 
                 logger.info('\tIncreased granularity')
 
@@ -90,17 +85,15 @@ class AbstractDD(object):
                 logger.info('\tDone')
                 return config
 
-    def _reduce_config(self, run, config, slices, complement_offset):
+    def _reduce_config(self, run, subsets, complement_offset):
         """
         Perform the reduce task of ddmin. To be overridden by subclasses.
 
         :param run: The index of the current iteration.
-        :param config: The current configuration under testing.
-        :param slices: List of slices marking the boundaries of the sets that
-            the current configuration is split to.
+        :param subsets: List of sets that the current configuration is split to.
         :param complement_offset: A compensation offset needed to calculate the
             index of the first unchecked complement (optimization purpose only).
-        :return: Tuple: (list of slices composing the failing config or None,
+        :return: Tuple: (list of subsets composing the failing config or None,
             next complement_offset).
         """
         raise NotImplementedError()
@@ -156,11 +149,3 @@ class AbstractDD(object):
         :return: Concatenating the arguments with slashes, e.g., "rN / DM".
         """
         return ' / '.join(str(i) for i in config_id)
-
-    @staticmethod
-    def _minus(c1, c2):
-        """
-        Return a list of all elements of C1 that are not in C2.
-        """
-        c2 = set(c2)
-        return [c for c in c1 if c not in c2]

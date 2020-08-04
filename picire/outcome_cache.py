@@ -74,60 +74,42 @@ class ConfigCache(OutcomeCache):
             self.result = None  # Result so far
             self.tail = {}  # Points to outcome of tail
 
-        def add(self, config, result):
-            """
-            Add (config, RESULT) to the cache. config must be a list of scalars.
-
-            :param config: Config to add to the cache.
-            :param result: The outcome of the added config.
-            """
-            p = self
-            for cs in config:
-                if cs not in p.tail:
-                    p.tail[cs] = ConfigCache._Entry()
-                p = p.tail[cs]
-            p.result = result
-
-        def lookup(self, config):
-            """
-            Performs a cache lookup.
-
-            :param config: The configuration we are looking for.
-            :return: PASS or FAIL if config is in the cache, None otherwise.
-            """
-            p = self
-            for cs in config:
-                if cs not in p.tail:
-                    return None
-                p = p.tail[cs]
-
-            return p.result
-
-        def _str(self, config=None):
-            config = config or []
-            s = ''
-            if self.result is not None:
-                s += '\t[%s]: %r,\n' % (', '.join(repr(c) for c in config), self.result)
-            for c, e in sorted(self.tail.items()):
-                config.append(c)
-                s += e._str(config)
-                config.pop()
-            return s
-
     def __init__(self):
-        self._root = ConfigCache._Entry()
+        self._root = self._Entry()
 
     def add(self, config, result):
-        self._root.add(config, result)
+        p = self._root
+        for cs in config:
+            if cs not in p.tail:
+                p.tail[cs] = self._Entry()
+            p = p.tail[cs]
+        p.result = result
 
     def lookup(self, config):
-        return self._root.lookup(config)
+        p = self._root
+        for cs in config:
+            if cs not in p.tail:
+                return None
+            p = p.tail[cs]
+        return p.result
 
     def clear(self):
-        self._root = ConfigCache._Entry()
+        self._root = self._Entry()
 
     def __str__(self):
-        return '{\n%s}' % self._root._str()
+        def _str(p):
+            if p.result is not None:
+                s.append('\t[%s]: %r,\n' % (', '.join(repr(cs) for cs in config), p.result))
+            for cs, e in sorted(p.tail.items()):
+                config.append(cs)
+                _str(e)
+                config.pop()
+
+        config, s = [], []
+        s.append('{\n')
+        _str(self._root)
+        s.append('}')
+        return ''.join(s)
 
 
 class ContentCache(OutcomeCache):

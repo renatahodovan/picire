@@ -40,6 +40,10 @@ class ZellerSplit(object):
             start = stop
         return next_subsets
 
+    def __str__(self):
+        cls = self.__class__
+        return '%s.%s(n=%s)' % (cls.__module__, cls.__name__, self._n)
+
 
 class BalancedSplit(object):
     """
@@ -67,6 +71,10 @@ class BalancedSplit(object):
         n = min(length, len(subsets) * self._n)
 
         return [config[length * i // n:length * (i + 1) // n] for i in range(n)]
+
+    def __str__(self):
+        cls = self.__class__
+        return '%s.%s(n=%s)' % (cls.__module__, cls.__name__, self._n)
 
 
 # Aliases for split classes to help their identification in CLI.

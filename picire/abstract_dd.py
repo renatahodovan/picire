@@ -50,18 +50,21 @@ class AbstractDD(object):
         for run in itertools.count():
             logger.info('Run #%d', run)
             logger.info('\tConfig size: %d', len(config))
-            logger.debug('\tConfig: %r', config)
             assert self._test_config(config, ('r%d' % run, 'assert')) == self.FAIL
 
             # Minimization ends if the configuration is already reduced to a single unit.
             if len(config) < 2:
+                logger.info('\tGranularity: %d', len(subsets))
+                logger.debug('\tConfig: %r', subsets)
                 logger.info('\tDone')
                 return config
 
             if len(subsets) < 2:
                 assert len(subsets) == 1
                 subsets = self._split(subsets)
+
             logger.info('\tGranularity: %d', len(subsets))
+            logger.debug('\tConfig: %r', subsets)
 
             next_subsets, complement_offset = self._reduce_config(run, subsets, complement_offset)
 

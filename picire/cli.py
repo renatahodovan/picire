@@ -11,7 +11,7 @@ import multiprocessing
 import os
 import time
 
-from os.path import abspath, basename, exists, join, relpath
+from os.path import basename, exists, join, realpath
 from shutil import rmtree
 
 import chardet
@@ -95,7 +95,7 @@ def create_parser():
 def process_args(parser, args):
     args.log_level = logging.levels[args.log_level]
 
-    args.input = abspath(relpath(args.input))
+    args.input = realpath(args.input)
     if not exists(args.input):
         parser.error('Test case does not exist: %s' % args.input)
 
@@ -113,7 +113,7 @@ def process_args(parser, args):
             parser.error('The encoding of the test case is not recognized. '
                          'Please define it with the --encoding command line option.')
 
-    args.test = abspath(relpath(args.test))
+    args.test = realpath(args.test)
     if not exists(args.test) or not os.access(args.test, os.X_OK):
         parser.error('Tester program does not exist or isn\'t executable: %s' % args.test)
 
@@ -154,7 +154,7 @@ def process_args(parser, args):
             args.reduce_config['complement_iterator'] = complement_iterator
             args.reduce_config['subset_first'] = args.subset_first
 
-    args.out = abspath(relpath(args.out if args.out else '%s.%s' % (args.input, time.strftime('%Y%m%d_%H%M%S'))))
+    args.out = realpath(args.out if args.out else '%s.%s' % (args.input, time.strftime('%Y%m%d_%H%M%S')))
 
 
 def call(reduce_class, reduce_config,

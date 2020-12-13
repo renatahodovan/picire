@@ -2,6 +2,31 @@
 *Picire* Release Notes
 ======================
 
+20.12
+=====
+
+Summary of changes:
+
+* Generalized ddmin algorithm to use split factor whenever configuration (test
+  case) needs to be split or re-split.
+* Changed the API of AbstractDD.ddmin by removing the split ratio argument (n).
+* Changed config splitters from functions to classes.
+* Extended API with OutcomeCache.set_test_builder.
+* Changed the behavior of --cleanup CLI option to remove temporary files right
+  after each test case execution (not only after the end of the reduction
+  session).
+* Improved log output.
+* Bumped minimum Python requirement to 3.5.
+* Adapted versioning to use setuptools_scm (included distance from latest
+  release into non-released version strings).
+* Added classification metadata to project.
+* Improved documentation.
+* Improved the testing infrastructure (linting, faster test suite, testing
+  Python 3.8, testing macOS, migrated testing from Travis CI to GitHub Actions).
+* Various internal refactorings and performance improvements.
+* Minor bug fixes.
+
+
 19.3
 ====
 

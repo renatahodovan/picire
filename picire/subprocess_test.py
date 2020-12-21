@@ -7,9 +7,7 @@
 
 import codecs
 import os
-import shlex
 import shutil
-import sys
 
 from subprocess import Popen
 
@@ -23,8 +21,9 @@ class SubprocessTest(object):
         Wrapper around the script provided by the user. It decides about the
         interestingness based on the return code of executed script.
 
-        :param command_pattern: The command as the tester script should be ran.
-            Except that the path of the test is substituted with %s.
+        :param command_pattern: The tester command as a sequence of arguments.
+            If an element of the sequence contains %s, it is substituted with
+            the path to the test case.
         :param test_builder: Callable object that creates test case from a
             configuration.
         :param test_pattern: The patter of the test's path. It contains one %s
@@ -60,9 +59,14 @@ class SubprocessTest(object):
         with codecs.open(test_path, 'w', encoding=self.encoding, errors='ignore') as f:
             f.write(self.test_builder(config))
 
-        proc = Popen(shlex.split(self.command_pattern % test_path,
-                                 posix=not sys.platform.startswith('win32')),
-                     cwd=test_dir)
+        args = []
+        for arg in self.command_pattern:
+            try:
+                arg = arg % test_path
+            except TypeError:
+                pass
+            args.append(arg)
+        proc = Popen(args, cwd=test_dir)
         proc.wait()
 
         if self.cleanup:

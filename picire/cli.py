@@ -108,10 +108,7 @@ def process_args(parser, args):
         except LookupError:
             parser.error('The given encoding (%s) is not known.' % args.encoding)
     else:
-        args.encoding = chardet.detect(args.src)['encoding']
-        if not args.encoding:
-            parser.error('The encoding of the test case is not recognized. '
-                         'Please define it with the --encoding command line option.')
+        args.encoding = chardet.detect(args.src)['encoding'] or 'latin-1'
 
     args.test = realpath(args.test)
     if not exists(args.test) or not os.access(args.test, os.X_OK):

@@ -156,14 +156,38 @@ Compatibility
 Acknowledgement and Citations
 =============================
 
-This software uses the delta debugging algorithm as described in (A. Zeller:
-"Yesterday, my program worked", ESEC/FSE 1999) and (R. Hildebrandt, A. Zeller:
-"Simplifying failure-inducing input", ISSTA 2000).
+This software uses the delta debugging algorithm as described in:
 
-Further improvements are described in (R. Hodovan, A. Kiss: "Practical
-Improvements to the Minimizing Delta Debugging Algorithm", ICSOFT-EA 2016)
-and (R. Hodovan, A. Kiss, T. Gyimothy: "Tree Preprocessing and Test Outcome
-Caching for Efficient Hierarchical Delta Debugging", AST 2017).
+* Andreas Zeller. Yesterday, My Program Worked. Today, It Does Not. Why?
+  In Proceedings of the 7th European Software Engineering Conference Held
+  Jointly with the 7th ACM SIGSOFT Symposium on the Foundations of Software
+  Engineering (ESEC/FSE '99), volume 1687 of Lecture Notes in Computer Science
+  (LNCS), pages 253-267, Toulouse, France, September 1999. Springer.
+  https://doi.org/10.1007/3-540-48166-4_16
+* Ralf Hildebrandt and Andreas Zeller. Simplifying Failure-Inducing Input.
+  In Proceedings of the 2000 ACM SIGSOFT International Symposium on Software
+  Testing and Analysis (ISSTA '00), pages 135-145, Portland, Oregon, USA, August
+  2000. ACM.
+  https://doi.org/10.1145/347324.348938
+
+Further improvements are described in:
+
+* Renata Hodovan and Akos Kiss. Practical Improvements to the Minimizing Delta
+  Debugging Algorithm.
+  In Proceedings of the 11th International Joint Conference on Software
+  Technologies (ICSOFT 2016) - Volume 1: ICSOFT-EA, pages 241-248, Lisbon,
+  Portugal, July 2016. SciTePress.
+  https://doi.org/10.5220/0005988602410248
+* Renata Hodovan, Akos Kiss, and Tibor Gyimothy. Tree Preprocessing and Test
+  Outcome Caching for Efficient Hierarchical Delta Debugging.
+  In Proceedings of the 12th IEEE/ACM International Workshop on Automation of
+  Software Testing (AST 2017), pages 23-29, Buenos Aires, Argentina, May 2017.
+  IEEE.
+  https://doi.org/10.1109/AST.2017.4
+* Akos Kiss. Generalizing the Split Factor of the Minimizing Delta Debugging
+  Algorithm.
+  IEEE Access, 8:219837-219846, December 2020. IEEE.
+  https://doi.org/10.1109/ACCESS.2020.3043027
 
 
 Copyright and Licensing

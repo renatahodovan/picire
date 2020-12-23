@@ -87,7 +87,7 @@ class TestApi:
                     split=split(n=granularity),
                     cache=cache(),
                     **it_kwargs)
-        output = [config[x] for x in dd_obj.ddmin(list(range(len(config))))]
+        output = [config[x] for x in dd_obj(list(range(len(config))))]
 
         assert output == expect
 

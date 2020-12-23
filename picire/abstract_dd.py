@@ -37,7 +37,7 @@ class AbstractDD(object):
         self._cache = cache or OutcomeCache()
         self._id_prefix = id_prefix
 
-    def ddmin(self, config):
+    def __call__(self, config):
         """
         Return a 1-minimal failing subset of the initial configuration.
 

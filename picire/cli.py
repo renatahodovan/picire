@@ -247,7 +247,7 @@ def call(reduce_class, reduce_config,
                                    **tester_config),
                       cache=cache,
                       **reduce_config)
-    min_set = dd.ddmin(list(range(len(content))))
+    min_set = dd(list(range(len(content))))
 
     logger.trace('The cached results are: %s', cache)
     logger.debug('A minimal config is: %r', min_set)

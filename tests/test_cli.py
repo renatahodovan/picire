@@ -1,4 +1,4 @@
-# Copyright (c) 2016-2020 Renata Hodovan, Akos Kiss.
+# Copyright (c) 2016-2021 Renata Hodovan, Akos Kiss.
 #
 # Licensed under the BSD 3-Clause License
 # <LICENSE.rst or https://opensource.org/licenses/BSD-3-Clause>.
@@ -24,6 +24,7 @@ resources_dir = os.path.join(tests_dir, 'resources')
     ('test-sumprod10-sum', 'inp-sumprod10.py', 'exp-sumprod10-sum.py', ('--atom=line', )),
     ('test-sumprod10-prod', 'inp-sumprod10.py', 'exp-sumprod10-prod.py', ('--atom=line', )),
     ('test-json-invalid-escape', 'inp-invalid-escape.json', 'exp-invalid-escape.json', ('--atom=char', )),
+    ('test-json-invalid-escape', 'inp-invalid-escape.json', 'exp-invalid-escape.json', ('--atom=both', )),
 ])
 class TestCli:
 

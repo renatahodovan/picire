@@ -1,4 +1,4 @@
-# Copyright (c) 2016-2020 Renata Hodovan, Akos Kiss.
+# Copyright (c) 2016-2021 Renata Hodovan, Akos Kiss.
 #
 # Licensed under the BSD 3-Clause License
 # <LICENSE.rst or https://opensource.org/licenses/BSD-3-Clause>.
@@ -222,51 +222,45 @@ def call(reduce_class, reduce_config,
     del args['src']
     log_args('Reduce session starts for %s' % input, args)
 
-    tests_dir = join(out, 'tests')
-    # Split source to the chosen atoms.
-    if atom in ['line', 'both']:
-        content = src.decode(encoding).splitlines(True)
-        tests_dir = join(tests_dir, 'line')
-    elif atom == 'char':
-        content = src.decode(encoding)
-        tests_dir = join(tests_dir, 'char')
+    content = src.decode(encoding)
+    cache = cache_class() if cache_class else None
 
-    if not os.path.isdir(tests_dir):
-        os.makedirs(tests_dir)
-    logger.info('Initial test contains %d %ss', len(content), atom if atom != 'both' else 'line')
+    for current_atom in ['line', 'char']:
+        if atom not in [current_atom, 'both']:
+            continue
 
-    test_builder = ConcatTestBuilder(content)
-    if cache_class:
-        cache = cache_class()
-        cache.set_test_builder(test_builder)
-    else:
-        cache = None
+        # Split source to the chosen atoms.
+        if atom == 'line':
+            content = content.splitlines(True)
+        logger.info('Initial test contains %d %ss', len(content), current_atom)
 
-    dd = reduce_class(tester_class(test_builder=test_builder,
-                                   test_pattern=join(tests_dir, '%s', basename(input)),
-                                   **tester_config),
-                      cache=cache,
-                      **reduce_config)
-    min_set = dd(list(range(len(content))))
+        tests_dir = join(out, 'tests', current_atom)
+        if not os.path.isdir(tests_dir):
+            os.makedirs(tests_dir)
 
-    logger.trace('The cached results are: %s', cache)
-    logger.debug('A minimal config is: %r', min_set)
+        test_builder = ConcatTestBuilder(content)
+        if cache:
+            cache.clear()
+            cache.set_test_builder(test_builder)
+
+        dd = reduce_class(tester_class(test_builder=test_builder,
+                                       test_pattern=join(tests_dir, '%s', basename(input)),
+                                       **tester_config),
+                          cache=cache,
+                          **reduce_config)
+        min_set = dd(list(range(len(content))))
+        content = test_builder(min_set)
+
+        logger.trace('The cached results are: %s', cache)
+        logger.debug('A minimal config is: %r', min_set)
 
     out_file = join(out, basename(input))
-    out_src = test_builder(min_set)
     with codecs.open(out_file, 'w', encoding=encoding, errors='ignore') as f:
-        f.write(out_src)
+        f.write(content)
     logger.info('Result is saved to %s.', out_file)
 
     if cleanup:
         rmtree(tests_dir)
-
-    if atom == 'both':
-        out_file = call(reduce_class=reduce_class, reduce_config=reduce_config,
-                        tester_class=tester_class, tester_config=tester_config,
-                        input=out_file, src=out_src.encode(encoding=encoding), encoding=encoding, out=out,
-                        atom='char',
-                        cache_class=cache_class, cleanup=cleanup)
 
     return out_file
 

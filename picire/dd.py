@@ -1,4 +1,4 @@
-# Copyright (c) 2016-2020 Renata Hodovan, Akos Kiss.
+# Copyright (c) 2016-2021 Renata Hodovan, Akos Kiss.
 #
 # Licensed under the BSD 3-Clause License
 # <LICENSE.rst or https://opensource.org/licenses/BSD-3-Clause>.
@@ -15,7 +15,7 @@ from .outcome_cache import ConfigCache
 logger = logging.getLogger(__name__)
 
 
-class LightDD(AbstractDD):
+class DD(AbstractDD):
     """
     Single process version of the Delta Debugging algorithm.
     """
@@ -23,7 +23,7 @@ class LightDD(AbstractDD):
     def __init__(self, test, cache=None, id_prefix=(), split=config_splitters.zeller,
                  subset_first=True, subset_iterator=config_iterators.forward, complement_iterator=config_iterators.forward):
         """
-        Initialize a LightDD object.
+        Initialize a DD object.
 
         :param test: A callable tester object.
         :param cache: Cache object to use.

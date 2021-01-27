@@ -21,7 +21,7 @@ from . import config_iterators, config_splitters, outcome_cache
 from . import logging
 from .combined_iterator import CombinedIterator
 from .combined_parallel_dd import CombinedParallelDD
-from .light_dd import LightDD
+from .dd import DD
 from .parallel_dd import ParallelDD
 from .shared_cache import shared_cache_decorator
 from .subprocess_test import ConcatTestBuilder, SubprocessTest
@@ -132,7 +132,7 @@ def process_args(parser, args):
     # Choose the reducer class that will be used and its configuration.
     args.reduce_config = {'split': split_class(n=args.granularity)}
     if not args.parallel:
-        args.reduce_class = LightDD
+        args.reduce_class = DD
         args.reduce_config['subset_iterator'] = subset_iterator
         args.reduce_config['complement_iterator'] = complement_iterator
         args.reduce_config['subset_first'] = args.subset_first

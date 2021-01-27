@@ -1,4 +1,4 @@
-# Copyright (c) 2016-2020 Renata Hodovan, Akos Kiss.
+# Copyright (c) 2016-2021 Renata Hodovan, Akos Kiss.
 #
 # Licensed under the BSD 3-Clause License
 # <LICENSE.rst or https://opensource.org/licenses/BSD-3-Clause>.
@@ -77,7 +77,7 @@ class TestApi:
                 'config_iterator': picire.CombinedIterator(subset_first, subset_iterator, complement_iterator)
             }
 
-        if dd != picire.LightDD:
+        if dd != picire.DD:
             cache = picire.shared_cache_decorator(cache)
 
         logging.basicConfig(format='%(message)s')
@@ -99,8 +99,8 @@ class TestApi:
         (picire.config_splitters.balanced, True, picire.config_iterators.skip, picire.config_iterators.forward, picire.OutcomeCache),
         (picire.config_splitters.zeller, True, picire.config_iterators.skip, picire.config_iterators.backward, picire.ConfigCache),
     ])
-    def test_light(self, interesting, config, expect, granularity, split, subset_first, subset_iterator, complement_iterator, cache):
-        self._run_picire(interesting, config, expect, granularity, picire.LightDD, split, subset_first, subset_iterator, complement_iterator, cache)
+    def test_dd(self, interesting, config, expect, granularity, split, subset_first, subset_iterator, complement_iterator, cache):
+        self._run_picire(interesting, config, expect, granularity, picire.DD, split, subset_first, subset_iterator, complement_iterator, cache)
 
     @pytest.mark.parametrize('split, subset_first, subset_iterator, complement_iterator, cache', [
         (picire.config_splitters.zeller, False, picire.config_iterators.forward, picire.config_iterators.forward, picire.ConfigCache),

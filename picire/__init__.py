@@ -1,4 +1,4 @@
-# Copyright (c) 2016-2020 Renata Hodovan, Akos Kiss.
+# Copyright (c) 2016-2021 Renata Hodovan, Akos Kiss.
 #
 # Licensed under the BSD 3-Clause License
 # <LICENSE.rst or https://opensource.org/licenses/BSD-3-Clause>.
@@ -14,7 +14,7 @@ from .abstract_parallel_dd import AbstractParallelDD
 from .cli import __version__, call
 from .combined_iterator import CombinedIterator
 from .combined_parallel_dd import CombinedParallelDD
-from .light_dd import LightDD
+from .dd import DD
 from .outcome_cache import ConfigCache, ContentCache, OutcomeCache
 from .parallel_dd import ParallelDD
 from .shared_cache import shared_cache_decorator

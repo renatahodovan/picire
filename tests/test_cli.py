@@ -47,7 +47,7 @@ class TestCli:
         ('--split=balanced', '--subset-iterator=skip', '--complement-iterator=forward', '--cache=config'),
         ('--split=zeller', '--subset-iterator=skip', '--complement-iterator=backward', '--cache=content'),
     ])
-    def test_light(self, test, inp, exp, tmpdir, args_atom, args):
+    def test_dd(self, test, inp, exp, tmpdir, args_atom, args):
         self._run_picire(test, inp, exp, tmpdir, args_atom + args)
 
     @pytest.mark.parametrize('args', [

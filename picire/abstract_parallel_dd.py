@@ -1,4 +1,4 @@
-# Copyright (c) 2016-2019 Renata Hodovan, Akos Kiss.
+# Copyright (c) 2016-2021 Renata Hodovan, Akos Kiss.
 #
 # Licensed under the BSD 3-Clause License
 # <LICENSE.rst or https://opensource.org/licenses/BSD-3-Clause>.
@@ -33,7 +33,7 @@ class AbstractParallelDD(AbstractDD):
         :param id_prefix: Tuple to prepend to config IDs during tests.
         """
         cache = cache or shared_cache_decorator(ConfigCache)()
-        AbstractDD.__init__(self, test, split, cache=cache, id_prefix=id_prefix)
+        AbstractDD.__init__(self, test=test, split=split, cache=cache, id_prefix=id_prefix)
 
         self._proc_num = proc_num
         self._max_utilization = max_utilization

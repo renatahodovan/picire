@@ -37,7 +37,7 @@ class DD(AbstractDD):
             provides config indices in an arbitrary order.
         """
         cache = cache or ConfigCache()
-        AbstractDD.__init__(self, test, split, cache=cache, id_prefix=id_prefix)
+        AbstractDD.__init__(self, test=test, split=split, cache=cache, id_prefix=id_prefix)
 
         self._subset_iterator = subset_iterator
         self._complement_iterator = complement_iterator

@@ -1,4 +1,4 @@
-# Copyright (c) 2016-2020 Renata Hodovan, Akos Kiss.
+# Copyright (c) 2016-2021 Renata Hodovan, Akos Kiss.
 #
 # Licensed under the BSD 3-Clause License
 # <LICENSE.rst or https://opensource.org/licenses/BSD-3-Clause>.
@@ -37,7 +37,7 @@ class ParallelDD(AbstractParallelDD):
         :param complement_iterator: Reference to a generator function that
             provides config indices in an arbitrary order.
         """
-        AbstractParallelDD.__init__(self, test, split, proc_num, max_utilization, cache=cache, id_prefix=id_prefix)
+        AbstractParallelDD.__init__(self, test=test, split=split, proc_num=proc_num, max_utilization=max_utilization, cache=cache, id_prefix=id_prefix)
 
         self._subset_iterator = subset_iterator
         self._complement_iterator = complement_iterator

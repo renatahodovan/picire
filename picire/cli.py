@@ -15,10 +15,12 @@ from os.path import basename, exists, join, realpath
 from shutil import rmtree
 
 import chardet
+import inators
 import pkg_resources
 
+from inators import log as logging
+
 from . import config_iterators, config_splitters, outcome_cache
-from . import logging
 from .combined_iterator import CombinedIterator
 from .combined_parallel_dd import CombinedParallelDD
 from .dd import DD
@@ -78,13 +80,7 @@ def create_parser():
                         help='ordering strategy for looping through complements (%(choices)s; default: %(default)s)')
 
     # Additional settings.
-    parser.add_argument('-l', '--log-level', metavar='LEVEL',
-                        choices=sorted(logging.levels.keys(), key=lambda k: logging.levels[k]), default='INFO',
-                        help='verbosity level of diagnostic messages (%(choices)s; default: %(default)s)')
-    parser.add_argument('-v', '--verbose', dest='log_level', action='store_const', const='DEBUG', default=argparse.SUPPRESS,
-                        help='verbose mode (alias for -l %(const)s)')
-    parser.add_argument('-q', '--quiet', dest='log_level', action='store_const', const='DISABLE', default=argparse.SUPPRESS,
-                        help='quiet mode (alias for -l %(const)s)')
+    inators.arg.add_log_level_argument(parser)
     parser.add_argument('-o', '--out', metavar='DIR',
                         help='working directory (default: input.timestamp)')
     parser.add_argument('--disable-cleanup', dest='cleanup', default=True, action='store_false',
@@ -93,8 +89,6 @@ def create_parser():
 
 
 def process_args(parser, args):
-    args.log_level = logging.levels[args.log_level]
-
     args.input = realpath(args.input)
     if not exists(args.input):
         parser.error('Test case does not exist: %s' % args.input)
@@ -274,13 +268,13 @@ def execute():
     # Implementation specific CLI options that are not needed to be part of the core parser.
     parser.add_argument('-a', '--atom', metavar='NAME', choices=['char', 'line', 'both'], default='line',
                         help='atom (i.e., granularity) of input (%(choices)s; default: %(default)s)')
-    parser.add_argument('--version', action='version', version='%(prog)s {version}'.format(version=__version__))
+    inators.arg.add_version_argument(parser, __version__)
 
     args = parser.parse_args()
     process_args(parser, args)
 
     logging.basicConfig(format='%(message)s')
-    logger.setLevel(args.log_level)
+    inators.arg.process_log_level_argument(args, logger)
 
     call(reduce_class=args.reduce_class,
          reduce_config=args.reduce_config,

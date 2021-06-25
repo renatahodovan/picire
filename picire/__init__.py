@@ -8,7 +8,6 @@
 from . import cli
 from . import config_iterators
 from . import config_splitters
-from . import logging
 from .abstract_dd import AbstractDD
 from .abstract_parallel_dd import AbstractParallelDD
 from .cli import __version__, call

@@ -2,6 +2,25 @@
 *Picire* Release Notes
 ======================
 
+21.7
+====
+
+Summary of changes:
+
+* Changed the API of algorithm classes and made them callable.
+* Renamed LightDD algorithm class to DD.
+* Changed the API of SubprocessTest to accept a sequence for command_pattern
+  instead of a string.
+* Added latin-1 as the default for encoding if it cannot be auto-detected.
+* Made use of the *inators* package to unify CLI argument handling and logging.
+* Moved to pyproject.toml & setup.cfg-based packaging.
+* Improved logging.
+* Various internal refactorings.
+* Improved the testing infrastructure (testing Python 3.9, fixed Coveralls
+  upload).
+* Improved documentation.
+
+
 20.12
 =====
 

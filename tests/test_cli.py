@@ -6,6 +6,7 @@
 # according to those terms.
 
 import os
+import platform
 import pytest
 import subprocess
 import sys
@@ -14,16 +15,21 @@ import sys
 is_windows = sys.platform.startswith('win32')
 script_ext = '.bat' if is_windows else '.sh'
 
+is_cpython = platform.python_implementation() == 'CPython'
+
 tests_dir = os.path.dirname(os.path.abspath(__file__))
 resources_dir = os.path.join(tests_dir, 'resources')
 
 
 @pytest.mark.parametrize('test, inp, exp, args_atom', [
-    ('test-json-extra-comma', 'inp-extra-comma.json', 'exp-extra-comma.json', ('--atom=line', )),
+    pytest.param('test-json-extra-comma', 'inp-extra-comma.json', 'exp-extra-comma.json', ('--atom=line', ),
+                 marks=pytest.mark.skipif(not is_cpython, reason='json error messages are implementation-specific')),
     ('test-sumprod10-sum', 'inp-sumprod10.py', 'exp-sumprod10-sum.py', ('--atom=line', )),
     ('test-sumprod10-prod', 'inp-sumprod10.py', 'exp-sumprod10-prod.py', ('--atom=line', )),
-    ('test-json-invalid-escape', 'inp-invalid-escape.json', 'exp-invalid-escape.json', ('--atom=char', )),
-    ('test-json-invalid-escape', 'inp-invalid-escape.json', 'exp-invalid-escape.json', ('--atom=both', )),
+    pytest.param('test-json-invalid-escape', 'inp-invalid-escape.json', 'exp-invalid-escape.json', ('--atom=char', ),
+                 marks=pytest.mark.skipif(not is_cpython, reason='json error messages are implementation-specific')),
+    pytest.param('test-json-invalid-escape', 'inp-invalid-escape.json', 'exp-invalid-escape.json', ('--atom=both', ),
+                 marks=pytest.mark.skipif(not is_cpython, reason='json error messages are implementation-specific')),
 ])
 class TestCli:
 

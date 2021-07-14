@@ -219,12 +219,9 @@ def call(reduce_class, reduce_config,
     content = src.decode(encoding)
     cache = cache_class() if cache_class else None
 
-    for current_atom in ['line', 'char']:
-        if atom not in [current_atom, 'both']:
-            continue
-
+    for current_atom in ['line', 'char'] if atom == 'both' else [atom]:
         # Split source to the chosen atoms.
-        if atom == 'line':
+        if current_atom == 'line':
             content = content.splitlines(True)
         logger.info('Initial test contains %d %ss', len(content), current_atom)
 
@@ -248,13 +245,13 @@ def call(reduce_class, reduce_config,
         logger.trace('The cached results are: %s', cache)
         logger.debug('A minimal config is: %r', min_set)
 
+        if cleanup:
+            rmtree(tests_dir)
+
     out_file = join(out, basename(input))
     with codecs.open(out_file, 'w', encoding=encoding, errors='ignore') as f:
         f.write(content)
     logger.info('Result is saved to %s.', out_file)
-
-    if cleanup:
-        rmtree(tests_dir)
 
     return out_file
 

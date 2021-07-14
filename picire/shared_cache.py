@@ -1,4 +1,4 @@
-# Copyright (c) 2016-2019 Renata Hodovan, Akos Kiss.
+# Copyright (c) 2016-2021 Renata Hodovan, Akos Kiss.
 #
 # Licensed under the BSD 3-Clause License
 # <LICENSE.rst or https://opensource.org/licenses/BSD-3-Clause>.
@@ -10,31 +10,37 @@ import inspect
 from multiprocessing import Lock
 from multiprocessing.managers import BaseManager
 
-shared_cache_class_store = dict()
+from .outcome_cache import OutcomeCache
 
 
-class SharedDataManager(BaseManager):
+class SharedCacheManager(BaseManager):
     """
-    Data manager to share the cache object between parallel processes.
-    """
-    pass
-
-
-class SharedCacheTrampoline(object):
-    """
-    Thread-safe wrapper for SharedCache methods.
+    Manager to share the cache object between parallel processes.
     """
 
-    def __init__(self, shared_cache, fn):
-        self._shared_cache = shared_cache
-        self._fn = fn
+    _managers = {}
+
+
+class SharedCacheConstructor(object):
+    """
+    Wrapper for cache classes to instantiate them as shared.
+    """
+
+    _exposed = []
+
+    @classmethod
+    def exposed(cls, fn):
+        cls._exposed.append(fn.__name__)
+        return fn
+
+    def __init__(self, cache_class):
+        self._cache_class = cache_class
 
     def __call__(self, *args, **kwargs):
-        with self._shared_cache._lock:
-            return getattr(self._shared_cache._cache, self._fn)(*args, **kwargs)
+        return SharedCache(self._cache_class(*args, **kwargs))
 
 
-class SharedCache(object):
+class SharedCache(OutcomeCache):
     """
     Thread-safe cache representation that stores the evaluated configurations
     and their outcome.
@@ -44,34 +50,43 @@ class SharedCache(object):
         self._cache = cache
         self._lock = Lock()
 
-        for fn, _ in inspect.getmembers(cache.__class__, lambda m: (inspect.isfunction(m) or inspect.ismethod(m)) and m.__name__ != '__init__'):
-            setattr(self, fn, SharedCacheTrampoline(self, fn))
+    @SharedCacheConstructor.exposed
+    def set_test_builder(self, test_builder):
+        with self._lock:
+            self._cache.set_test_builder(test_builder)
 
+    @SharedCacheConstructor.exposed
+    def add(self, config, result):
+        with self._lock:
+            self._cache.add(config, result)
 
-class SharedCacheConstructor(object):
-    """
-    Wrapper for cache classes to instantiate them as shared.
-    """
+    @SharedCacheConstructor.exposed
+    def lookup(self, config):
+        with self._lock:
+            return self._cache.lookup(config)
 
-    def __init__(self, cache_class):
-        self._cache_class = cache_class
+    @SharedCacheConstructor.exposed
+    def clear(self):
+        with self._lock:
+            self._cache.clear()
 
-    def __call__(self, *args, **kwargs):
-        return SharedCache(self._cache_class(*args, **kwargs))
+    @SharedCacheConstructor.exposed
+    def __str__(self):
+        with self._lock:
+            return self._cache.__str__()
 
 
 def shared_cache_decorator(cache_class):
-    if cache_class not in shared_cache_class_store:
-        SharedDataManager.register(cache_class.__name__, SharedCacheConstructor(cache_class), None,
-                                   [fn for fn, _ in inspect.getmembers(cache_class, lambda m: (inspect.isfunction(m) or inspect.ismethod(m)) and m.__name__ != '__init__')])
+    name = cache_class.__name__
+
+    if not hasattr(SharedCacheManager, name):
+        SharedCacheManager.register(name, SharedCacheConstructor(cache_class), None, SharedCacheConstructor._exposed)
         try:
-            getattr(SharedDataManager, cache_class.__name__).__signature__ = inspect.signature(cache_class)
+            getattr(SharedCacheManager, name).__signature__ = inspect.signature(cache_class)
         except AttributeError:
             pass  # no signatures in Python < 3.3
 
-        data_manager = SharedDataManager()
-        data_manager.start()
+        SharedCacheManager._managers[name] = SharedCacheManager()
+        SharedCacheManager._managers[name].start()
 
-        shared_cache_class_store[cache_class] = getattr(data_manager, cache_class.__name__)
-
-    return shared_cache_class_store[cache_class]
+    return getattr(SharedCacheManager._managers[name], name)

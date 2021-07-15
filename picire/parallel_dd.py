@@ -93,6 +93,7 @@ class ParallelDD(AbstractParallelDD):
                 continue
             if outcome == self.FAIL:
                 self._fail_index.value = i
+                ploop.brk()
                 break
 
             if not ploop.do(self._loop_body, (subset, i, config_id)):
@@ -134,6 +135,7 @@ class ParallelDD(AbstractParallelDD):
                 continue
             if outcome == self.FAIL:
                 self._fail_index.value = i
+                ploop.brk()
                 break
 
             if not ploop.do(self._loop_body, (complement, i, config_id)):

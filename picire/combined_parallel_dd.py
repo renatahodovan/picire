@@ -70,6 +70,7 @@ class CombinedParallelDD(AbstractParallelDD):
                 continue
             if outcome == self.FAIL:
                 self._fail_index.value = i
+                ploop.brk()
                 break
 
             # Break if we found a FAIL either in the cache or be testing it now.

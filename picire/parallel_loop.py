@@ -1,4 +1,4 @@
-# Copyright (c) 2016-2019 Renata Hodovan, Akos Kiss.
+# Copyright (c) 2016-2021 Renata Hodovan, Akos Kiss.
 #
 # Licensed under the BSD 3-Clause License
 # <LICENSE.rst or https://opensource.org/licenses/BSD-3-Clause>.
@@ -131,7 +131,6 @@ class Loop(object):
         """
         if self._break.value:
             logger.debug('do() called on a broken loop')
-            self._abort()
             return False
 
         i = None
@@ -145,7 +144,6 @@ class Loop(object):
                 self._lock.wait(self._timeout)
 
         if self._break.value:
-            self._abort()
             return False
 
         proc = multiprocessing.Process(target=loop_body, args=(self._break, self._slots, self._lock, i, target, args))
@@ -153,6 +151,12 @@ class Loop(object):
         self._slots[i], self._procs[i] = 1, proc
 
         return True
+
+    def brk(self):
+        """
+        Break the parallel loop.
+        """
+        self._break.value = 1
 
     def join(self):
         """

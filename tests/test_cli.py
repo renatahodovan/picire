@@ -5,7 +5,6 @@
 # This file may not be copied, modified, or distributed except
 # according to those terms.
 
-import filecmp
 import os
 import pytest
 import subprocess
@@ -37,7 +36,12 @@ class TestCli:
         proc = subprocess.Popen(cmd, cwd=resources_dir)
         proc.communicate()
         assert proc.returncode == 0
-        assert filecmp.cmp(os.path.join(out_dir, inp), os.path.join(resources_dir, exp))
+
+        with open(os.path.join(out_dir, inp), 'rb') as outf:
+            outb = outf.read()
+        with open(os.path.join(resources_dir, exp), 'rb') as expf:
+            expb = expf.read()
+        assert outb == expb
 
     @pytest.mark.parametrize('args', [
         ('--split=balanced', '--subset-iterator=forward', '--complement-iterator=forward', '--cache=none'),

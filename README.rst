@@ -39,23 +39,35 @@ Requirements
 ============
 
 * Python_ ~= 2.7 or >= 3.5
-* pip_
 
 .. _Python: https://www.python.org
-.. _pip: https://pip.pypa.io
 
 
 Install
 =======
 
-The quick way (to install the latest official release)::
+To use *Picire* in another project, it can be added to ``setup.cfg`` as an
+install requirement (if using setuptools_ with declarative config):
+
+.. code-block:: ini
+
+    [options]
+    install_requires =
+        picire
+
+To install *Picire* manually, e.g., into a virtual environment, use pip_::
 
     pip install picire
 
-Or clone the project and perform a local install (to install the freshest
-development revision)::
+The above approaches install the latest release of *Picire* from PyPI_.
+Alternatively, for the development version, clone the project and perform a
+local install::
 
     pip install .
+
+.. _setuptools: https://github.com/pypa/setuptools
+.. _pip: https://pip.pypa.io
+.. _PyPI: https://pypi.org/
 
 
 Usage
@@ -147,8 +159,8 @@ Compatibility
 
 *Picire* was tested on:
 
-* Linux (Ubuntu 14.04 / 16.04 / 18.04)
-* Mac OS X (El Capitan 10.11 / Sierra 10.12 / High Sierra 10.13 / Mojave 10.14 / Catalina 10.15)
+* Linux (Ubuntu 14.04 / 16.04 / 18.04 / 20.04)
+* OS X / macOS (10.11 / 10.12 / 10.13 / 10.14 / 10.15 / 11)
 * Windows (Server 2012 R2 / Server version 1809 / Windows 10)
 
 

@@ -99,14 +99,15 @@ class Loop(object):
                     children = root_proc.children(recursive=True) + [root_proc]
                     for child_proc in children:
                         try:
-                            # Would be easier to use proc.terminate() here but psutils
-                            # (up to version 5.4.0) on Windows terminates processes with
-                            # the 0 signal/code, making the outcome of the terminated
-                            # process indistinguishable from a successful execution.
-                            os.kill(child_proc.pid, signal.SIGTERM)
-                        except OSError:
+                            child_proc.terminate()
+                        except psutil.Error:
                             pass
-                    psutil.wait_procs(children, timeout=1)
+                    _, alive = psutil.wait_procs(children, timeout=1)
+                    for proc in alive:
+                        try:
+                            proc.kill()
+                        except psutil.Error:
+                            pass
             self._slots[i], self._procs[i] = 0, None
 
     def _cleanup_slots(self):

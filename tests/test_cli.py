@@ -34,7 +34,7 @@ resources_dir = os.path.join(tests_dir, 'resources')
 class TestCli:
 
     def _run_picire(self, test, inp, exp, tmpdir, args):
-        out_dir = '%s' % tmpdir
+        out_dir = str(tmpdir)
         cmd = (sys.executable, '-m', 'picire') \
               + ('--test=' + test + script_ext, '--input=' + inp, '--out=' + out_dir) \
               + ('--log-level=TRACE', ) \

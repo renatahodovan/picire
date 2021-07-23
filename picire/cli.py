@@ -226,8 +226,7 @@ def call(reduce_class, reduce_config,
         logger.info('Initial test contains %d %ss', len(content), current_atom)
 
         tests_dir = join(out, 'tests', current_atom)
-        if not os.path.isdir(tests_dir):
-            os.makedirs(tests_dir)
+        os.makedirs(tests_dir, exist_ok=True)
 
         test_builder = ConcatTestBuilder(content)
         if cache:

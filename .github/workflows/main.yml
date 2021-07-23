@@ -6,7 +6,7 @@ jobs:
     strategy:
       matrix:
         os: [ubuntu-latest, macos-latest, windows-latest]
-        python-version: [2.7, 3.5, 3.6, 3.7, 3.8, 3.9, 'pypy-3.7']  # NOTE: pypy-2.7 doesn't work on Windows (psutil doesn't build)
+        python-version: [3.5, 3.6, 3.7, 3.8, 3.9, 'pypy-3.7']
     runs-on: ${{ matrix.os }}
     steps:
       - uses: actions/checkout@v2

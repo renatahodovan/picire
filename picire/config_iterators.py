@@ -1,4 +1,4 @@
-# Copyright (c) 2016-2019 Renata Hodovan, Akos Kiss.
+# Copyright (c) 2016-2021 Renata Hodovan, Akos Kiss.
 #
 # Licensed under the BSD 3-Clause License
 # <LICENSE.rst or https://opensource.org/licenses/BSD-3-Clause>.
@@ -15,8 +15,7 @@ def backward(n):
     :param n: Upper bound of the interval.
     :return: Decreasing numbers from n - 1 to 0.
     """
-    for i in range(n - 1, -1, -1):
-        yield i
+    yield from range(n - 1, -1, -1)
 
 
 def skip(n):
@@ -28,8 +27,7 @@ def skip(n):
         reasons.
     :return: None
     """
-    for i in ():
-        yield i
+    yield from ()
 
 
 def random(n):
@@ -43,5 +41,4 @@ def random(n):
 
     lst = list(range(n))
     shuffle(lst)
-    for i in lst:
-        yield i
+    yield from lst

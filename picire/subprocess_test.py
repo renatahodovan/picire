@@ -1,4 +1,4 @@
-# Copyright (c) 2016-2020 Renata Hodovan, Akos Kiss.
+# Copyright (c) 2016-2021 Renata Hodovan, Akos Kiss.
 #
 # Licensed under the BSD 3-Clause License
 # <LICENSE.rst or https://opensource.org/licenses/BSD-3-Clause>.
@@ -9,7 +9,7 @@ import codecs
 import os
 import shutil
 
-from subprocess import Popen
+from subprocess import run
 
 from .abstract_dd import AbstractDD
 
@@ -53,8 +53,7 @@ class SubprocessTest(object):
         test_path = self.test_pattern % '_'.join(str(i) for i in config_id)
         test_dir = os.path.dirname(test_path)
 
-        if not os.path.isdir(test_dir):
-            os.makedirs(test_dir)
+        os.makedirs(test_dir, exist_ok=True)
 
         with codecs.open(test_path, 'w', encoding=self.encoding, errors='ignore') as f:
             f.write(self.test_builder(config))
@@ -66,14 +65,13 @@ class SubprocessTest(object):
             except TypeError:
                 pass
             args.append(arg)
-        proc = Popen(args, cwd=test_dir)
-        proc.wait()
+        returncode = run(args, cwd=test_dir, check=False).returncode
 
         if self.cleanup:
             shutil.rmtree(test_dir)
 
         # Determine outcome.
-        return AbstractDD.FAIL if proc.returncode == 0 else AbstractDD.PASS
+        return AbstractDD.FAIL if returncode == 0 else AbstractDD.PASS
 
 
 class ConcatTestBuilder(object):

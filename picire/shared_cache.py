@@ -81,10 +81,7 @@ def shared_cache_decorator(cache_class):
 
     if not hasattr(SharedCacheManager, name):
         SharedCacheManager.register(name, SharedCacheConstructor(cache_class), None, SharedCacheConstructor._exposed)
-        try:
-            getattr(SharedCacheManager, name).__signature__ = inspect.signature(cache_class)
-        except AttributeError:
-            pass  # no signatures in Python < 3.3
+        getattr(SharedCacheManager, name).__signature__ = inspect.signature(cache_class)
 
         SharedCacheManager._managers[name] = SharedCacheManager()
         SharedCacheManager._managers[name].start()

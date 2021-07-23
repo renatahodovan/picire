@@ -39,9 +39,7 @@ class TestCli:
               + ('--test=' + test + script_ext, '--input=' + inp, '--out=' + out_dir) \
               + ('--log-level=TRACE', ) \
               + args
-        proc = subprocess.Popen(cmd, cwd=resources_dir)
-        proc.communicate()
-        assert proc.returncode == 0
+        subprocess.run(cmd, cwd=resources_dir, check=True)
 
         with open(os.path.join(out_dir, inp), 'rb') as outf:
             outb = outf.read()

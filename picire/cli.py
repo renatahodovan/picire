@@ -7,10 +7,10 @@
 
 import argparse
 import codecs
-import multiprocessing
 import os
 import time
 
+from multiprocessing import cpu_count
 from os.path import basename, exists, join, realpath
 from shutil import rmtree
 
@@ -64,7 +64,7 @@ def create_parser():
                         help='run DD in parallel')
     parser.add_argument('-c', '--combine-loops', action='store_true', default=False,
                         help='combine subset and complement check loops for more parallelization (has effect in parallel mode only)')
-    parser.add_argument('-j', '--jobs', metavar='N', type=int, default=multiprocessing.cpu_count(),
+    parser.add_argument('-j', '--jobs', metavar='N', type=int, default=cpu_count(),
                         help='maximum number of test commands to execute in parallel (has effect in parallel mode only; default: %(default)s)')
     parser.add_argument('-u', '--max-utilization', metavar='N', type=int, default=100,
                         help='maximum CPU utilization allowed; don\'t start new parallel jobs until utilization is higher (has effect in parallel mode only; default: %(default)s)')

@@ -6,10 +6,11 @@
 # according to those terms.
 
 import logging
-import multiprocessing
 import os
 import signal
 import sys
+
+from multiprocessing import Array, Condition, cpu_count, Process, Value
 
 import psutil
 
@@ -67,13 +68,13 @@ class Loop(object):
         :param max_utilization: The maximum CPU utilization. Above this no more
             new jobs will be started.
         """
-        self._j = j or multiprocessing.cpu_count()
+        self._j = j or cpu_count()
         self._max_utilization = max_utilization or 100
         # This gets initialized to 0, may be set to 1 anytime, but must not be reset to 0 ever;
         # thus, no locking is needed when accessing
-        self._break = multiprocessing.sharedctypes.Value('i', 0, lock=False)
-        self._lock = multiprocessing.Condition()
-        self._slots = multiprocessing.sharedctypes.Array('i', self._j, lock=False)
+        self._break = Value('i', 0, lock=False)
+        self._lock = Condition()
+        self._slots = Array('i', self._j, lock=False)
         self._procs = [None] * self._j
         psutil.cpu_percent(None)
 
@@ -147,7 +148,7 @@ class Loop(object):
         if self._break.value:
             return False
 
-        proc = multiprocessing.Process(target=loop_body, args=(self._break, self._slots, self._lock, i, target, args))
+        proc = Process(target=loop_body, args=(self._break, self._slots, self._lock, i, target, args))
         proc.start()
         self._slots[i], self._procs[i] = 1, proc
 

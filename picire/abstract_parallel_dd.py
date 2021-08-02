@@ -7,7 +7,7 @@
 
 import logging
 
-from multiprocessing.sharedctypes import Value
+from multiprocessing import Value
 
 from .abstract_dd import AbstractDD
 from .outcome import Outcome

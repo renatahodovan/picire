@@ -11,7 +11,7 @@ import shutil
 
 from subprocess import run
 
-from .abstract_dd import AbstractDD
+from .outcome import Outcome
 
 
 class SubprocessTest(object):
@@ -71,7 +71,7 @@ class SubprocessTest(object):
             shutil.rmtree(test_dir)
 
         # Determine outcome.
-        return AbstractDD.FAIL if returncode == 0 else AbstractDD.PASS
+        return Outcome.FAIL if returncode == 0 else Outcome.PASS
 
 
 class ConcatTestBuilder(object):

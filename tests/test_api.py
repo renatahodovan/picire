@@ -51,7 +51,7 @@ class CaseTest:
         self.interesting = interesting
 
     def __call__(self, config, config_id):
-        return picire.AbstractDD.FAIL if self.interesting([self.content[x] for x in config]) else picire.AbstractDD.PASS
+        return picire.Outcome.FAIL if self.interesting([self.content[x] for x in config]) else picire.Outcome.PASS
 
 
 @pytest.mark.parametrize('interesting, config, expect', [

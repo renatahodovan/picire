@@ -10,6 +10,7 @@ import logging
 from . import parallel_loop
 from .abstract_parallel_dd import AbstractParallelDD
 from .config_iterators import forward
+from .outcome import Outcome
 
 logger = logging.getLogger(__name__)
 
@@ -64,9 +65,9 @@ class CombinedParallelDD(AbstractParallelDD):
 
             # If we checked this test before, return its result
             outcome = self._lookup_cache(config_set, config_id)
-            if outcome == self.PASS:
+            if outcome is Outcome.PASS:
                 continue
-            if outcome == self.FAIL:
+            if outcome is Outcome.FAIL:
                 self._fail_index.value = i
                 ploop.brk()
                 break

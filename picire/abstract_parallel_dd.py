@@ -10,6 +10,7 @@ import logging
 from multiprocessing.sharedctypes import Value
 
 from .abstract_dd import AbstractDD
+from .outcome import Outcome
 from .outcome_cache import ConfigCache
 from .shared_cache import shared_cache_decorator
 
@@ -49,7 +50,7 @@ class AbstractParallelDD(AbstractDD):
         :param config_id: The unique ID of the current configuration.
         :return: True if the test is not interesting, False otherwise.
         """
-        if self._test_config(config, config_id) == self.FAIL:
+        if self._test_config(config, config_id) is Outcome.FAIL:
             self._fail_index.value = index
             return False
 

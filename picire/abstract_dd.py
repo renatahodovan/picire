@@ -9,6 +9,7 @@ import itertools
 import logging
 
 from .config_splitters import ZellerSplit
+from .outcome import Outcome
 from .outcome_cache import OutcomeCache
 
 logger = logging.getLogger(__name__)
@@ -18,10 +19,6 @@ class AbstractDD(object):
     """
     Abstract super-class of the parallel and non-parallel DD classes.
     """
-
-    # Test outcomes.
-    PASS = 'PASS'
-    FAIL = 'FAIL'
 
     def __init__(self, test, *, split=None, cache=None, id_prefix=None):
         """
@@ -51,7 +48,7 @@ class AbstractDD(object):
         for run in itertools.count():
             logger.info('Run #%d', run)
             logger.info('\tConfig size: %d', len(config))
-            assert self._test_config(config, ('r%d' % run, 'assert')) == self.FAIL
+            assert self._test_config(config, ('r%d' % run, 'assert')) is Outcome.FAIL
 
             # Minimization ends if the configuration is already reduced to a single unit.
             if len(config) < 2:
@@ -114,7 +111,7 @@ class AbstractDD(object):
         """
         cached_result = self._cache.lookup(config)
         if cached_result is not None:
-            logger.debug('\t[ %s ]: cache = %r', self._pretty_config_id(self._id_prefix + config_id), cached_result)
+            logger.debug('\t[ %s ]: cache = %r', self._pretty_config_id(self._id_prefix + config_id), cached_result.name)
 
         return cached_result
 
@@ -131,7 +128,7 @@ class AbstractDD(object):
 
         logger.debug('\t[ %s ]: test...', self._pretty_config_id(config_id))
         outcome = self._test(config, config_id)
-        logger.debug('\t[ %s ]: test = %r', self._pretty_config_id(config_id), outcome)
+        logger.debug('\t[ %s ]: test = %r', self._pretty_config_id(config_id), outcome.name)
 
         if 'assert' not in config_id:
             self._cache.add(config, outcome)

@@ -1,4 +1,4 @@
-# Copyright (c) 2016-2020 Renata Hodovan, Akos Kiss.
+# Copyright (c) 2016-2021 Renata Hodovan, Akos Kiss.
 #
 # Licensed under the BSD 3-Clause License
 # <LICENSE.rst or https://opensource.org/licenses/BSD-3-Clause>.
@@ -99,7 +99,7 @@ class ConfigCache(OutcomeCache):
     def __str__(self):
         def _str(p):
             if p.result is not None:
-                s.append('\t[%s]: %r,\n' % (', '.join(repr(cs) for cs in config), p.result))
+                s.append('\t[%s]: %r,\n' % (', '.join(repr(cs) for cs in config), p.result.name))
             for cs, e in sorted(p.tail.items()):
                 config.append(cs)
                 _str(e)
@@ -131,7 +131,7 @@ class ContentCache(OutcomeCache):
         return self.container.get(self.test_builder(config), None)
 
     def __str__(self):
-        return '{\n%s}' % ''.join('\t%r: %r,\n' % (k, v) for k, v in sorted(self.container.items()))
+        return '{\n%s}' % ''.join('\t%r: %r,\n' % (k, v.name) for k, v in sorted(self.container.items()))
 
 
 # Aliases for cache classes to help their identification in CLI.

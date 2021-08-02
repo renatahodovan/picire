@@ -9,6 +9,7 @@ import logging
 
 from .abstract_dd import AbstractDD
 from .config_iterators import forward
+from .outcome import Outcome
 from .outcome_cache import ConfigCache
 
 logger = logging.getLogger(__name__)
@@ -84,7 +85,7 @@ class DD(AbstractDD):
 
             # Get the outcome either from cache or by testing it.
             outcome = self._lookup_cache(subset, config_id) or self._test_config(subset, config_id)
-            if outcome == self.FAIL:
+            if outcome is Outcome.FAIL:
                 # Interesting subset is found.
                 return [subsets[i]], 0
 
@@ -111,7 +112,7 @@ class DD(AbstractDD):
             complement = [c for si, s in enumerate(subsets) for c in s if si != i]
 
             outcome = self._lookup_cache(complement, config_id) or self._test_config(complement, config_id)
-            if outcome == self.FAIL:
+            if outcome is Outcome.FAIL:
                 # Interesting complement is found.
                 # In next run, start removing the following subset
                 return subsets[:i] + subsets[i + 1:], i

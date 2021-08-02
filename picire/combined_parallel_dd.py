@@ -6,36 +6,34 @@
 # according to those terms.
 
 import logging
-import multiprocessing
 
-from . import config_iterators
-from . import config_splitters
 from . import parallel_loop
 from .abstract_parallel_dd import AbstractParallelDD
+from .config_iterators import forward
 
 logger = logging.getLogger(__name__)
 
 
 class CombinedParallelDD(AbstractParallelDD):
 
-    def __init__(self, test, cache=None, id_prefix=(), split=config_splitters.zeller,
-                 proc_num=multiprocessing.cpu_count(), max_utilization=100,
-                 config_iterator=config_iterators.forward):
+    def __init__(self, test, *, split=None, cache=None, id_prefix=None,
+                 proc_num=None, max_utilization=None,
+                 config_iterator=None):
         """
         Initialize a CombinedParallelDD object.
 
         :param test: A callable tester object.
+        :param split: Splitter method to break a configuration up to n part.
         :param cache: Cache object to use.
         :param id_prefix: Tuple to prepend to config IDs during tests.
-        :param split: Splitter method to break a configuration up to n part.
         :param proc_num: The level of parallelization.
         :param max_utilization: The maximum CPU utilization accepted.
         :param config_iterator: Reference to a generator function that provides
             config indices in an arbitrary order.
         """
-        AbstractParallelDD.__init__(self, test=test, split=split, proc_num=proc_num, max_utilization=max_utilization, cache=cache, id_prefix=id_prefix)
+        super().__init__(test=test, split=split, cache=cache, id_prefix=id_prefix, proc_num=proc_num, max_utilization=max_utilization)
 
-        self._config_iterator = config_iterator
+        self._config_iterator = config_iterator or forward
 
     def _reduce_config(self, run, subsets, complement_offset):
         """

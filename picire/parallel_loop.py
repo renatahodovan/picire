@@ -59,7 +59,7 @@ class Loop(object):
     # TODO: could be None if we trusted that wait for infinity would not hang
     _timeout = 1
 
-    def __init__(self, j=multiprocessing.cpu_count(), max_utilization=100):
+    def __init__(self, j=None, max_utilization=None):
         """
         Initialize a parallel loop object.
 
@@ -67,14 +67,14 @@ class Loop(object):
         :param max_utilization: The maximum CPU utilization. Above this no more
             new jobs will be started.
         """
-        self._j = j
-        self._max_utilization = max_utilization
+        self._j = j or multiprocessing.cpu_count()
+        self._max_utilization = max_utilization or 100
         # This gets initialized to 0, may be set to 1 anytime, but must not be reset to 0 ever;
         # thus, no locking is needed when accessing
         self._break = multiprocessing.sharedctypes.Value('i', 0, lock=False)
         self._lock = multiprocessing.Condition()
-        self._slots = multiprocessing.sharedctypes.Array('i', j, lock=False)
-        self._procs = [None] * j
+        self._slots = multiprocessing.sharedctypes.Array('i', self._j, lock=False)
+        self._procs = [None] * self._j
         psutil.cpu_percent(None)
 
     def _abort(self):

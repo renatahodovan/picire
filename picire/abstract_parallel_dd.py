@@ -21,19 +21,20 @@ class AbstractParallelDD(AbstractDD):
     Abstract super-class of the various parallel DD implementations.
     """
 
-    def __init__(self, test, split, proc_num, max_utilization, cache=None, id_prefix=()):
+    def __init__(self, test, *, split=None, cache=None, id_prefix=None,
+                 proc_num=None, max_utilization=None):
         """
         Initialize an AbstractParallelDD object.
 
         :param test: A callable tester object.
         :param split: Splitter method to break a configuration up to n parts.
-        :param proc_num: The level of parallelization.
-        :param max_utilization: The maximum CPU utilization accepted.
         :param cache: Cache object to use.
         :param id_prefix: Tuple to prepend to config IDs during tests.
+        :param proc_num: The level of parallelization.
+        :param max_utilization: The maximum CPU utilization accepted.
         """
         cache = cache or shared_cache_decorator(ConfigCache)()
-        AbstractDD.__init__(self, test=test, split=split, cache=cache, id_prefix=id_prefix)
+        super().__init__(test=test, split=split, cache=cache, id_prefix=id_prefix)
 
         self._proc_num = proc_num
         self._max_utilization = max_utilization

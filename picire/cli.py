@@ -182,7 +182,8 @@ def log_args(title, args):
     logger.info('%s\n\t%s\n', title, '\n\t'.join(_log_args(args)))
 
 
-def call(reduce_class, reduce_config,
+def call(*,
+         reduce_class, reduce_config,
          tester_class, tester_config,
          input, src, encoding, out,
          atom='line', cache_class=None, cleanup=True):
@@ -264,7 +265,7 @@ def execute():
     # Implementation specific CLI options that are not needed to be part of the core parser.
     parser.add_argument('-a', '--atom', metavar='NAME', choices=['char', 'line', 'both'], default='line',
                         help='atom (i.e., granularity) of input (%(choices)s; default: %(default)s)')
-    inators.arg.add_version_argument(parser, __version__)
+    inators.arg.add_version_argument(parser, version=__version__)
 
     args = parser.parse_args()
     process_args(parser, args)

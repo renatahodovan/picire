@@ -16,7 +16,7 @@ from .abstract_dd import AbstractDD
 
 class SubprocessTest(object):
 
-    def __init__(self, command_pattern, test_builder, test_pattern, encoding, cleanup):
+    def __init__(self, *, command_pattern, test_builder, test_pattern, encoding='utf-8', cleanup=True):
         """
         Wrapper around the script provided by the user. It decides about the
         interestingness based on the return code of executed script.
@@ -34,9 +34,9 @@ class SubprocessTest(object):
             be removed after test execution or not.
         """
         self.command_pattern = command_pattern
-        self.encoding = encoding
         self.test_builder = test_builder
         self.test_pattern = test_pattern
+        self.encoding = encoding
         self.cleanup = cleanup
 
     def __call__(self, config, config_id):

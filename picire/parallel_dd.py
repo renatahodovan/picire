@@ -6,28 +6,26 @@
 # according to those terms.
 
 import logging
-import multiprocessing
 
-from . import config_iterators
-from . import config_splitters
 from . import parallel_loop
 from .abstract_parallel_dd import AbstractParallelDD
+from .config_iterators import forward
 
 logger = logging.getLogger(__name__)
 
 
 class ParallelDD(AbstractParallelDD):
 
-    def __init__(self, test, cache=None, id_prefix=(), split=config_splitters.zeller,
-                 proc_num=multiprocessing.cpu_count(), max_utilization=100,
-                 subset_first=True, subset_iterator=config_iterators.forward, complement_iterator=config_iterators.forward):
+    def __init__(self, test, *, split=None, cache=None, id_prefix=None,
+                 proc_num=None, max_utilization=None,
+                 subset_first=True, subset_iterator=None, complement_iterator=None):
         """
         Initialize a ParallelDD object.
 
         :param test: A callable tester object.
+        :param split: Splitter method to break a configuration up to n part.
         :param cache: Cache object to use.
         :param id_prefix: Tuple to prepend to config IDs during tests.
-        :param split: Splitter method to break a configuration up to n part.
         :param proc_num: The level of parallelization.
         :param max_utilization: The maximum CPU utilization accepted.
         :param subset_first: Boolean value denoting whether the reduce has to
@@ -37,10 +35,10 @@ class ParallelDD(AbstractParallelDD):
         :param complement_iterator: Reference to a generator function that
             provides config indices in an arbitrary order.
         """
-        AbstractParallelDD.__init__(self, test=test, split=split, proc_num=proc_num, max_utilization=max_utilization, cache=cache, id_prefix=id_prefix)
+        super().__init__(test=test, split=split, cache=cache, id_prefix=id_prefix, proc_num=proc_num, max_utilization=max_utilization)
 
-        self._subset_iterator = subset_iterator
-        self._complement_iterator = complement_iterator
+        self._subset_iterator = subset_iterator or forward
+        self._complement_iterator = complement_iterator or forward
 
         if subset_first:
             self._first_reduce, self._second_reduce = self._reduce_to_subset, self._reduce_to_complement

@@ -1,4 +1,4 @@
-# Copyright (c) 2016-2020 Renata Hodovan, Akos Kiss.
+# Copyright (c) 2016-2021 Renata Hodovan, Akos Kiss.
 #
 # Licensed under the BSD 3-Clause License
 # <LICENSE.rst or https://opensource.org/licenses/BSD-3-Clause>.
@@ -8,6 +8,7 @@
 import itertools
 import logging
 
+from .config_splitters import ZellerSplit
 from .outcome_cache import OutcomeCache
 
 logger = logging.getLogger(__name__)
@@ -22,7 +23,7 @@ class AbstractDD(object):
     PASS = 'PASS'
     FAIL = 'FAIL'
 
-    def __init__(self, test, split, cache=None, id_prefix=()):
+    def __init__(self, test, *, split=None, cache=None, id_prefix=None):
         """
         Initialise an abstract DD class. Not to be called directly, only by
         super calls in subclass initializers.
@@ -33,9 +34,9 @@ class AbstractDD(object):
         :param id_prefix: Tuple to prepend to config IDs during tests.
         """
         self._test = test
-        self._split = split
+        self._split = split or ZellerSplit()
         self._cache = cache or OutcomeCache()
-        self._id_prefix = id_prefix
+        self._id_prefix = id_prefix or ()
 
     def __call__(self, config):
         """

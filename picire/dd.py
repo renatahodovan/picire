@@ -7,9 +7,8 @@
 
 import logging
 
-from . import config_iterators
-from . import config_splitters
 from .abstract_dd import AbstractDD
+from .config_iterators import forward
 from .outcome_cache import ConfigCache
 
 logger = logging.getLogger(__name__)
@@ -20,15 +19,15 @@ class DD(AbstractDD):
     Single process version of the Delta Debugging algorithm.
     """
 
-    def __init__(self, test, cache=None, id_prefix=(), split=config_splitters.zeller,
-                 subset_first=True, subset_iterator=config_iterators.forward, complement_iterator=config_iterators.forward):
+    def __init__(self, test, *, split=None, cache=None, id_prefix=None,
+                 subset_first=True, subset_iterator=None, complement_iterator=None):
         """
         Initialize a DD object.
 
         :param test: A callable tester object.
+        :param split: Splitter method to break a configuration up to n parts.
         :param cache: Cache object to use.
         :param id_prefix: Tuple to prepend to config IDs during tests.
-        :param split: Splitter method to break a configuration up to n parts.
         :param subset_first: Boolean value denoting whether the reduce has to
             start with the subset-based approach or not.
         :param subset_iterator: Reference to a generator function that provides
@@ -37,10 +36,10 @@ class DD(AbstractDD):
             provides config indices in an arbitrary order.
         """
         cache = cache or ConfigCache()
-        AbstractDD.__init__(self, test=test, split=split, cache=cache, id_prefix=id_prefix)
+        super().__init__(test=test, split=split, cache=cache, id_prefix=id_prefix)
 
-        self._subset_iterator = subset_iterator
-        self._complement_iterator = complement_iterator
+        self._subset_iterator = subset_iterator or forward
+        self._complement_iterator = complement_iterator or forward
 
         if subset_first:
             self._first_reduce, self._second_reduce = self._reduce_to_subset, self._reduce_to_complement

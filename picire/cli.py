@@ -104,6 +104,8 @@ def process_args(parser, args):
     else:
         args.encoding = chardet.detect(args.src)['encoding'] or 'latin-1'
 
+    args.src = args.src.decode(args.encoding)
+
     args.out = realpath(args.out if args.out else '%s.%s' % (args.input, time.strftime('%Y%m%d_%H%M%S')))
 
     args.test = realpath(args.test)
@@ -184,15 +186,16 @@ def log_args(title, args):
     logger.info('%s\n\t%s\n', title, '\n\t'.join(_log_args(args)))
 
 
-def call(*,
-         reduce_class, reduce_config,
-         tester_class, tester_config,
-         input, src, encoding, out,
-         atom='line', cache_class=None, cleanup=True):
+def reduce(src, *,
+           reduce_class, reduce_config,
+           tester_class, tester_config,
+           atom='line',
+           cache_class=None):
     """
     Execute picire as if invoked from command line, however, control its
     behaviour not via command line arguments but function parameters.
 
+    :param src: Contents of the test case to reduce.
     :param reduce_class: Reference to the reducer class.
     :param reduce_config: Dictionary containing information to initialize the
         reduce_class.
@@ -200,35 +203,27 @@ def call(*,
         interestingness of a test case.
     :param tester_config: Dictionary containing information to initialize the
         tester_class.
-    :param input: Path to the test case to reduce (only used to determine the
-        name of the output file).
-    :param src: Contents of the test case to reduce.
-    :param encoding: Encoding of the input test case.
-    :param out: Path to the output directory.
     :param atom: Input granularity to work with during reduce ('char', 'line',
         or 'both'; default: 'line').
     :param cache_class: Reference to the cache class to use.
-    :param cleanup: Binary flag denoting whether removing auxiliary files at the
-        end is enabled (default: True).
-    :return: The path to the minimal test case.
+    :return: The contents of the minimal test case.
     """
 
     # Get the parameters in a dictionary so that they can be pretty-printed
     # (minus src, as that parameter can be arbitrarily large)
     args = locals().copy()
     del args['src']
-    log_args('Reduce session starts for %s' % input, args)
+    log_args('Reduce session starts', args)
 
-    content = src.decode(encoding)
     cache = cache_class() if cache_class else None
 
     for atom_cnt, atom_name in enumerate(['line', 'char'] if atom == 'both' else [atom]):
         # Split source to the chosen atoms.
         if atom_name == 'line':
-            content = content.splitlines(True)
-        logger.info('Initial test contains %d %ss', len(content), atom_name)
+            src = src.splitlines(True)
+        logger.info('Initial test contains %d %ss', len(src), atom_name)
 
-        test_builder = ConcatTestBuilder(content)
+        test_builder = ConcatTestBuilder(src)
         if cache:
             cache.clear()
             cache.set_test_builder(test_builder)
@@ -237,21 +232,13 @@ def call(*,
                           cache=cache,
                           id_prefix=('a%d' % atom_cnt,),
                           **reduce_config)
-        min_set = dd(list(range(len(content))))
-        content = test_builder(min_set)
+        min_set = dd(list(range(len(src))))
+        src = test_builder(min_set)
 
         logger.trace('The cached results are: %s', cache)
         logger.debug('A minimal config is: %r', min_set)
 
-    if cleanup:
-        rmtree(join(out, 'tests'))
-
-    out_file = join(out, basename(input))
-    with codecs.open(out_file, 'w', encoding=encoding, errors='ignore') as f:
-        f.write(content)
-    logger.info('Result is saved to %s.', out_file)
-
-    return out_file
+    return src
 
 
 def execute():
@@ -271,14 +258,20 @@ def execute():
     logging.basicConfig(format='%(message)s')
     inators.arg.process_log_level_argument(args, logger)
 
-    call(reduce_class=args.reduce_class,
-         reduce_config=args.reduce_config,
-         tester_class=args.tester_class,
-         tester_config=args.tester_config,
-         input=args.input,
-         src=args.src,
-         encoding=args.encoding,
-         out=args.out,
-         atom=args.atom,
-         cache_class=args.cache,
-         cleanup=args.cleanup)
+    logger.info('Input loaded from %s', args.input)
+
+    out_src = reduce(args.src,
+                     reduce_class=args.reduce_class,
+                     reduce_config=args.reduce_config,
+                     tester_class=args.tester_class,
+                     tester_config=args.tester_config,
+                     atom=args.atom,
+                     cache_class=args.cache)
+
+    if args.cleanup:
+        rmtree(join(args.out, 'tests'))
+
+    out_file = join(args.out, basename(args.input))
+    with codecs.open(out_file, 'w', encoding=args.encoding, errors='ignore') as f:
+        f.write(out_src)
+    logger.info('Output saved to %s', out_file)

@@ -10,7 +10,7 @@ from . import config_iterators
 from . import config_splitters
 from .abstract_dd import AbstractDD
 from .abstract_parallel_dd import AbstractParallelDD
-from .cli import __version__, call
+from .cli import __version__, reduce
 from .combined_iterator import CombinedIterator
 from .combined_parallel_dd import CombinedParallelDD
 from .dd import DD

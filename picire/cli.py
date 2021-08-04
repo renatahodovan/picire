@@ -104,14 +104,18 @@ def process_args(parser, args):
     else:
         args.encoding = chardet.detect(args.src)['encoding'] or 'latin-1'
 
+    args.out = realpath(args.out if args.out else '%s.%s' % (args.input, time.strftime('%Y%m%d_%H%M%S')))
+
     args.test = realpath(args.test)
     if not exists(args.test) or not os.access(args.test, os.X_OK):
         parser.error('Tester program does not exist or isn\'t executable: %s' % args.test)
 
     args.tester_class = SubprocessTest
     args.tester_config = {
-        'encoding': args.encoding,
         'command_pattern': [args.test, '%s'],
+        'work_dir': join(args.out, 'tests'),
+        'filename': basename(args.input),
+        'encoding': args.encoding,
         'cleanup': args.cleanup,
     }
 
@@ -144,8 +148,6 @@ def process_args(parser, args):
             args.reduce_config['subset_iterator'] = subset_iterator
             args.reduce_config['complement_iterator'] = complement_iterator
             args.reduce_config['subset_first'] = args.subset_first
-
-    args.out = realpath(args.out if args.out else '%s.%s' % (args.input, time.strftime('%Y%m%d_%H%M%S')))
 
 
 def log_args(title, args):
@@ -220,24 +222,20 @@ def call(*,
     content = src.decode(encoding)
     cache = cache_class() if cache_class else None
 
-    for current_atom in ['line', 'char'] if atom == 'both' else [atom]:
+    for atom_cnt, atom_name in enumerate(['line', 'char'] if atom == 'both' else [atom]):
         # Split source to the chosen atoms.
-        if current_atom == 'line':
+        if atom_name == 'line':
             content = content.splitlines(True)
-        logger.info('Initial test contains %d %ss', len(content), current_atom)
-
-        tests_dir = join(out, 'tests', current_atom)
-        os.makedirs(tests_dir, exist_ok=True)
+        logger.info('Initial test contains %d %ss', len(content), atom_name)
 
         test_builder = ConcatTestBuilder(content)
         if cache:
             cache.clear()
             cache.set_test_builder(test_builder)
 
-        dd = reduce_class(tester_class(test_builder=test_builder,
-                                       test_pattern=join(tests_dir, '%s', basename(input)),
-                                       **tester_config),
+        dd = reduce_class(tester_class(test_builder=test_builder, **tester_config),
                           cache=cache,
+                          id_prefix=('a%d' % atom_cnt,),
                           **reduce_config)
         min_set = dd(list(range(len(content))))
         content = test_builder(min_set)
@@ -245,8 +243,8 @@ def call(*,
         logger.trace('The cached results are: %s', cache)
         logger.debug('A minimal config is: %r', min_set)
 
-        if cleanup:
-            rmtree(tests_dir)
+    if cleanup:
+        rmtree(join(out, 'tests'))
 
     out_file = join(out, basename(input))
     with codecs.open(out_file, 'w', encoding=encoding, errors='ignore') as f:

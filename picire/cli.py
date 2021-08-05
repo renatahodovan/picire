@@ -83,7 +83,7 @@ def create_parser():
     inators.arg.add_log_level_argument(parser)
     parser.add_argument('-o', '--out', metavar='DIR',
                         help='working directory (default: input.timestamp)')
-    parser.add_argument('--disable-cleanup', dest='cleanup', default=True, action='store_false',
+    parser.add_argument('--no-cleanup', dest='cleanup', default=True, action='store_false',
                         help='disable the removal of generated temporary files')
     return parser
 

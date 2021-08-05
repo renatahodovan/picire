@@ -115,13 +115,11 @@ def process_args(args):
         raise ValueError('Tester program does not exist or isn\'t executable: %s' % args.test)
 
     args.tester_class = SubprocessTest
-    args.tester_config = {
-        'command_pattern': [args.test, '%s'],
-        'work_dir': join(args.out, 'tests'),
-        'filename': basename(args.input),
-        'encoding': args.encoding,
-        'cleanup': args.cleanup,
-    }
+    args.tester_config = dict(command_pattern=[args.test, '%s'],
+                              work_dir=join(args.out, 'tests'),
+                              filename=basename(args.input),
+                              encoding=args.encoding,
+                              cleanup=args.cleanup)
 
     args.cache = getattr(outcome_cache, args.cache)
     if args.parallel:
@@ -132,26 +130,23 @@ def process_args(args):
     complement_iterator = getattr(config_iterators, args.complement_iterator)
 
     # Choose the reducer class that will be used and its configuration.
-    args.reduce_config = {'split': split_class(n=args.granularity)}
     if not args.parallel:
         args.reduce_class = DD
-        args.reduce_config['subset_iterator'] = subset_iterator
-        args.reduce_config['complement_iterator'] = complement_iterator
-        args.reduce_config['subset_first'] = args.subset_first
+        args.reduce_config = dict(subset_iterator=subset_iterator,
+                                  complement_iterator=complement_iterator,
+                                  subset_first=args.subset_first)
     else:
-        args.reduce_config['proc_num'] = args.jobs
-        args.reduce_config['max_utilization'] = args.max_utilization
-
         if args.combine_loops:
             args.reduce_class = CombinedParallelDD
-            args.reduce_config['config_iterator'] = CombinedIterator(args.subset_first,
-                                                                     subset_iterator,
-                                                                     complement_iterator)
+            args.reduce_config = dict(config_iterator=CombinedIterator(args.subset_first, subset_iterator, complement_iterator))
         else:
             args.reduce_class = ParallelDD
-            args.reduce_config['subset_iterator'] = subset_iterator
-            args.reduce_config['complement_iterator'] = complement_iterator
-            args.reduce_config['subset_first'] = args.subset_first
+            args.reduce_config = dict(subset_iterator=subset_iterator,
+                                      complement_iterator=complement_iterator,
+                                      subset_first=args.subset_first)
+        args.reduce_config.update(dict(proc_num=args.jobs,
+                                       max_utilization=args.max_utilization))
+    args.reduce_config.update(dict(split=split_class(n=args.granularity)))
 
     logger.info('Input loaded from %s', args.input)
 

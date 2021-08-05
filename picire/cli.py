@@ -88,10 +88,12 @@ def create_parser():
     return parser
 
 
-def process_args(parser, args):
+def process_args(args):
+    inators.arg.process_log_level_argument(args, logger)
+
     args.input = realpath(args.input)
     if not exists(args.input):
-        parser.error('Test case does not exist: %s' % args.input)
+        raise ValueError('Test case does not exist: %s' % args.input)
 
     with open(args.input, 'rb') as f:
         args.src = f.read()
@@ -99,8 +101,8 @@ def process_args(parser, args):
     if args.encoding:
         try:
             codecs.lookup(args.encoding)
-        except LookupError:
-            parser.error('The given encoding (%s) is not known.' % args.encoding)
+        except LookupError as e:
+            raise ValueError('The given encoding (%s) is not known.' % args.encoding) from e
     else:
         args.encoding = chardet.detect(args.src)['encoding'] or 'latin-1'
 
@@ -110,7 +112,7 @@ def process_args(parser, args):
 
     args.test = realpath(args.test)
     if not exists(args.test) or not os.access(args.test, os.X_OK):
-        parser.error('Tester program does not exist or isn\'t executable: %s' % args.test)
+        raise ValueError('Tester program does not exist or isn\'t executable: %s' % args.test)
 
     args.tester_class = SubprocessTest
     args.tester_config = {
@@ -150,6 +152,8 @@ def process_args(parser, args):
             args.reduce_config['subset_iterator'] = subset_iterator
             args.reduce_config['complement_iterator'] = complement_iterator
             args.reduce_config['subset_first'] = args.subset_first
+
+    logger.info('Input loaded from %s', args.input)
 
 
 def log_args(title, args):
@@ -241,24 +245,34 @@ def reduce(src, *,
     return src
 
 
+def postprocess(args, out_src):
+    if args.cleanup:
+        rmtree(join(args.out, 'tests'))
+
+    output = join(args.out, basename(args.input))
+    with codecs.open(output, 'w', encoding=args.encoding, errors='ignore') as f:
+        f.write(out_src)
+
+    logger.info('Output saved to %s', output)
+
+
 def execute():
     """
     The main entry point of picire.
     """
+    logging.basicConfig(format='%(message)s')
 
     parser = create_parser()
     # Implementation specific CLI options that are not needed to be part of the core parser.
     parser.add_argument('-a', '--atom', metavar='NAME', choices=['char', 'line', 'both'], default='line',
                         help='atom (i.e., granularity) of input (%(choices)s; default: %(default)s)')
     inators.arg.add_version_argument(parser, version=__version__)
-
     args = parser.parse_args()
-    process_args(parser, args)
 
-    logging.basicConfig(format='%(message)s')
-    inators.arg.process_log_level_argument(args, logger)
-
-    logger.info('Input loaded from %s', args.input)
+    try:
+        process_args(args)
+    except ValueError as e:
+        parser.error(e)
 
     out_src = reduce(args.src,
                      reduce_class=args.reduce_class,
@@ -268,10 +282,4 @@ def execute():
                      atom=args.atom,
                      cache_class=args.cache)
 
-    if args.cleanup:
-        rmtree(join(args.out, 'tests'))
-
-    out_file = join(args.out, basename(args.input))
-    with codecs.open(out_file, 'w', encoding=args.encoding, errors='ignore') as f:
-        f.write(out_src)
-    logger.info('Output saved to %s', out_file)
+    postprocess(args, out_src)

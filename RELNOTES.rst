@@ -2,6 +2,34 @@
 *Picire* Release Notes
 ======================
 
+21.8
+====
+
+Summary of changes:
+
+* Dropped support for Python 2.
+* Moved the test outcomes from AbstractDD into the new enum Outcome.
+* Heavily simplified the signature of picire.call and renamed it to
+  picire.reduce.
+* Changed the API of tester classes in general and of SubprocessTest in
+  particular by not mandating them to have a test_pattern initializer argument.
+* Changed the API of several functions and methods, made numerous arguments
+  keyword-only.
+* Renamed the --disable-cleanup CLI argument to -no-cleanup.
+* Improved the CLI argument helper function picire.cli.process_args by moving
+  into it all CLI-related processing steps and by decoupling it from argument
+  parser's error reporting.
+* Added new CLI-related helper function picire.cli.postprocess_args for
+  finalization.
+* Fixed the --atom=both use case.
+* Fixed the default of the split argument of DD algorithms.
+* Various internal refactorings (caching in parallel cases, parallel loops, use
+  of multiprocessing).
+* Improved the testing infrastructure (better output on failure, stabilized
+  tests, testing PyPy).
+* Improved documentation.
+
+
 21.7
 ====
 

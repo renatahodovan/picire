@@ -144,9 +144,9 @@ def process_args(args):
             args.reduce_config = dict(subset_iterator=subset_iterator,
                                       complement_iterator=complement_iterator,
                                       subset_first=args.subset_first)
-        args.reduce_config.update(dict(proc_num=args.jobs,
-                                       max_utilization=args.max_utilization))
-    args.reduce_config.update(dict(split=split_class(n=args.granularity)))
+        args.reduce_config.update(proc_num=args.jobs,
+                                  max_utilization=args.max_utilization)
+    args.reduce_config.update(split=split_class(n=args.granularity))
 
     logger.info('Input loaded from %s', args.input)
 

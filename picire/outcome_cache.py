@@ -118,7 +118,7 @@ class ContentCache(OutcomeCache):
     """
 
     def __init__(self):
-        self.container = dict()
+        self.container = {}
         self.test_builder = None
 
     def set_test_builder(self, test_builder):

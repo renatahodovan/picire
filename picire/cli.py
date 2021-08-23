@@ -14,9 +14,13 @@ from multiprocessing import cpu_count
 from os.path import basename, exists, join, realpath
 from shutil import rmtree
 
+try:
+    from importlib import metadata
+except ImportError:
+    import importlib_metadata as metadata
+
 import chardet
 import inators
-import pkg_resources
 
 from inators import log as logging
 
@@ -29,7 +33,7 @@ from .shared_cache import shared_cache_decorator
 from .subprocess_test import ConcatTestBuilder, SubprocessTest
 
 logger = logging.getLogger('picire')
-__version__ = pkg_resources.get_distribution(__package__).version
+__version__ = metadata.version(__package__)
 
 
 def create_parser():

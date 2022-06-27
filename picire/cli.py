@@ -1,4 +1,5 @@
 # Copyright (c) 2016-2023 Renata Hodovan, Akos Kiss.
+# Copyright (c) 2023 Daniel Vince.
 #
 # Licensed under the BSD 3-Clause License
 # <LICENSE.rst or https://opensource.org/licenses/BSD-3-Clause>.
@@ -64,6 +65,8 @@ def create_parser():
                         help='initial granularity and split factor (integer or \'inf\'; default: %(default)d)')
     parser.add_argument('--encoding', metavar='NAME',
                         help='test case encoding (default: autodetect)')
+    parser.add_argument('--no-dd-star', dest='dd_star', default=True, action='store_false',
+                        help='run the ddmin algorithm only once')
 
     # Extra settings for parallel reduce.
     parser.add_argument('-p', '--parallel', action='store_true', default=False,
@@ -152,7 +155,8 @@ def process_args(args):
                                   'subset_first': args.subset_first}
         args.reduce_config.update(proc_num=args.jobs,
                                   max_utilization=args.max_utilization)
-    args.reduce_config.update(split=split_class(n=args.granularity))
+    args.reduce_config.update(split=split_class(n=args.granularity),
+                              dd_star=args.dd_star)
 
     logger.info('Input loaded from %s', args.input)
 

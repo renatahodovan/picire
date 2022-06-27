@@ -1,4 +1,5 @@
 # Copyright (c) 2016-2023 Renata Hodovan, Akos Kiss.
+# Copyright (c) 2023 Daniel Vince.
 #
 # Licensed under the BSD 3-Clause License
 # <LICENSE.rst or https://opensource.org/licenses/BSD-3-Clause>.
@@ -23,7 +24,7 @@ class AbstractParallelDD(AbstractDD):
     """
 
     def __init__(self, test, *, split=None, cache=None, id_prefix=None,
-                 proc_num=None, max_utilization=None):
+                 proc_num=None, max_utilization=None, dd_star=False):
         """
         Initialize an AbstractParallelDD object.
 
@@ -33,9 +34,10 @@ class AbstractParallelDD(AbstractDD):
         :param id_prefix: Tuple to prepend to config IDs during tests.
         :param proc_num: The level of parallelization.
         :param max_utilization: The maximum CPU utilization accepted.
+        :param dd_star: Boolean to enable the DD star algorithm.
         """
         cache = cache or shared_cache_decorator(ConfigCache)()
-        super().__init__(test=test, split=split, cache=cache, id_prefix=id_prefix)
+        super().__init__(test=test, split=split, cache=cache, id_prefix=id_prefix, dd_star=dd_star)
 
         self._proc_num = proc_num
         self._max_utilization = max_utilization

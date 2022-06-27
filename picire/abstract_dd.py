@@ -1,4 +1,5 @@
 # Copyright (c) 2016-2023 Renata Hodovan, Akos Kiss.
+# Copyright (c) 2023 Daniel Vince.
 #
 # Licensed under the BSD 3-Clause License
 # <LICENSE.rst or https://opensource.org/licenses/BSD-3-Clause>.
@@ -20,7 +21,7 @@ class AbstractDD(object):
     Abstract super-class of the parallel and non-parallel DD classes.
     """
 
-    def __init__(self, test, *, split=None, cache=None, id_prefix=None):
+    def __init__(self, test, *, split=None, cache=None, id_prefix=None, dd_star=False):
         """
         Initialise an abstract DD class. Not to be called directly, only by
         super calls in subclass initializers.
@@ -29,11 +30,14 @@ class AbstractDD(object):
         :param split: Splitter method to break a configuration up to n parts.
         :param cache: Cache object to use.
         :param id_prefix: Tuple to prepend to config IDs during tests.
+        :param dd_star: Boolean to enable the DD star algorithm.
         """
         self._test = test
         self._split = split or ZellerSplit()
         self._cache = cache or OutcomeCache()
         self._id_prefix = id_prefix or ()
+        self._iteration_prefix = ()
+        self._dd_star = dd_star
 
     def __call__(self, config):
         """
@@ -42,49 +46,58 @@ class AbstractDD(object):
         :param config: The initial configuration that will be reduced.
         :return: 1-minimal failing configuration.
         """
-        subsets = [config]
-        complement_offset = 0
+        for iter_cnt in itertools.count():
+            logger.info('Iteration #%d', iter_cnt)
+            self._iteration_prefix = self._id_prefix + (f'i{iter_cnt}',)
+            changed = False
+            subsets = [config]
+            complement_offset = 0
 
-        for run in itertools.count():
-            logger.info('Run #%d', run)
-            logger.info('\tConfig size: %d', len(config))
-            assert self._test_config(config, (f'r{run}', 'assert')) is Outcome.FAIL
+            for run in itertools.count():
+                logger.info('Run #%d', run)
+                logger.info('\tConfig size: %d', len(config))
+                assert self._test_config(config, (f'r{run}', 'assert')) is Outcome.FAIL
 
-            # Minimization ends if the configuration is already reduced to a single unit.
-            if len(config) < 2:
+                # Minimization ends if the configuration is already reduced to a single unit.
+                if len(config) < 2:
+                    logger.info('\tGranularity: %d', len(subsets))
+                    logger.debug('\tConfig: %r', subsets)
+                    break
+
+                if len(subsets) < 2:
+                    assert len(subsets) == 1
+                    subsets = self._split(subsets)
+
                 logger.info('\tGranularity: %d', len(subsets))
                 logger.debug('\tConfig: %r', subsets)
-                logger.info('\tDone')
-                return config
 
-            if len(subsets) < 2:
-                assert len(subsets) == 1
-                subsets = self._split(subsets)
+                next_subsets, complement_offset = self._reduce_config(run, subsets, complement_offset)
 
-            logger.info('\tGranularity: %d', len(subsets))
-            logger.debug('\tConfig: %r', subsets)
+                if next_subsets is not None:
+                    changed = True
+                    # Interesting configuration is found, continue reduction with this configuration.
+                    subsets = next_subsets
+                    config = [c for s in subsets for c in s]
 
-            next_subsets, complement_offset = self._reduce_config(run, subsets, complement_offset)
+                    logger.info('\tReduced')
 
-            if next_subsets is not None:
-                # Interesting configuration is found, start new iteration.
-                subsets = next_subsets
-                config = [c for s in subsets for c in s]
+                elif len(subsets) < len(config):
+                    # No interesting configuration is found but it is still not the finest splitting, start new iteration.
+                    next_subsets = self._split(subsets)
+                    complement_offset = (complement_offset * len(next_subsets)) / len(subsets)
+                    subsets = next_subsets
 
-                logger.info('\tReduced')
+                    logger.info('\tIncreased granularity')
 
-            elif len(subsets) < len(config):
-                # No interesting configuration is found but it is still not the finest splitting, start new iteration.
-                next_subsets = self._split(subsets)
-                complement_offset = (complement_offset * len(next_subsets)) / len(subsets)
-                subsets = next_subsets
+                else:
+                    # Current iteration ends if no interesting configuration was found by the finest splitting.
+                    break
 
-                logger.info('\tIncreased granularity')
+            if not self._dd_star or not changed:
+                break
 
-            else:
-                # Minimization ends if no interesting configuration was found by the finest splitting.
-                logger.info('\tDone')
-                return config
+        logger.info('\tDone')
+        return config
 
     def _reduce_config(self, run, subsets, complement_offset):
         """
@@ -111,7 +124,7 @@ class AbstractDD(object):
         """
         cached_result = self._cache.lookup(config)
         if cached_result is not None:
-            logger.debug('\t[ %s ]: cache = %r', self._pretty_config_id(self._id_prefix + config_id), cached_result.name)
+            logger.debug('\t[ %s ]: cache = %r', self._pretty_config_id(self._iteration_prefix + config_id), cached_result.name)
 
         return cached_result
 
@@ -124,7 +137,7 @@ class AbstractDD(object):
             identifiable directories.
         :return: PASS or FAIL
         """
-        config_id = self._id_prefix + config_id
+        config_id = self._iteration_prefix + config_id
 
         logger.debug('\t[ %s ]: test...', self._pretty_config_id(config_id))
         outcome = self._test(config, config_id)

@@ -1,4 +1,5 @@
 # Copyright (c) 2016-2023 Renata Hodovan, Akos Kiss.
+# Copyright (c) 2023 Daniel Vince.
 #
 # Licensed under the BSD 3-Clause License
 # <LICENSE.rst or https://opensource.org/licenses/BSD-3-Clause>.
@@ -21,7 +22,8 @@ class DD(AbstractDD):
     """
 
     def __init__(self, test, *, split=None, cache=None, id_prefix=None,
-                 subset_first=True, subset_iterator=None, complement_iterator=None):
+                 subset_first=True, subset_iterator=None, complement_iterator=None,
+                 dd_star=False):
         """
         Initialize a DD object.
 
@@ -35,9 +37,10 @@ class DD(AbstractDD):
             config indices in an arbitrary order.
         :param complement_iterator: Reference to a generator function that
             provides config indices in an arbitrary order.
+        :param dd_star: Boolean to enable the DD star algorithm.
         """
         cache = cache or ConfigCache()
-        super().__init__(test=test, split=split, cache=cache, id_prefix=id_prefix)
+        super().__init__(test=test, split=split, cache=cache, id_prefix=id_prefix, dd_star=dd_star)
 
         self._subset_iterator = subset_iterator or forward
         self._complement_iterator = complement_iterator or forward

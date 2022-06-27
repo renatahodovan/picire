@@ -1,4 +1,5 @@
 # Copyright (c) 2016-2023 Renata Hodovan, Akos Kiss.
+# Copyright (c) 2023 Daniel Vince.
 #
 # Licensed under the BSD 3-Clause License
 # <LICENSE.rst or https://opensource.org/licenses/BSD-3-Clause>.
@@ -61,7 +62,7 @@ class CombinedParallelDD(AbstractParallelDD):
 
     def __init__(self, test, *, split=None, cache=None, id_prefix=None,
                  proc_num=None, max_utilization=None,
-                 config_iterator=None):
+                 config_iterator=None, dd_star=False):
         """
         Initialize a CombinedParallelDD object.
 
@@ -73,8 +74,9 @@ class CombinedParallelDD(AbstractParallelDD):
         :param max_utilization: The maximum CPU utilization accepted.
         :param config_iterator: Reference to a generator function that provides
             config indices in an arbitrary order.
+        :param dd_star: Boolean to enable the DD star algorithm.
         """
-        super().__init__(test=test, split=split, cache=cache, id_prefix=id_prefix, proc_num=proc_num, max_utilization=max_utilization)
+        super().__init__(test=test, split=split, cache=cache, id_prefix=id_prefix, proc_num=proc_num, max_utilization=max_utilization, dd_star=dd_star)
 
         self._config_iterator = config_iterator or forward
 

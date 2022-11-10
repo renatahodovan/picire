@@ -19,7 +19,7 @@ disable=
     useless-object-inheritance, unnecessary-pass, duplicate-code,
     abstract-method, function-redefined, redefined-outer-name,
     import-outside-toplevel, inconsistent-return-statements,
-    consider-using-with, consider-using-f-string
+    consider-using-with
 
 [REPORTS]
 

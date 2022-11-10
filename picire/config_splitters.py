@@ -1,4 +1,4 @@
-# Copyright (c) 2016-2020 Renata Hodovan, Akos Kiss.
+# Copyright (c) 2016-2022 Renata Hodovan, Akos Kiss.
 #
 # Licensed under the BSD 3-Clause License
 # <LICENSE.rst or https://opensource.org/licenses/BSD-3-Clause>.
@@ -42,7 +42,7 @@ class ZellerSplit(object):
 
     def __str__(self):
         cls = self.__class__
-        return '%s.%s(n=%s)' % (cls.__module__, cls.__name__, self._n)
+        return f'{cls.__module__}.{cls.__name__}(n={self._n})'
 
 
 class BalancedSplit(object):
@@ -74,7 +74,7 @@ class BalancedSplit(object):
 
     def __str__(self):
         cls = self.__class__
-        return '%s.%s(n=%s)' % (cls.__module__, cls.__name__, self._n)
+        return f'{cls.__module__}.{cls.__name__}(n={self._n})'
 
 
 # Aliases for split classes to help their identification in CLI.

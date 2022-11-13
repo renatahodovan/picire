@@ -6,5 +6,5 @@ for i in range(1,11):
     sum += i
     prod *= i
 
-print('sum: %d' % sum)
-print('prod: %d' % prod)
+print(f'sum: {sum}')
+print(f'prod: {prod}')

@@ -1,4 +1,4 @@
-# Copyright (c) 2016-2021 Renata Hodovan, Akos Kiss.
+# Copyright (c) 2016-2022 Renata Hodovan, Akos Kiss.
 #
 # Licensed under the BSD 3-Clause License
 # <LICENSE.rst or https://opensource.org/licenses/BSD-3-Clause>.
@@ -42,7 +42,7 @@ def create_parser():
             return float('inf')
         value = int(value)
         if value < 2:
-            raise argparse.ArgumentTypeError('invalid value: {value!r} (must be at least 2)'.format(value=value))
+            raise argparse.ArgumentTypeError(f'invalid value: {value!r} (must be at least 2)')
         return value
 
     parser = argparse.ArgumentParser(description='Command line interface of the "picire" test case reducer')
@@ -97,7 +97,7 @@ def process_args(args):
 
     args.input = realpath(args.input)
     if not exists(args.input):
-        raise ValueError('Test case does not exist: %s' % args.input)
+        raise ValueError(f'Test case does not exist: {args.input}')
 
     with open(args.input, 'rb') as f:
         args.src = f.read()
@@ -106,17 +106,17 @@ def process_args(args):
         try:
             codecs.lookup(args.encoding)
         except LookupError as e:
-            raise ValueError('The given encoding (%s) is not known.' % args.encoding) from e
+            raise ValueError(f'The given encoding ({args.encoding}) is not known.') from e
     else:
         args.encoding = chardet.detect(args.src)['encoding'] or 'latin-1'
 
     args.src = args.src.decode(args.encoding)
 
-    args.out = realpath(args.out if args.out else '%s.%s' % (args.input, time.strftime('%Y%m%d_%H%M%S')))
+    args.out = realpath(args.out if args.out else f'{args.input}.{time.strftime("%Y%m%d_%H%M%S")}')
 
     args.test = realpath(args.test)
     if not exists(args.test) or not os.access(args.test, os.X_OK):
-        raise ValueError('Tester program does not exist or isn\'t executable: %s' % args.test)
+        raise ValueError(f'Tester program does not exist or isn\'t executable: {args.test}')
 
     args.tester_class = SubprocessTest
     args.tester_config = dict(command_pattern=[args.test, '%s'],
@@ -165,11 +165,11 @@ def log_args(title, args):
                 k_log = _log_args(k)
                 v_log = _log_args(v)
                 if isinstance(v_log, list):
-                    log += ['%s:' % k_log]
+                    log += [f'{k_log}:']
                     for line in v_log:
-                        log += ['\t' + line]
+                        log += [f'\t{line}']
                 else:
-                    log += ['%s: %s' % (k_log, v_log)]
+                    log += [f'{k_log}: {v_log}']
             return log if len(log) > 1 else log[0]
         if isinstance(args, list):
             v_logs = [_log_args(v) for v in args]
@@ -179,7 +179,7 @@ def log_args(title, args):
                     if not isinstance(v_log, list):
                         v_log = [v_log]
                     for i, line in enumerate(v_log):
-                        log += ['%s %s' % ('-' if i == 0 else ' ', line)]
+                        log += [f'{"-" if i == 0 else " "} {line}']
             else:
                 log = ', '.join(v_log for v_log in v_logs)
             return log
@@ -233,7 +233,7 @@ def reduce(src, *,
 
         dd = reduce_class(tester_class(test_builder=test_builder, **tester_config),
                           cache=cache,
-                          id_prefix=('a%d' % atom_cnt,),
+                          id_prefix=(f'a{atom_cnt}',),
                           **reduce_config)
         min_set = dd(list(range(len(src))))
         src = test_builder(min_set)

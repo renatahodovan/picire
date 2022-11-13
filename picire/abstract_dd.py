@@ -1,4 +1,4 @@
-# Copyright (c) 2016-2021 Renata Hodovan, Akos Kiss.
+# Copyright (c) 2016-2022 Renata Hodovan, Akos Kiss.
 #
 # Licensed under the BSD 3-Clause License
 # <LICENSE.rst or https://opensource.org/licenses/BSD-3-Clause>.
@@ -48,7 +48,7 @@ class AbstractDD(object):
         for run in itertools.count():
             logger.info('Run #%d', run)
             logger.info('\tConfig size: %d', len(config))
-            assert self._test_config(config, ('r%d' % run, 'assert')) is Outcome.FAIL
+            assert self._test_config(config, (f'r{run}', 'assert')) is Outcome.FAIL
 
             # Minimization ends if the configuration is already reduced to a single unit.
             if len(config) < 2:

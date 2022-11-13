@@ -1,4 +1,4 @@
-# Copyright (c) 2016-2021 Renata Hodovan, Akos Kiss.
+# Copyright (c) 2016-2022 Renata Hodovan, Akos Kiss.
 #
 # Licensed under the BSD 3-Clause License
 # <LICENSE.rst or https://opensource.org/licenses/BSD-3-Clause>.
@@ -36,7 +36,7 @@ class TestCli:
     def _run_picire(self, test, inp, exp, tmpdir, args):
         out_dir = str(tmpdir)
         cmd = (sys.executable, '-m', 'picire') \
-              + ('--test=' + test + script_ext, '--input=' + inp, '--out=' + out_dir) \
+              + (f'--test={test}{script_ext}', f'--input={inp}', f'--out={out_dir}') \
               + ('--log-level=TRACE', ) \
               + args
         subprocess.run(cmd, cwd=resources_dir, check=True)

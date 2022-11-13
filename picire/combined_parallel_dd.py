@@ -1,4 +1,4 @@
-# Copyright (c) 2016-2021 Renata Hodovan, Akos Kiss.
+# Copyright (c) 2016-2022 Renata Hodovan, Akos Kiss.
 #
 # Licensed under the BSD 3-Clause License
 # <LICENSE.rst or https://opensource.org/licenses/BSD-3-Clause>.
@@ -56,11 +56,11 @@ class CombinedParallelDD(AbstractParallelDD):
                 continue
 
             if i < n:
-                config_id = ('r%d' % run, 's%d' % i)
+                config_id = (f'r{run}', f's{i}')
                 config_set = subsets[i]
             else:
                 i = int((i - n + complement_offset) % n) + n
-                config_id = ('r%d' % run, 'c%d' % (i - n))
+                config_id = (f'r{run}', f'c{i - n}')
                 config_set = [c for si, s in enumerate(subsets) for c in s if si != i - n]
 
             # If we checked this test before, return its result

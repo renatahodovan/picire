@@ -1,4 +1,4 @@
-# Copyright (c) 2016-2021 Renata Hodovan, Akos Kiss.
+# Copyright (c) 2016-2022 Renata Hodovan, Akos Kiss.
 #
 # Licensed under the BSD 3-Clause License
 # <LICENSE.rst or https://opensource.org/licenses/BSD-3-Clause>.
@@ -83,7 +83,7 @@ class ParallelDD(AbstractParallelDD):
             if i is None:
                 continue
 
-            config_id = ('r%d' % run, 's%d' % i)
+            config_id = (f'r{run}', f's{i}')
             subset = subsets[i]
 
             # If we had this test before, return the saved result.
@@ -125,7 +125,7 @@ class ParallelDD(AbstractParallelDD):
                 continue
             i = int((i + complement_offset) % n)
 
-            config_id = ('r%d' % run, 'c%d' % i)
+            config_id = (f'r{run}', f'c{i}')
             complement = [c for si, s in enumerate(subsets) for c in s if si != i]
 
             # If we had this test before, return its result

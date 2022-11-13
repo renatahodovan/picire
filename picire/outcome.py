@@ -1,4 +1,4 @@
-# Copyright (c) 2021 Renata Hodovan, Akos Kiss.
+# Copyright (c) 2021-2022 Renata Hodovan, Akos Kiss.
 #
 # Licensed under the BSD 3-Clause License
 # <LICENSE.rst or https://opensource.org/licenses/BSD-3-Clause>.
@@ -14,4 +14,4 @@ class Outcome(Enum):
     FAIL = 'FAIL'
 
     def __repr__(self):
-        return '<%s.%s>' % (self.__class__.__name__, self.name)
+        return f'<{self.__class__.__name__}.{self.name}>'

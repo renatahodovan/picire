@@ -7,7 +7,7 @@ Picire
    :target: https://pypi.org/project/picire/
 .. image:: https://img.shields.io/pypi/l/picire?logo=open-source-initiative&logoColor=white
    :target: https://pypi.org/project/picire/
-.. image:: https://img.shields.io/github/workflow/status/renatahodovan/picire/main/master?logo=github&logoColor=white
+.. image:: https://img.shields.io/github/actions/workflow/status/renatahodovan/picire/main.yml?branch=master&logo=github&logoColor=white
    :target: https://github.com/renatahodovan/picire/actions
 .. image:: https://img.shields.io/coveralls/github/renatahodovan/picire/master?logo=coveralls&logoColor=white
    :target: https://coveralls.io/github/renatahodovan/picire

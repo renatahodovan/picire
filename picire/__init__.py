@@ -1,4 +1,4 @@
-# Copyright (c) 2016-2021 Renata Hodovan, Akos Kiss.
+# Copyright (c) 2016-2023 Renata Hodovan, Akos Kiss.
 #
 # Licensed under the BSD 3-Clause License
 # <LICENSE.rst or https://opensource.org/licenses/BSD-3-Clause>.
@@ -13,9 +13,11 @@ from .abstract_parallel_dd import AbstractParallelDD
 from .cli import __version__, reduce
 from .combined_iterator import CombinedIterator
 from .combined_parallel_dd import CombinedParallelDD
+from .config_iterators import IteratorRegistry
+from .config_splitters import SplitterRegistry
 from .dd import DD
 from .outcome import Outcome
-from .outcome_cache import ConfigCache, ContentCache, OutcomeCache
+from .outcome_cache import CacheRegistry, ConfigCache, ContentCache, OutcomeCache
 from .parallel_dd import ParallelDD
 from .shared_cache import shared_cache_decorator
 from .subprocess_test import ConcatTestBuilder, SubprocessTest

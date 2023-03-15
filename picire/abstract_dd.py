@@ -1,4 +1,4 @@
-# Copyright (c) 2016-2022 Renata Hodovan, Akos Kiss.
+# Copyright (c) 2016-2023 Renata Hodovan, Akos Kiss.
 #
 # Licensed under the BSD 3-Clause License
 # <LICENSE.rst or https://opensource.org/licenses/BSD-3-Clause>.
@@ -8,9 +8,9 @@
 import itertools
 import logging
 
-from .config_splitters import ZellerSplit
+from .cache import OutcomeCache
 from .outcome import Outcome
-from .outcome_cache import OutcomeCache
+from .splitter import ZellerSplit
 
 logger = logging.getLogger(__name__)
 

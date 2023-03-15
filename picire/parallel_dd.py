@@ -1,4 +1,4 @@
-# Copyright (c) 2016-2022 Renata Hodovan, Akos Kiss.
+# Copyright (c) 2016-2023 Renata Hodovan, Akos Kiss.
 #
 # Licensed under the BSD 3-Clause License
 # <LICENSE.rst or https://opensource.org/licenses/BSD-3-Clause>.
@@ -9,7 +9,7 @@ import logging
 
 from . import parallel_loop
 from .abstract_parallel_dd import AbstractParallelDD
-from .config_iterators import forward
+from .iterator import forward
 from .outcome import Outcome
 
 logger = logging.getLogger(__name__)

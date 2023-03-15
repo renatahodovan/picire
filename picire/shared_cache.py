@@ -1,4 +1,4 @@
-# Copyright (c) 2016-2021 Renata Hodovan, Akos Kiss.
+# Copyright (c) 2016-2023 Renata Hodovan, Akos Kiss.
 #
 # Licensed under the BSD 3-Clause License
 # <LICENSE.rst or https://opensource.org/licenses/BSD-3-Clause>.
@@ -10,7 +10,7 @@ import inspect
 from multiprocessing import Lock
 from multiprocessing.managers import BaseManager
 
-from .outcome_cache import OutcomeCache
+from .cache import OutcomeCache
 
 
 class SharedCacheManager(BaseManager):

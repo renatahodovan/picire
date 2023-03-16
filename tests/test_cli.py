@@ -1,4 +1,5 @@
-# Copyright (c) 2016-2022 Renata Hodovan, Akos Kiss.
+# Copyright (c) 2016-2023 Renata Hodovan, Akos Kiss.
+# Copyright (c) 2023 Daniel Vince.
 #
 # Licensed under the BSD 3-Clause License
 # <LICENSE.rst or https://opensource.org/licenses/BSD-3-Clause>.
@@ -48,12 +49,12 @@ class TestCli:
         assert outb == expb
 
     @pytest.mark.parametrize('args', [
-        ('--split=balanced', '--subset-iterator=forward', '--complement-iterator=forward', '--cache=none'),
-        ('--split=zeller', '--subset-iterator=forward', '--complement-iterator=backward', '--cache=config'),
-        ('--split=balanced', '--complement-first', '--subset-iterator=backward', '--complement-iterator=forward', '--cache=content'),
-        ('--split=zeller', '--complement-first', '--subset-iterator=backward', '--complement-iterator=backward', '--cache=none'),
-        ('--split=balanced', '--subset-iterator=skip', '--complement-iterator=forward', '--cache=config'),
-        ('--split=zeller', '--subset-iterator=skip', '--complement-iterator=backward', '--cache=content'),
+        ('--split=balanced', '--subset-iterator=forward', '--complement-iterator=forward', '--cache=config'),
+        ('--split=zeller', '--subset-iterator=forward', '--complement-iterator=backward', '--cache=content'),
+        ('--split=balanced', '--complement-first', '--subset-iterator=backward', '--complement-iterator=forward', '--cache=content-hash'),
+        ('--split=zeller', '--complement-first', '--subset-iterator=backward', '--complement-iterator=backward', '--cache=config', '--cache-fail', '--no-cache-evict-after-fail'),
+        ('--split=balanced', '--subset-iterator=skip', '--complement-iterator=forward', '--cache=content', '--cache-fail', '--no-cache-evict-after-fail'),
+        ('--split=zeller', '--subset-iterator=skip', '--complement-iterator=backward', '--cache=content-hash', '--cache-fail', '--no-cache-evict-after-fail'),
     ])
     def test_dd(self, test, inp, exp, tmpdir, args_atom, args):
         self._run_picire(test, inp, exp, tmpdir, args_atom + args)
@@ -61,19 +62,19 @@ class TestCli:
     @pytest.mark.parametrize('args', [
         ('--split=zeller', '--complement-first', '--subset-iterator=forward', '--complement-iterator=forward', '--cache=config'),
         ('--split=balanced', '--complement-first', '--subset-iterator=forward', '--complement-iterator=backward', '--cache=content'),
-        ('--split=zeller', '--subset-iterator=backward', '--complement-iterator=forward', '--cache=none'),
-        ('--split=balanced', '--subset-iterator=backward', '--complement-iterator=backward', '--cache=config'),
-        ('--split=zeller', '--subset-iterator=skip', '--complement-iterator=forward', '--cache=content'),
-        ('--split=balanced', '--subset-iterator=skip', '--complement-iterator=backward', '--cache=none'),
+        ('--split=zeller', '--subset-iterator=backward', '--complement-iterator=forward', '--cache=content-hash'),
+        ('--split=balanced', '--subset-iterator=backward', '--complement-iterator=backward', '--cache=config', '--cache-fail', '--no-cache-evict-after-fail'),
+        ('--split=zeller', '--subset-iterator=skip', '--complement-iterator=forward', '--cache=content', '--cache-fail', '--no-cache-evict-after-fail'),
+        ('--split=balanced', '--subset-iterator=skip', '--complement-iterator=backward', '--cache=content-hash', '--cache-fail', '--no-cache-evict-after-fail'),
     ])
     def test_parallel(self, test, inp, exp, tmpdir, args_atom, args):
         self._run_picire(test, inp, exp, tmpdir, args_atom + ('--parallel', ) + args)
 
     @pytest.mark.parametrize('args', [
-        ('--split=zeller', '--subset-iterator=forward', '--complement-iterator=forward', '--cache=content'),
-        ('--split=balanced', '--subset-iterator=forward', '--complement-iterator=backward', '--cache=none'),
-        ('--split=zeller', '--complement-first', '--subset-iterator=backward', '--complement-iterator=forward', '--cache=config'),
-        ('--split=balanced', '--complement-first', '--subset-iterator=backward', '--complement-iterator=backward', '--cache=content'),
+        ('--split=zeller', '--subset-iterator=forward', '--complement-iterator=forward', '--cache=none'),
+        ('--split=balanced', '--subset-iterator=forward', '--complement-iterator=backward', '--cache=config'),
+        ('--split=zeller', '--complement-first', '--subset-iterator=backward', '--complement-iterator=forward', '--cache=content'),
+        ('--split=balanced', '--complement-first', '--subset-iterator=backward', '--complement-iterator=backward', '--cache=content-hash'),
     ])
     def test_combined(self, test, inp, exp, tmpdir, args_atom, args):
         self._run_picire(test, inp, exp, tmpdir, args_atom + ('--parallel', '--combine-loops', ) + args)

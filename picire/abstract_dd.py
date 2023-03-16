@@ -9,7 +9,7 @@
 import itertools
 import logging
 
-from .cache import OutcomeCache
+from .cache import NoCache
 from .outcome import Outcome
 from .splitter import ZellerSplit
 
@@ -34,7 +34,7 @@ class AbstractDD(object):
         """
         self._test = test
         self._split = split or ZellerSplit()
-        self._cache = cache or OutcomeCache()
+        self._cache = cache or NoCache()
         self._id_prefix = id_prefix or ()
         self._iteration_prefix = ()
         self._dd_star = dd_star

@@ -1,4 +1,4 @@
-# Copyright (c) 2016-2021 Renata Hodovan, Akos Kiss.
+# Copyright (c) 2016-2023 Renata Hodovan, Akos Kiss.
 #
 # Licensed under the BSD 3-Clause License
 # <LICENSE.rst or https://opensource.org/licenses/BSD-3-Clause>.
@@ -92,32 +92,32 @@ class TestApi:
         assert output == expect
 
     @pytest.mark.parametrize('split, subset_first, subset_iterator, complement_iterator, cache', [
-        (picire.config_splitters.balanced, True, picire.config_iterators.forward, picire.config_iterators.forward, picire.OutcomeCache),
-        (picire.config_splitters.zeller, True, picire.config_iterators.forward, picire.config_iterators.backward, picire.ConfigCache),
-        (picire.config_splitters.balanced, False, picire.config_iterators.backward, picire.config_iterators.forward, picire.OutcomeCache),
-        (picire.config_splitters.zeller, False, picire.config_iterators.backward, picire.config_iterators.backward, picire.ConfigCache),
-        (picire.config_splitters.balanced, True, picire.config_iterators.skip, picire.config_iterators.forward, picire.OutcomeCache),
-        (picire.config_splitters.zeller, True, picire.config_iterators.skip, picire.config_iterators.backward, picire.ConfigCache),
+        (picire.config_splitters.BalancedSplit, True, picire.config_iterators.forward, picire.config_iterators.forward, picire.OutcomeCache),
+        (picire.config_splitters.ZellerSplit, True, picire.config_iterators.forward, picire.config_iterators.backward, picire.ConfigCache),
+        (picire.config_splitters.BalancedSplit, False, picire.config_iterators.backward, picire.config_iterators.forward, picire.OutcomeCache),
+        (picire.config_splitters.ZellerSplit, False, picire.config_iterators.backward, picire.config_iterators.backward, picire.ConfigCache),
+        (picire.config_splitters.BalancedSplit, True, picire.config_iterators.skip, picire.config_iterators.forward, picire.OutcomeCache),
+        (picire.config_splitters.ZellerSplit, True, picire.config_iterators.skip, picire.config_iterators.backward, picire.ConfigCache),
     ])
     def test_dd(self, interesting, config, expect, granularity, split, subset_first, subset_iterator, complement_iterator, cache):
         self._run_picire(interesting, config, expect, granularity, picire.DD, split, subset_first, subset_iterator, complement_iterator, cache)
 
     @pytest.mark.parametrize('split, subset_first, subset_iterator, complement_iterator, cache', [
-        (picire.config_splitters.zeller, False, picire.config_iterators.forward, picire.config_iterators.forward, picire.ConfigCache),
-        (picire.config_splitters.balanced, False, picire.config_iterators.forward, picire.config_iterators.backward, picire.OutcomeCache),
-        (picire.config_splitters.zeller, True, picire.config_iterators.backward, picire.config_iterators.forward, picire.ConfigCache),
-        (picire.config_splitters.balanced, True, picire.config_iterators.backward, picire.config_iterators.backward, picire.OutcomeCache),
-        (picire.config_splitters.zeller, True, picire.config_iterators.skip, picire.config_iterators.forward, picire.ConfigCache),
-        (picire.config_splitters.balanced, True, picire.config_iterators.skip, picire.config_iterators.backward, picire.OutcomeCache),
+        (picire.config_splitters.ZellerSplit, False, picire.config_iterators.forward, picire.config_iterators.forward, picire.ConfigCache),
+        (picire.config_splitters.BalancedSplit, False, picire.config_iterators.forward, picire.config_iterators.backward, picire.OutcomeCache),
+        (picire.config_splitters.ZellerSplit, True, picire.config_iterators.backward, picire.config_iterators.forward, picire.ConfigCache),
+        (picire.config_splitters.BalancedSplit, True, picire.config_iterators.backward, picire.config_iterators.backward, picire.OutcomeCache),
+        (picire.config_splitters.ZellerSplit, True, picire.config_iterators.skip, picire.config_iterators.forward, picire.ConfigCache),
+        (picire.config_splitters.BalancedSplit, True, picire.config_iterators.skip, picire.config_iterators.backward, picire.OutcomeCache),
     ])
     def test_parallel(self, interesting, config, expect, granularity, split, subset_first, subset_iterator, complement_iterator, cache):
         self._run_picire(interesting, config, expect, granularity, picire.ParallelDD, split, subset_first, subset_iterator, complement_iterator, cache)
 
     @pytest.mark.parametrize('split, subset_first, subset_iterator, complement_iterator, cache', [
-        (picire.config_splitters.zeller, True, picire.config_iterators.forward, picire.config_iterators.forward, picire.OutcomeCache),
-        (picire.config_splitters.balanced, True, picire.config_iterators.forward, picire.config_iterators.backward, picire.ConfigCache),
-        (picire.config_splitters.zeller, False, picire.config_iterators.backward, picire.config_iterators.forward, picire.OutcomeCache),
-        (picire.config_splitters.balanced, False, picire.config_iterators.backward, picire.config_iterators.backward, picire.ConfigCache),
+        (picire.config_splitters.ZellerSplit, True, picire.config_iterators.forward, picire.config_iterators.forward, picire.OutcomeCache),
+        (picire.config_splitters.BalancedSplit, True, picire.config_iterators.forward, picire.config_iterators.backward, picire.ConfigCache),
+        (picire.config_splitters.ZellerSplit, False, picire.config_iterators.backward, picire.config_iterators.forward, picire.OutcomeCache),
+        (picire.config_splitters.BalancedSplit, False, picire.config_iterators.backward, picire.config_iterators.backward, picire.ConfigCache),
     ])
     def test_combined(self, interesting, config, expect, granularity, split, subset_first, subset_iterator, complement_iterator, cache):
         self._run_picire(interesting, config, expect, granularity, picire.CombinedParallelDD, split, subset_first, subset_iterator, complement_iterator, cache)

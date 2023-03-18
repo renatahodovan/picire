@@ -24,10 +24,12 @@ import inators
 
 from inators import log as logging
 
-from . import config_iterators, config_splitters, outcome_cache
 from .combined_iterator import CombinedIterator
 from .combined_parallel_dd import CombinedParallelDD
+from .config_iterators import IteratorRegistry
+from .config_splitters import SplitterRegistry
 from .dd import DD
+from .outcome_cache import CacheRegistry
 from .parallel_dd import ParallelDD
 from .shared_cache import shared_cache_decorator
 from .subprocess_test import ConcatTestBuilder, SubprocessTest
@@ -51,10 +53,10 @@ def create_parser():
 
     # Base reduce settings.
     parser.add_argument('--cache', metavar='NAME',
-                        choices=[i for i in dir(outcome_cache) if not i.startswith('_') and i.islower()], default='config',
+                        choices=sorted(CacheRegistry.registry.keys()), default='config',
                         help='cache strategy (%(choices)s; default: %(default)s)')
     parser.add_argument('--split', metavar='NAME',
-                        choices=[i for i in dir(config_splitters) if not i.startswith('_') and i.islower()], default='zeller',
+                        choices=sorted(SplitterRegistry.registry.keys()), default='zeller',
                         help='split algorithm (%(choices)s; default: %(default)s)')
     parser.add_argument('--test', metavar='FILE', required=True,
                         help='test command that decides about interestingness of an input')
@@ -77,10 +79,10 @@ def create_parser():
     parser.add_argument('--complement-first', dest='subset_first', action='store_false', default=True,
                         help='check complements first')
     parser.add_argument('--subset-iterator', metavar='NAME',
-                        choices=[i for i in dir(config_iterators) if not i.startswith('_')], default='forward',
+                        choices=sorted(IteratorRegistry.registry.keys()), default='forward',
                         help='ordering strategy for looping through subsets (%(choices)s; default: %(default)s)')
     parser.add_argument('--complement-iterator', metavar='NAME',
-                        choices=[i for i in dir(config_iterators) if not i.startswith('_')], default='forward',
+                        choices=sorted(IteratorRegistry.registry.keys()), default='forward',
                         help='ordering strategy for looping through complements (%(choices)s; default: %(default)s)')
 
     # Additional settings.
@@ -125,13 +127,13 @@ def process_args(args):
                           'encoding': args.encoding,
                           'cleanup': args.cleanup}
 
-    args.cache = getattr(outcome_cache, args.cache)
+    args.cache = CacheRegistry.registry[args.cache]
     if args.parallel:
         args.cache = shared_cache_decorator(args.cache)
 
-    split_class = getattr(config_splitters, args.split)
-    subset_iterator = getattr(config_iterators, args.subset_iterator)
-    complement_iterator = getattr(config_iterators, args.complement_iterator)
+    split_class = SplitterRegistry.registry[args.split]
+    subset_iterator = IteratorRegistry.registry[args.subset_iterator]
+    complement_iterator = IteratorRegistry.registry[args.complement_iterator]
 
     # Choose the reducer class that will be used and its configuration.
     if not args.parallel:

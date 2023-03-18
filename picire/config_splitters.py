@@ -1,11 +1,22 @@
-# Copyright (c) 2016-2022 Renata Hodovan, Akos Kiss.
+# Copyright (c) 2016-2023 Renata Hodovan, Akos Kiss.
 #
 # Licensed under the BSD 3-Clause License
 # <LICENSE.rst or https://opensource.org/licenses/BSD-3-Clause>.
 # This file may not be copied, modified, or distributed except
 # according to those terms.
 
+class SplitterRegistry(object):
+    registry = {}
 
+    @classmethod
+    def register(cls, split_name):
+        def decorator(split_class):
+            cls.registry[split_name] = split_class
+            return split_class
+        return decorator
+
+
+@SplitterRegistry.register('zeller')
 class ZellerSplit(object):
     """
     Splits up the input config into n pieces as used by Zeller in the original
@@ -45,6 +56,7 @@ class ZellerSplit(object):
         return f'{cls.__module__}.{cls.__name__}(n={self._n})'
 
 
+@SplitterRegistry.register('balanced')
 class BalancedSplit(object):
     """
     Slightly different version of Zeller's split. This version keeps the split
@@ -75,8 +87,3 @@ class BalancedSplit(object):
     def __str__(self):
         cls = self.__class__
         return f'{cls.__module__}.{cls.__name__}(n={self._n})'
-
-
-# Aliases for split classes to help their identification in CLI.
-zeller = ZellerSplit
-balanced = BalancedSplit

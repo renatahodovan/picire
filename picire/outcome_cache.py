@@ -1,11 +1,22 @@
-# Copyright (c) 2016-2022 Renata Hodovan, Akos Kiss.
+# Copyright (c) 2016-2023 Renata Hodovan, Akos Kiss.
 #
 # Licensed under the BSD 3-Clause License
 # <LICENSE.rst or https://opensource.org/licenses/BSD-3-Clause>.
 # This file may not be copied, modified, or distributed except
 # according to those terms.
 
+class CacheRegistry(object):
+    registry = {}
 
+    @classmethod
+    def register(cls, cache_name):
+        def decorator(cache_class):
+            cls.registry[cache_name] = cache_class
+            return cache_class
+        return decorator
+
+
+@CacheRegistry.register('none')
 class OutcomeCache(object):
     """
     Base class for configuration outcome caching strategies. It does not
@@ -51,6 +62,7 @@ class OutcomeCache(object):
         return '{}'
 
 
+@CacheRegistry.register('config')
 class ConfigCache(OutcomeCache):
 
     class _Entry(object):
@@ -112,6 +124,7 @@ class ConfigCache(OutcomeCache):
         return ''.join(s)
 
 
+@CacheRegistry.register('content')
 class ContentCache(OutcomeCache):
     """
     Class that can cache the outcome of test cases by their content.
@@ -132,9 +145,3 @@ class ContentCache(OutcomeCache):
 
     def __str__(self):
         return '{\n%s}' % ''.join(f'\t{k!r}: {v.name!r},\n' for k, v in sorted(self.container.items()))
-
-
-# Aliases for cache classes to help their identification in CLI.
-none = OutcomeCache
-config = ConfigCache
-content = ContentCache

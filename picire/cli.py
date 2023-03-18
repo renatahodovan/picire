@@ -10,6 +10,7 @@ import codecs
 import os
 import time
 
+from math import inf
 from multiprocessing import cpu_count
 from os.path import basename, exists, join, realpath
 from shutil import rmtree
@@ -40,7 +41,7 @@ __version__ = metadata.version(__package__)
 def create_parser():
     def int_or_inf(value):
         if value == 'inf':
-            return float('inf')
+            return inf
         value = int(value)
         if value < 2:
             raise argparse.ArgumentTypeError(f'invalid value: {value!r} (must be at least 2)')

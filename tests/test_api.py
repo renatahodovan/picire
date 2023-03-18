@@ -6,6 +6,7 @@
 # according to those terms.
 
 import logging
+import math
 import pytest
 
 import picire
@@ -61,7 +62,7 @@ class CaseTest:
 ])
 @pytest.mark.parametrize('granularity', [
     2,
-    float('inf'),
+    math.inf,
 ])
 class TestApi:
 

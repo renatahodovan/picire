@@ -184,6 +184,50 @@ class ConfigCache(OutcomeCache):
         return ''.join(s)
 
 
+@CacheRegistry.register('config-tuple')
+class ConfigTupleCache(OutcomeCache):
+    """
+    This cache associates configurations (i.e., lists of elements) with their
+    test outcomes, using a dictionary of tuples as the underlying data
+    structure.
+    """
+
+    def __init__(self, *, cache_fail=False, evict_after_fail=True):
+        """
+        :param cache_fail: Add configurations with FAIL outcome to the cache.
+        :param evict_after_fail: When a configuration with a FAIL outcome is
+            added to the cache, evict all larger configurations.
+        """
+        # NOTE: evict_after_fail=True should be safe as after a fail is found,
+        # reduction continues from there, generating only even smaller test
+        # cases, and larger tests are never re-tested again.
+        self._cache_fail = cache_fail
+        self._evict_after_fail = evict_after_fail
+        self._container = {}
+
+    def set_test_builder(self, test_builder):
+        pass
+
+    def add(self, config, result):
+        if result is Outcome.PASS or self._cache_fail:
+            self._container[tuple(config)] = result
+
+        if result is Outcome.FAIL and self._evict_after_fail:
+            length = len(config)
+            evicted = [c for c in self._container if len(c) > length]
+            for c in evicted:
+                del self._container[c]
+
+    def lookup(self, config):
+        return self._container.get(tuple(config), None)
+
+    def clear(self):
+        self._container = {}
+
+    def __str__(self):
+        return '{\n%s}' % ''.join(f'\t{c!r}: {r.name!r},\n' for c, r in sorted(self._container.items()))
+
+
 @CacheRegistry.register('content')
 class ContentCache(OutcomeCache):
     """

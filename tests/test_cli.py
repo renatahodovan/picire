@@ -52,7 +52,7 @@ class TestCli:
         ('--split=balanced', '--subset-iterator=forward', '--complement-iterator=forward', '--cache=config'),
         ('--split=zeller', '--subset-iterator=forward', '--complement-iterator=backward', '--cache=content'),
         ('--split=balanced', '--complement-first', '--subset-iterator=backward', '--complement-iterator=forward', '--cache=content-hash'),
-        ('--split=zeller', '--complement-first', '--subset-iterator=backward', '--complement-iterator=backward', '--cache=config', '--cache-fail', '--no-cache-evict-after-fail'),
+        ('--split=zeller', '--complement-first', '--subset-iterator=backward', '--complement-iterator=backward', '--cache=config-tuple', '--cache-fail', '--no-cache-evict-after-fail'),
         ('--split=balanced', '--subset-iterator=skip', '--complement-iterator=forward', '--cache=content', '--cache-fail', '--no-cache-evict-after-fail'),
         ('--split=zeller', '--subset-iterator=skip', '--complement-iterator=backward', '--cache=content-hash', '--cache-fail', '--no-cache-evict-after-fail'),
     ])
@@ -60,7 +60,7 @@ class TestCli:
         self._run_picire(test, inp, exp, tmpdir, args_atom + args)
 
     @pytest.mark.parametrize('args', [
-        ('--split=zeller', '--complement-first', '--subset-iterator=forward', '--complement-iterator=forward', '--cache=config'),
+        ('--split=zeller', '--complement-first', '--subset-iterator=forward', '--complement-iterator=forward', '--cache=config-tuple'),
         ('--split=balanced', '--complement-first', '--subset-iterator=forward', '--complement-iterator=backward', '--cache=content'),
         ('--split=zeller', '--subset-iterator=backward', '--complement-iterator=forward', '--cache=content-hash'),
         ('--split=balanced', '--subset-iterator=backward', '--complement-iterator=backward', '--cache=config', '--cache-fail', '--no-cache-evict-after-fail'),

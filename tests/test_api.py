@@ -85,20 +85,20 @@ class TestApi:
     @pytest.mark.parametrize('split, subset_first, subset_iterator, complement_iterator, cache', [
         (picire.splitter.BalancedSplit, True, picire.iterator.forward, picire.iterator.forward, picire.cache.NoCache),
         (picire.splitter.ZellerSplit, True, picire.iterator.forward, picire.iterator.backward, picire.cache.ConfigCache),
-        (picire.splitter.BalancedSplit, False, picire.iterator.backward, picire.iterator.forward, picire.cache.NoCache),
-        (picire.splitter.ZellerSplit, False, picire.iterator.backward, picire.iterator.backward, picire.cache.ConfigCache),
-        (picire.splitter.BalancedSplit, True, picire.iterator.skip, picire.iterator.forward, picire.cache.NoCache),
-        (picire.splitter.ZellerSplit, True, picire.iterator.skip, picire.iterator.backward, picire.cache.ConfigCache),
+        (picire.splitter.BalancedSplit, False, picire.iterator.backward, picire.iterator.forward, picire.cache.ConfigTupleCache),
+        (picire.splitter.ZellerSplit, False, picire.iterator.backward, picire.iterator.backward, picire.cache.NoCache),
+        (picire.splitter.BalancedSplit, True, picire.iterator.skip, picire.iterator.forward, picire.cache.ConfigCache),
+        (picire.splitter.ZellerSplit, True, picire.iterator.skip, picire.iterator.backward, picire.cache.ConfigTupleCache),
     ])
     def test_dd(self, interesting, config, expect, granularity, split, subset_first, subset_iterator, complement_iterator, cache):
         self._run_picire(interesting, config, expect, granularity, picire.DD, split, subset_first, subset_iterator, complement_iterator, cache)
 
     @pytest.mark.parametrize('split, subset_first, subset_iterator, complement_iterator, cache', [
         (picire.splitter.ZellerSplit, False, picire.iterator.forward, picire.iterator.forward, picire.cache.ConfigCache),
-        (picire.splitter.BalancedSplit, False, picire.iterator.forward, picire.iterator.backward, picire.cache.NoCache),
-        (picire.splitter.ZellerSplit, True, picire.iterator.backward, picire.iterator.forward, picire.cache.ConfigCache),
-        (picire.splitter.BalancedSplit, True, picire.iterator.backward, picire.iterator.backward, picire.cache.NoCache),
-        (picire.splitter.ZellerSplit, False, picire.iterator.skip, picire.iterator.forward, picire.cache.ConfigCache),
+        (picire.splitter.BalancedSplit, False, picire.iterator.forward, picire.iterator.backward, picire.cache.ConfigTupleCache),
+        (picire.splitter.ZellerSplit, True, picire.iterator.backward, picire.iterator.forward, picire.cache.NoCache),
+        (picire.splitter.BalancedSplit, True, picire.iterator.backward, picire.iterator.backward, picire.cache.ConfigCache),
+        (picire.splitter.ZellerSplit, False, picire.iterator.skip, picire.iterator.forward, picire.cache.ConfigTupleCache),
         (picire.splitter.BalancedSplit, False, picire.iterator.skip, picire.iterator.backward, picire.cache.NoCache),
     ])
     def test_parallel(self, interesting, config, expect, granularity, split, subset_first, subset_iterator, complement_iterator, cache):

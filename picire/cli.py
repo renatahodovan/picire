@@ -24,14 +24,13 @@ import inators
 
 from inators import log as logging
 
-from .combined_iterator import CombinedIterator
-from .combined_parallel_dd import CombinedParallelDD
-from .config_iterators import IteratorRegistry
-from .config_splitters import SplitterRegistry
+from .cache import CacheRegistry
+from .combined_parallel_dd import CombinedIterator, CombinedParallelDD
 from .dd import DD
-from .outcome_cache import CacheRegistry
+from .iterator import IteratorRegistry
 from .parallel_dd import ParallelDD
 from .shared_cache import shared_cache_decorator
+from .splitter import SplitterRegistry
 from .subprocess_test import ConcatTestBuilder, SubprocessTest
 
 logger = logging.getLogger('picire')

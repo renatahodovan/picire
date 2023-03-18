@@ -1,4 +1,4 @@
-# Copyright (c) 2016-2022 Renata Hodovan, Akos Kiss.
+# Copyright (c) 2016-2023 Renata Hodovan, Akos Kiss.
 #
 # Licensed under the BSD 3-Clause License
 # <LICENSE.rst or https://opensource.org/licenses/BSD-3-Clause>.
@@ -8,9 +8,9 @@
 import logging
 
 from .abstract_dd import AbstractDD
-from .config_iterators import forward
+from .cache import ConfigCache
+from .iterator import forward
 from .outcome import Outcome
-from .outcome_cache import ConfigCache
 
 logger = logging.getLogger(__name__)
 

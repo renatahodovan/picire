@@ -1,4 +1,4 @@
-# Copyright (c) 2016-2021 Renata Hodovan, Akos Kiss.
+# Copyright (c) 2016-2023 Renata Hodovan, Akos Kiss.
 #
 # Licensed under the BSD 3-Clause License
 # <LICENSE.rst or https://opensource.org/licenses/BSD-3-Clause>.
@@ -10,8 +10,8 @@ import logging
 from multiprocessing import Value
 
 from .abstract_dd import AbstractDD
+from .cache import ConfigCache
 from .outcome import Outcome
-from .outcome_cache import ConfigCache
 from .shared_cache import shared_cache_decorator
 
 logger = logging.getLogger(__name__)

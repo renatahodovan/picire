@@ -199,6 +199,16 @@ Further improvements are described in:
   Algorithm.
   IEEE Access, 8:219837-219846, December 2020. IEEE.
   https://doi.org/10.1109/ACCESS.2020.3043027
+* Daniel Vince. Iterating the Minimizing Delta Debugging Algorithm.
+  In Proceedings of the 13th International Workshop on Automating Test Case
+  Design, Selection and Evaluation (A-TEST'22), pages 57-60, Singapore, November
+  2022. ACM.
+  https://doi.org/10.1145/3548659.3561314
+* Daniel Vince and Akos Kiss. Cache Optimizations for Test Case Reduction.
+  In Proceedings of the 22nd IEEE International Conference on Software Quality,
+  Reliability, and Security (QRS 2022), pages 442-453, Guangzhou, China,
+  December 2022. IEEE.
+  https://doi.org/10.1109/QRS57517.2022.00052
 
 
 Copyright and Licensing

@@ -9,13 +9,10 @@ from . import cache
 from . import cli
 from . import iterator
 from . import splitter
-from .abstract_dd import AbstractDD
-from .abstract_parallel_dd import AbstractParallelDD
 from .cache import CacheRegistry
 from .cli import __version__, reduce
-from .combined_parallel_dd import CombinedIterator, CombinedParallelDD
 from .dd import DD
-from .iterator import IteratorRegistry
+from .iterator import CombinedIterator, IteratorRegistry
 from .outcome import Outcome
 from .parallel_dd import ParallelDD
 from .shared_cache import shared_cache_decorator

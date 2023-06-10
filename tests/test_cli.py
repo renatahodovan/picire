@@ -68,13 +68,4 @@ class TestCli:
         ('--split=balanced', '--subset-iterator=skip', '--complement-iterator=backward', '--cache=content-hash', '--cache-fail', '--no-cache-evict-after-fail'),
     ])
     def test_parallel(self, test, inp, exp, tmpdir, args_atom, args):
-        self._run_picire(test, inp, exp, tmpdir, args_atom + ('--parallel', ) + args)
-
-    @pytest.mark.parametrize('args', [
-        ('--split=zeller', '--subset-iterator=forward', '--complement-iterator=forward', '--cache=none'),
-        ('--split=balanced', '--subset-iterator=forward', '--complement-iterator=backward', '--cache=config'),
-        ('--split=zeller', '--complement-first', '--subset-iterator=backward', '--complement-iterator=forward', '--cache=content'),
-        ('--split=balanced', '--complement-first', '--subset-iterator=backward', '--complement-iterator=backward', '--cache=content-hash'),
-    ])
-    def test_combined(self, test, inp, exp, tmpdir, args_atom, args):
-        self._run_picire(test, inp, exp, tmpdir, args_atom + ('--parallel', '--combine-loops', ) + args)
+        self._run_picire(test, inp, exp, tmpdir, args_atom + ('--parallel',) + args)

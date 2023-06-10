@@ -86,13 +86,6 @@ Common settings
 
 * ``-j <num>``: Defines the maximum number of parallel jobs.
 
-* ``--combine-loops``: The base algorithm had a dependency between subset and
-  complement-based reduce loops, but because of the sequential nature of its
-  implementation, it had no effect on efficiency. However, in parallel mode,
-  this separation becomes a potential sub-optimality. With this option, the
-  two reduce loops run combined for additional performance. Further details
-  about the algorithm variants are available in the cited papers.
-
 * ``--complement-first``: For some input types, subset-based reduce is not as
   effective as the complement-based one (sometimes, aggressively removing too
   big parts of the input eliminates the interestingness as well). By default,

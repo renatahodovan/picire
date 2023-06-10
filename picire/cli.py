@@ -27,9 +27,8 @@ import inators
 from inators import log as logging
 
 from .cache import CacheRegistry
-from .combined_parallel_dd import CombinedIterator, CombinedParallelDD
 from .dd import DD
-from .iterator import IteratorRegistry
+from .iterator import CombinedIterator, IteratorRegistry
 from .parallel_dd import ParallelDD
 from .shared_cache import shared_cache_decorator
 from .splitter import SplitterRegistry
@@ -71,8 +70,6 @@ def create_parser():
     # Extra settings for parallel reduce.
     parser.add_argument('-p', '--parallel', action='store_true', default=False,
                         help='run DD in parallel')
-    parser.add_argument('-c', '--combine-loops', action='store_true', default=False,
-                        help='combine subset and complement check loops for more parallelization (has effect in parallel mode only)')
     parser.add_argument('-j', '--jobs', metavar='N', type=int, default=cpu_count(),
                         help='maximum number of test commands to execute in parallel (has effect in parallel mode only; default: %(default)s)')
     parser.add_argument('-u', '--max-utilization', metavar='N', type=int, default=100,
@@ -151,29 +148,18 @@ def process_args(args):
     args.cache_config = {'cache_fail': args.cache_fail,
                          'evict_after_fail': args.evict_after_fail}
 
-    split_class = SplitterRegistry.registry[args.split]
-    subset_iterator = IteratorRegistry.registry[args.subset_iterator]
-    complement_iterator = IteratorRegistry.registry[args.complement_iterator]
-
     # Choose the reducer class that will be used and its configuration.
+    args.reduce_config = {'config_iterator': CombinedIterator(args.subset_first,
+                                                              IteratorRegistry.registry[args.subset_iterator],
+                                                              IteratorRegistry.registry[args.complement_iterator]),
+                          'split': SplitterRegistry.registry[args.split](n=args.granularity),
+                          'dd_star': args.dd_star}
     if not args.parallel:
         args.reduce_class = DD
-        args.reduce_config = {'subset_iterator': subset_iterator,
-                              'complement_iterator': complement_iterator,
-                              'subset_first': args.subset_first}
     else:
-        if args.combine_loops:
-            args.reduce_class = CombinedParallelDD
-            args.reduce_config = {'config_iterator': CombinedIterator(args.subset_first, subset_iterator, complement_iterator)}
-        else:
-            args.reduce_class = ParallelDD
-            args.reduce_config = {'subset_iterator': subset_iterator,
-                                  'complement_iterator': complement_iterator,
-                                  'subset_first': args.subset_first}
+        args.reduce_class = ParallelDD
         args.reduce_config.update(proc_num=args.jobs,
                                   max_utilization=args.max_utilization)
-    args.reduce_config.update(split=split_class(n=args.granularity),
-                              dd_star=args.dd_star)
 
     logger.info('Input loaded from %s', args.input)
 

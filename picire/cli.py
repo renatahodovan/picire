@@ -94,8 +94,14 @@ def create_parser():
     parser.add_argument('--no-cache-evict-after-fail', dest='evict_after_fail', action='store_false', default=True,
                         help='disable the eviction of larger test cases from the cache when a failing, i.e., interesting test case is found')
 
-    # Additional settings.
+    # Logging settings.
     inators.arg.add_log_level_argument(parser)
+    parser.add_argument('--log-format', metavar='FORMAT', default='%(message)s',
+                        help='printf-style format string of diagnostic messages (default: %(default)s)')
+    parser.add_argument('--log-datefmt', metavar='FORMAT', default='%Y-%m-%d %H:%M:%S',
+                        help='strftime-style format string of timestamps in diagnostic messages (default: %(default)s)')
+
+    # Additional settings.
     parser.add_argument('-o', '--out', metavar='DIR',
                         help='working directory (default: input.timestamp)')
     parser.add_argument('--no-cleanup', dest='cleanup', default=True, action='store_false',
@@ -103,9 +109,12 @@ def create_parser():
     return parser
 
 
-def process_args(args):
+def config_logging(args):
+    logging.basicConfig(format=args.log_format, datefmt=args.log_datefmt)
     inators.arg.process_log_level_argument(args, logger)
 
+
+def process_args(args):
     args.input = realpath(args.input)
     if not exists(args.input):
         raise ValueError(f'Test case does not exist: {args.input}')
@@ -275,8 +284,6 @@ def execute():
     """
     The main entry point of picire.
     """
-    logging.basicConfig(format='%(message)s')
-
     parser = create_parser()
     # Implementation specific CLI options that are not needed to be part of the core parser.
     parser.add_argument('-a', '--atom', metavar='NAME', choices=['char', 'line', 'both'], default='line',
@@ -284,6 +291,7 @@ def execute():
     inators.arg.add_version_argument(parser, version=__version__)
     args = parser.parse_args()
 
+    config_logging(args)
     try:
         process_args(args)
     except ValueError as e:

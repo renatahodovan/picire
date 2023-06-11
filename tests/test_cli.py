@@ -33,7 +33,7 @@ resources_dir = os.path.join(tests_dir, 'resources')
     pytest.param('test-json-invalid-escape', 'inp-invalid-escape.json', 'exp-invalid-escape.json', ('--atom=both', ),
                  marks=pytest.mark.skipif(not is_cpython, reason='json error messages are implementation-specific')),
 ])
-class TestCli:
+class TestReduction:
 
     def _run_picire(self, test, inp, exp, tmpdir, args):
         out_dir = str(tmpdir)
@@ -70,3 +70,40 @@ class TestCli:
     ])
     def test_parallel(self, test, inp, exp, tmpdir, args_atom, args):
         self._run_picire(test, inp, exp, tmpdir, args_atom + ('--parallel',) + args)
+
+
+@pytest.mark.parametrize('test, inp, args_atom', [
+    pytest.param('test-json-extra-comma', 'inp-extra-comma.json', ('--atom=line', ),
+                 marks=pytest.mark.skipif(not is_cpython, reason='json error messages are implementation-specific')),
+    ('test-sumprod10-sum', 'inp-sumprod10.py', ('--atom=line', )),
+    ('test-sumprod10-prod', 'inp-sumprod10.py', ('--atom=line', )),
+    pytest.param('test-json-invalid-escape', 'inp-invalid-escape.json', ('--atom=char', ),
+                 marks=pytest.mark.skipif(not is_cpython, reason='json error messages are implementation-specific')),
+    pytest.param('test-json-invalid-escape', 'inp-invalid-escape.json', ('--atom=both', ),
+                 marks=pytest.mark.skipif(not is_cpython, reason='json error messages are implementation-specific')),
+])
+@pytest.mark.parametrize('limit', [
+    '--limit-time=0',
+    '--limit-tests=0',
+])
+class TestLimit:
+
+    def _run_picire(self, test, inp, tmpdir, args):
+        out_dir = str(tmpdir)
+        cmd = (sys.executable, '-m', 'picire') \
+            + (f'--test={test}{script_ext}', f'--input={inp}', f'--out={out_dir}') \
+            + ('--log-level=TRACE', ) \
+            + args
+        subprocess.run(cmd, cwd=resources_dir, check=True)
+
+        with open(os.path.join(out_dir, inp), 'rb') as outf:
+            outb = outf.read()
+        with open(os.path.join(resources_dir, inp), 'rb') as inpf:
+            inpb = inpf.read()
+        assert outb == inpb
+
+    def test_dd(self, test, inp, tmpdir, args_atom, limit):
+        self._run_picire(test, inp, tmpdir, args_atom + (limit,))
+
+    def test_parallel(self, test, inp, tmpdir, args_atom, limit):
+        self._run_picire(test, inp, tmpdir, args_atom + ('--parallel',) + (limit,))

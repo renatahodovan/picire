@@ -12,7 +12,9 @@ from . import splitter
 from .cache import CacheRegistry
 from .cli import __version__, reduce
 from .dd import DD
+from .exception import ReductionError, ReductionException, ReductionStopped
 from .iterator import CombinedIterator, IteratorRegistry
+from .limit_reduction import LimitReduction
 from .outcome import Outcome
 from .parallel_dd import ParallelDD
 from .shared_cache import shared_cache_decorator

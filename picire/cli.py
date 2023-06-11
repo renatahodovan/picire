@@ -9,8 +9,10 @@
 import argparse
 import codecs
 import os
+import sys
 import time
 
+from datetime import timedelta
 from math import inf
 from multiprocessing import cpu_count
 from os.path import basename, exists, join, realpath
@@ -28,7 +30,9 @@ from inators import log as logging
 
 from .cache import CacheRegistry
 from .dd import DD
+from .exception import ReductionException, ReductionStopped
 from .iterator import CombinedIterator, IteratorRegistry
+from .limit_reduction import LimitReduction
 from .parallel_dd import ParallelDD
 from .shared_cache import shared_cache_decorator
 from .splitter import SplitterRegistry
@@ -91,6 +95,12 @@ def create_parser():
     parser.add_argument('--no-cache-evict-after-fail', dest='evict_after_fail', action='store_false', default=True,
                         help='disable the eviction of larger test cases from the cache when a failing, i.e., interesting test case is found')
 
+    # Limits on the reduction.
+    parser.add_argument('--limit-time', metavar='SEC', type=int,
+                        help='limit the execution time of reduction (in seconds; may result in non-minimal output)')
+    parser.add_argument('--limit-tests', metavar='N', type=int,
+                        help='limit the number of test command executions (may result in non-minimal output)')
+
     # Logging settings.
     inators.arg.add_log_level_argument(parser)
     parser.add_argument('--log-format', metavar='FORMAT', default='%(message)s',
@@ -148,12 +158,19 @@ def process_args(args):
     args.cache_config = {'cache_fail': args.cache_fail,
                          'evict_after_fail': args.evict_after_fail}
 
+    if args.limit_time is not None or args.limit_tests is not None:
+        stop = LimitReduction(deadline=timedelta(seconds=args.limit_time) if args.limit_time is not None else None,
+                              max_tests=args.limit_tests)
+    else:
+        stop = None
+
     # Choose the reducer class that will be used and its configuration.
     args.reduce_config = {'config_iterator': CombinedIterator(args.subset_first,
                                                               IteratorRegistry.registry[args.subset_iterator],
                                                               IteratorRegistry.registry[args.complement_iterator]),
                           'split': SplitterRegistry.registry[args.split](n=args.granularity),
-                          'dd_star': args.dd_star}
+                          'dd_star': args.dd_star,
+                          'stop': stop}
     if not args.parallel:
         args.reduce_class = DD
     else:
@@ -221,6 +238,10 @@ def reduce(src, *,
     :param cache_config: Dictionary containing information to initialize the
         cache_class.
     :return: The contents of the minimal test case.
+    :raises ReductionException: If reduction could not run until completion. The
+        ``result`` attribute of the exception contains the contents of the
+        smallest, potentially non-minimal, but failing test case found during
+        reduction.
     """
 
     # Get the parameters in a dictionary so that they can be pretty-printed
@@ -246,11 +267,19 @@ def reduce(src, *,
                           cache=cache,
                           id_prefix=(f'a{atom_cnt}',),
                           **reduce_config)
-        min_set = dd(list(range(len(src))))
-        src = test_builder(min_set)
+        try:
+            min_set = dd(list(range(len(src))))
+            src = test_builder(min_set)
 
-        logger.trace('The cached results are: %s', cache)
-        logger.debug('A minimal config is: %r', min_set)
+            logger.trace('The cached results are: %s', cache)
+            logger.debug('A minimal config is: %r', min_set)
+        except ReductionException as e:
+            logger.trace('The cached results are: %s', cache)
+            logger.debug('The reduced config is: %r', e.result)
+            logger.warning('Reduction stopped prematurely, the output may not be minimal: %s', e, exc_info=None if isinstance(e, ReductionStopped) else e)
+
+            e.result = test_builder(e.result)
+            raise
 
     return src
 
@@ -283,13 +312,17 @@ def execute():
     except ValueError as e:
         parser.error(e)
 
-    out_src = reduce(args.src,
-                     reduce_class=args.reduce_class,
-                     reduce_config=args.reduce_config,
-                     tester_class=args.tester_class,
-                     tester_config=args.tester_config,
-                     atom=args.atom,
-                     cache_class=args.cache_class,
-                     cache_config=args.cache_config)
-
-    postprocess(args, out_src)
+    try:
+        out_src = reduce(args.src,
+                         reduce_class=args.reduce_class,
+                         reduce_config=args.reduce_config,
+                         tester_class=args.tester_class,
+                         tester_config=args.tester_config,
+                         atom=args.atom,
+                         cache_class=args.cache_class,
+                         cache_config=args.cache_config)
+        postprocess(args, out_src)
+    except ReductionException as e:
+        postprocess(args, e.result)
+        if not isinstance(e, ReductionStopped):
+            sys.exit(1)

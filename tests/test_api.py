@@ -66,7 +66,7 @@ class CaseTest:
     2,
     math.inf,
 ])
-class TestApi:
+class TestReduction:
 
     def _run_picire(self, interesting, config, expect, granularity, dd, split, subset_first, subset_iterator, complement_iterator, cache):
         logging.basicConfig(format='%(message)s')
@@ -101,3 +101,33 @@ class TestApi:
     ])
     def test_parallel(self, interesting, config, expect, granularity, split, subset_first, subset_iterator, complement_iterator, cache):
         self._run_picire(interesting, config, expect, granularity, picire.ParallelDD, split, subset_first, subset_iterator, complement_iterator, picire.shared_cache_decorator(cache))
+
+
+@pytest.mark.parametrize('interesting, config', [
+    (interesting_a, config_a),
+    (interesting_b, config_b),
+    (interesting_c, config_c),
+])
+@pytest.mark.parametrize('deadline, max_tests', [
+    (0, None),
+    (None, 0),
+])
+class TestLimit:
+
+    def _run_picire(self, interesting, config, dd, deadline, max_tests):
+        logging.basicConfig(format='%(message)s')
+        logging.getLogger('picire').setLevel(logging.DEBUG)
+
+        dd_obj = dd(CaseTest(interesting, config),
+                    stop=picire.LimitReduction(deadline=deadline, max_tests=max_tests))
+        with pytest.raises(picire.ReductionStopped) as exc_info:
+            dd_obj(list(range(len(config))))
+
+        output = [config[x] for x in exc_info.value.result]
+        assert output == config
+
+    def test_dd(self, interesting, config, deadline, max_tests):
+        self._run_picire(interesting, config, picire.DD, deadline, max_tests)
+
+    def test_parallel(self, interesting, config, deadline, max_tests):
+        self._run_picire(interesting, config, picire.ParallelDD, deadline, max_tests)

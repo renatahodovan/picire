@@ -88,7 +88,7 @@ class DD(object):
                 elif len(subsets) < len(config):
                     # No interesting configuration is found but it is still not the finest splitting, start new iteration.
                     next_subsets = self._split(subsets)
-                    complement_offset = (complement_offset * len(next_subsets)) / len(subsets)
+                    complement_offset = (complement_offset * len(next_subsets)) // len(subsets)
                     subsets = next_subsets
 
                     logger.info('\tIncreased granularity')
@@ -121,7 +121,7 @@ class DD(object):
                 config_id = (f'r{run}', f's{i}')
                 config_set = subsets[i]
             else:
-                i = int((-i - 1 + complement_offset) % n)
+                i = (-i - 1 + complement_offset) % n
                 config_id = (f'r{run}', f'c{i}')
                 config_set = [c for si, s in enumerate(subsets) for c in s if si != i]
                 i = -i - 1

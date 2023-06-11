@@ -79,7 +79,7 @@ class ParallelDD(DD):
                 config_id = (f'r{run}', f's{i}')
                 config_set = subsets[i]
             else:
-                i = int((-i - 1 + complement_offset) % n)
+                i = (-i - 1 + complement_offset) % n
                 config_id = (f'r{run}', f'c{i}')
                 config_set = [c for si, s in enumerate(subsets) for c in s if si != i]
                 i = -i - 1

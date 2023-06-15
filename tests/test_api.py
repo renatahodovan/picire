@@ -100,7 +100,7 @@ class TestReduction:
         (picire.splitter.BalancedSplit, False, picire.iterator.skip, picire.iterator.backward, picire.cache.NoCache),
     ])
     def test_parallel(self, interesting, config, expect, granularity, split, subset_first, subset_iterator, complement_iterator, cache):
-        self._run_picire(interesting, config, expect, granularity, picire.ParallelDD, split, subset_first, subset_iterator, complement_iterator, picire.shared_cache_decorator(cache))
+        self._run_picire(interesting, config, expect, granularity, picire.ParallelDD, split, subset_first, subset_iterator, complement_iterator, cache)
 
 
 @pytest.mark.parametrize('interesting, config', [

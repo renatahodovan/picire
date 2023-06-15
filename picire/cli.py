@@ -34,7 +34,6 @@ from .exception import ReductionException, ReductionStopped
 from .iterator import CombinedIterator, IteratorRegistry
 from .limit_reduction import LimitReduction
 from .parallel_dd import ParallelDD
-from .shared_cache import shared_cache_decorator
 from .splitter import SplitterRegistry
 from .subprocess_test import ConcatTestBuilder, SubprocessTest
 
@@ -76,8 +75,6 @@ def create_parser():
                         help='run DD in parallel')
     parser.add_argument('-j', '--jobs', metavar='N', type=int, default=cpu_count(),
                         help='maximum number of test commands to execute in parallel (has effect in parallel mode only; default: %(default)s)')
-    parser.add_argument('-u', '--max-utilization', metavar='N', type=int, default=100,
-                        help='maximum CPU utilization allowed; don\'t start new parallel jobs until utilization is higher (has effect in parallel mode only; default: %(default)s)')
 
     # Tweaks how to walk through the chunk lists.
     parser.add_argument('--complement-first', dest='subset_first', action='store_false', default=True,
@@ -153,8 +150,6 @@ def process_args(args):
                           'cleanup': args.cleanup}
 
     args.cache_class = CacheRegistry.registry[args.cache]
-    if args.parallel:
-        args.cache_class = shared_cache_decorator(args.cache_class)
     args.cache_config = {'cache_fail': args.cache_fail,
                          'evict_after_fail': args.evict_after_fail}
 
@@ -175,8 +170,7 @@ def process_args(args):
         args.reduce_class = DD
     else:
         args.reduce_class = ParallelDD
-        args.reduce_config.update(proc_num=args.jobs,
-                                  max_utilization=args.max_utilization)
+        args.reduce_config.update(proc_num=args.jobs)
 
     logger.info('Input loaded from %s', args.input)
 

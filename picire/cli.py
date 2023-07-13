@@ -88,6 +88,12 @@ def create_parser():
                         choices=sorted(IteratorRegistry.registry.keys()), default='forward',
                         help='ordering strategy for looping through complements (%(choices)s; default: %(default)s)')
 
+    # Tweaks for caching.
+    parser.add_argument('--cache-fail', action='store_true', default=False,
+                        help='store failing, i.e., interesting test cases in the cache')
+    parser.add_argument('--no-cache-evict-after-fail', dest='evict_after_fail', action='store_false', default=True,
+                        help='disable the eviction of larger test cases from the cache when a failing, i.e., interesting test case is found')
+
     # Additional settings.
     inators.arg.add_log_level_argument(parser)
     parser.add_argument('-o', '--out', metavar='DIR',
@@ -130,9 +136,11 @@ def process_args(args):
                           'encoding': args.encoding,
                           'cleanup': args.cleanup}
 
-    args.cache = CacheRegistry.registry[args.cache]
+    args.cache_class = CacheRegistry.registry[args.cache]
     if args.parallel:
-        args.cache = shared_cache_decorator(args.cache)
+        args.cache_class = shared_cache_decorator(args.cache_class)
+    args.cache_config = {'cache_fail': args.cache_fail,
+                         'evict_after_fail': args.evict_after_fail}
 
     split_class = SplitterRegistry.registry[args.split]
     subset_iterator = IteratorRegistry.registry[args.subset_iterator]
@@ -199,7 +207,7 @@ def reduce(src, *,
            reduce_class, reduce_config,
            tester_class, tester_config,
            atom='line',
-           cache_class=None):
+           cache_class=None, cache_config=None):
     """
     Execute picire as if invoked from command line, however, control its
     behaviour not via command line arguments but function parameters.
@@ -215,6 +223,8 @@ def reduce(src, *,
     :param atom: Input granularity to work with during reduce ('char', 'line',
         or 'both'; default: 'line').
     :param cache_class: Reference to the cache class to use.
+    :param cache_config: Dictionary containing information to initialize the
+        cache_class.
     :return: The contents of the minimal test case.
     """
 
@@ -224,7 +234,7 @@ def reduce(src, *,
     del args['src']
     log_args('Reduce session starts', args)
 
-    cache = cache_class() if cache_class else None
+    cache = cache_class(**cache_config) if cache_class else None
 
     for atom_cnt, atom_name in enumerate(['line', 'char'] if atom == 'both' else [atom]):
         # Split source to the chosen atoms.
@@ -285,6 +295,7 @@ def execute():
                      tester_class=args.tester_class,
                      tester_config=args.tester_config,
                      atom=args.atom,
-                     cache_class=args.cache)
+                     cache_class=args.cache_class,
+                     cache_config=args.cache_config)
 
     postprocess(args, out_src)

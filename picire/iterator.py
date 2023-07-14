@@ -56,3 +56,53 @@ def random(n):
     lst = list(range(n))
     shuffle(lst)
     yield from lst
+
+
+class CombinedIterator(object):
+    """
+    Callable iterator class that acts as generator when subset and complement
+    check loops are combined.
+    """
+
+    def __init__(self, subset_first=True, subset_iterator=forward, complement_iterator=forward):
+        """
+        Initialize CombinedIterator with the basic settings describing the order
+        of subset and complement checks together with the certain iterators.
+
+        :param subset_first: Boolean value denoting whether the reduce has to
+            start with the subset-based approach or not.
+        :param subset_iterator: Reference to a generator function that provides
+            config indices in an arbitrary order.
+        :param complement_iterator: Reference to a generator function that
+            provides config indices in an arbitrary order.
+        """
+        self._subset_first = subset_first
+        self._subset_iterator = subset_iterator
+        self._complement_iterator = complement_iterator
+
+    def __call__(self, n):
+        """
+        Provide the index of the next configuration according to the settings.
+
+        :param n: The number of subsets in the configuration.
+        :return: The index of the next configuration (i=0..n-1 to keep subset i,
+            i=-1..-n to remove subset -i-1).
+        """
+        if self._subset_first:
+            for i in self._subset_iterator(n):
+                yield i
+            for i in self._complement_iterator(n):
+                yield -i - 1
+        else:
+            for i in self._complement_iterator(n):
+                yield -i - 1
+            for i in self._subset_iterator(n):
+                yield i
+
+    def __str__(self):
+        def _str(a):
+            if hasattr(a, '__name__'):
+                return '.'.join(([a.__module__] if hasattr(a, '__module__') else []) + [a.__name__])
+            return str(a)
+
+        return f'{_str(self.__class__)}(subset_first={self._subset_first}, subset_iterator={_str(self._subset_iterator)}, complement_iterator={_str(self._complement_iterator)})'

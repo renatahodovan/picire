@@ -68,17 +68,6 @@ class CaseTest:
 class TestApi:
 
     def _run_picire(self, interesting, config, expect, granularity, dd, split, subset_first, subset_iterator, complement_iterator, cache):
-        if dd != picire.CombinedParallelDD:
-            it_kwargs = {
-                'subset_first': subset_first,
-                'subset_iterator': subset_iterator,
-                'complement_iterator': complement_iterator,
-            }
-        else:
-            it_kwargs = {
-                'config_iterator': picire.CombinedIterator(subset_first, subset_iterator, complement_iterator)
-            }
-
         if dd != picire.DD:
             cache = picire.shared_cache_decorator(cache)
 
@@ -88,7 +77,7 @@ class TestApi:
         dd_obj = dd(CaseTest(interesting, config),
                     split=split(n=granularity),
                     cache=cache(),
-                    **it_kwargs)
+                    config_iterator=picire.iterator.CombinedIterator(subset_first, subset_iterator, complement_iterator))
         output = [config[x] for x in dd_obj(list(range(len(config))))]
 
         assert output == expect
@@ -109,17 +98,8 @@ class TestApi:
         (picire.splitter.BalancedSplit, False, picire.iterator.forward, picire.iterator.backward, picire.cache.NoCache),
         (picire.splitter.ZellerSplit, True, picire.iterator.backward, picire.iterator.forward, picire.cache.ConfigCache),
         (picire.splitter.BalancedSplit, True, picire.iterator.backward, picire.iterator.backward, picire.cache.NoCache),
-        (picire.splitter.ZellerSplit, True, picire.iterator.skip, picire.iterator.forward, picire.cache.ConfigCache),
-        (picire.splitter.BalancedSplit, True, picire.iterator.skip, picire.iterator.backward, picire.cache.NoCache),
+        (picire.splitter.ZellerSplit, False, picire.iterator.skip, picire.iterator.forward, picire.cache.ConfigCache),
+        (picire.splitter.BalancedSplit, False, picire.iterator.skip, picire.iterator.backward, picire.cache.NoCache),
     ])
     def test_parallel(self, interesting, config, expect, granularity, split, subset_first, subset_iterator, complement_iterator, cache):
         self._run_picire(interesting, config, expect, granularity, picire.ParallelDD, split, subset_first, subset_iterator, complement_iterator, cache)
-
-    @pytest.mark.parametrize('split, subset_first, subset_iterator, complement_iterator, cache', [
-        (picire.splitter.ZellerSplit, True, picire.iterator.forward, picire.iterator.forward, picire.cache.NoCache),
-        (picire.splitter.BalancedSplit, True, picire.iterator.forward, picire.iterator.backward, picire.cache.ConfigCache),
-        (picire.splitter.ZellerSplit, False, picire.iterator.backward, picire.iterator.forward, picire.cache.NoCache),
-        (picire.splitter.BalancedSplit, False, picire.iterator.backward, picire.iterator.backward, picire.cache.ConfigCache),
-    ])
-    def test_combined(self, interesting, config, expect, granularity, split, subset_first, subset_iterator, complement_iterator, cache):
-        self._run_picire(interesting, config, expect, granularity, picire.CombinedParallelDD, split, subset_first, subset_iterator, complement_iterator, cache)

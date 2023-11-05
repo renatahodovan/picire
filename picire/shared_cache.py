@@ -21,7 +21,7 @@ class SharedCacheManager(BaseManager):
     _managers = {}
 
 
-class SharedCacheConstructor(object):
+class SharedCacheConstructor:
     """
     Wrapper for cache classes to instantiate them as shared.
     """

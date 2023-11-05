@@ -17,7 +17,7 @@ from .splitter import ZellerSplit
 logger = logging.getLogger(__name__)
 
 
-class DD(object):
+class DD:
     """
     Single process version of the Delta Debugging algorithm.
     """

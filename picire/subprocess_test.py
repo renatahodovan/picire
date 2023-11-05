@@ -1,4 +1,4 @@
-# Copyright (c) 2016-2021 Renata Hodovan, Akos Kiss.
+# Copyright (c) 2016-2023 Renata Hodovan, Akos Kiss.
 #
 # Licensed under the BSD 3-Clause License
 # <LICENSE.rst or https://opensource.org/licenses/BSD-3-Clause>.
@@ -14,7 +14,7 @@ from subprocess import run
 from .outcome import Outcome
 
 
-class SubprocessTest(object):
+class SubprocessTest:
 
     def __init__(self, *, test_builder, command_pattern, work_dir, filename, encoding='utf-8', cleanup=True):
         """
@@ -74,7 +74,7 @@ class SubprocessTest(object):
         return Outcome.FAIL if returncode == 0 else Outcome.PASS
 
 
-class ConcatTestBuilder(object):
+class ConcatTestBuilder:
     """
     Callable class that builds test case from a configuration.
     """

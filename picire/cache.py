@@ -11,7 +11,7 @@ from hashlib import sha3_256
 from .outcome import Outcome
 
 
-class CacheRegistry(object):
+class CacheRegistry:
     registry = {}
 
     @classmethod
@@ -22,7 +22,7 @@ class CacheRegistry(object):
         return decorator
 
 
-class OutcomeCache(object):
+class OutcomeCache:
     """
     Abstract base class for configuration outcome caching strategies.
     """
@@ -101,7 +101,7 @@ class ConfigCache(OutcomeCache):
     outcomes, using a tree as the underlying data structure.
     """
 
-    class _Entry(object):
+    class _Entry:
         """
         This class holds test outcomes for configurations. This avoids running
         the same test twice.

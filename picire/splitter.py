@@ -5,7 +5,7 @@
 # This file may not be copied, modified, or distributed except
 # according to those terms.
 
-class SplitterRegistry(object):
+class SplitterRegistry:
     registry = {}
 
     @classmethod
@@ -17,7 +17,7 @@ class SplitterRegistry(object):
 
 
 @SplitterRegistry.register('zeller')
-class ZellerSplit(object):
+class ZellerSplit:
     """
     Splits up the input config into n pieces as used by Zeller in the original
     reference implementation. The approach works iteratively in n steps, first
@@ -57,7 +57,7 @@ class ZellerSplit(object):
 
 
 @SplitterRegistry.register('balanced')
-class BalancedSplit(object):
+class BalancedSplit:
     """
     Slightly different version of Zeller's split. This version keeps the split
     balanced by distributing the residuals of the integer division among all

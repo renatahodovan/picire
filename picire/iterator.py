@@ -5,7 +5,10 @@
 # This file may not be copied, modified, or distributed except
 # according to those terms.
 
-class IteratorRegistry(object):
+from random import shuffle
+
+
+class IteratorRegistry:
     registry = {}
 
     @classmethod
@@ -51,14 +54,12 @@ def random(n):
     :param n: Upper bound of the interval.
     :return: Numbers in random order from 0 to n - 1.
     """
-    from random import shuffle
-
     lst = list(range(n))
     shuffle(lst)
     yield from lst
 
 
-class CombinedIterator(object):
+class CombinedIterator:
     """
     Callable iterator class that acts as generator when subset and complement
     check loops are combined.

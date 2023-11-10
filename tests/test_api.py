@@ -20,6 +20,7 @@ def interesting_a(c):
         return True
     return False
 
+
 config_a = [1, 2, 3, 4, 5, 6, 7, 8]
 expect_a = [5, 8]
 
@@ -27,20 +28,20 @@ expect_a = [5, 8]
 def interesting_b(c):
     if not c:
         return False
-    if 1 in c and 2 in c and 3 in c and 4 in c and \
-                    5 in c and 6 in c and 7 in c and 8 in c:
+    if all(d in c for d in [1, 2, 3, 4, 5, 6, 7, 8]):
         return True
     return False
+
 
 config_b = [1, 2, 3, 4, 5, 6, 7, 8]
 expect_b = [1, 2, 3, 4, 5, 6, 7, 8]
 
 
 def interesting_c(c):
-    if 1 in c and 2 in c and 3 in c and 4 in c and \
-       6 in c and 8 in c:
+    if all(d in c for d in [1, 2, 3, 4, 6, 8]):
         return True
     return False
+
 
 config_c = [1, 2, 3, 4, 5, 6, 7, 8]
 expect_c = [1, 2, 3, 4, 6, 8]

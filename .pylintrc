@@ -20,6 +20,7 @@ disable=
     protected-access,
     too-few-public-methods,
     too-many-arguments,
+    too-many-boolean-expressions,
     too-many-branches,
     unused-argument,
     useless-option-value,  # disables warning in recent pylint that does not check for no-self-use anymore

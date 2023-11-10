@@ -8,9 +8,10 @@
 
 import os
 import platform
-import pytest
 import subprocess
 import sys
+
+import pytest
 
 
 is_windows = sys.platform.startswith('win32')
@@ -37,9 +38,9 @@ class TestCli:
     def _run_picire(self, test, inp, exp, tmpdir, args):
         out_dir = str(tmpdir)
         cmd = (sys.executable, '-m', 'picire') \
-              + (f'--test={test}{script_ext}', f'--input={inp}', f'--out={out_dir}') \
-              + ('--log-level=TRACE', ) \
-              + args
+            + (f'--test={test}{script_ext}', f'--input={inp}', f'--out={out_dir}') \
+            + ('--log-level=TRACE', ) \
+            + args
         subprocess.run(cmd, cwd=resources_dir, check=True)
 
         with open(os.path.join(out_dir, inp), 'rb') as outf:

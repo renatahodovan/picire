@@ -1,10 +1,10 @@
 #!/usr/bin/env python3
 
-sum = 0
-prod = 1
-for i in range(1,11):
-    sum += i
-    prod *= i
+s = 0
+p = 1
+for i in range(1, 11):
+    s += i
+    p *= i
 
-print(f'sum: {sum}')
-print(f'prod: {prod}')
+print(f'sum: {s}')
+print(f'prod: {p}')

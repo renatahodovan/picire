@@ -69,9 +69,6 @@ class CaseTest:
 class TestApi:
 
     def _run_picire(self, interesting, config, expect, granularity, dd, split, subset_first, subset_iterator, complement_iterator, cache):
-        if dd != picire.DD:
-            cache = picire.shared_cache_decorator(cache)
-
         logging.basicConfig(format='%(message)s')
         logging.getLogger('picire').setLevel(logging.DEBUG)
 
@@ -103,4 +100,4 @@ class TestApi:
         (picire.splitter.BalancedSplit, False, picire.iterator.skip, picire.iterator.backward, picire.cache.NoCache),
     ])
     def test_parallel(self, interesting, config, expect, granularity, split, subset_first, subset_iterator, complement_iterator, cache):
-        self._run_picire(interesting, config, expect, granularity, picire.ParallelDD, split, subset_first, subset_iterator, complement_iterator, cache)
+        self._run_picire(interesting, config, expect, granularity, picire.ParallelDD, split, subset_first, subset_iterator, complement_iterator, picire.shared_cache_decorator(cache))

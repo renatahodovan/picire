@@ -10,6 +10,7 @@ import itertools
 import logging
 
 from .cache import ConfigCache
+from .exception import ReductionError, ReductionStopped
 from .iterator import CombinedIterator
 from .outcome import Outcome
 from .splitter import ZellerSplit
@@ -23,7 +24,7 @@ class DD:
     """
 
     def __init__(self, test, *, split=None, cache=None, id_prefix=None,
-                 config_iterator=None, dd_star=False):
+                 config_iterator=None, dd_star=False, stop=None):
         """
         Initialize a DD object.
 
@@ -34,6 +35,7 @@ class DD:
         :param config_iterator: Reference to a generator function that provides
             config indices in an arbitrary order.
         :param dd_star: Boolean to enable the DD star algorithm.
+        :param stop: A callable invoked before the execution of every test.
         """
         self._test = test
         self._split = split or ZellerSplit()
@@ -42,6 +44,7 @@ class DD:
         self._iteration_prefix = ()
         self._config_iterator = config_iterator or CombinedIterator()
         self._dd_star = dd_star
+        self._stop = stop
 
     def __call__(self, config):
         """
@@ -49,6 +52,10 @@ class DD:
 
         :param config: The initial configuration that will be reduced.
         :return: 1-minimal failing configuration.
+        :raises ReductionException: If reduction could not run until completion.
+            The ``result`` attribute of the exception contains the smallest,
+            potentially non-minimal, but failing configuration found during
+            reduction.
         """
         for iter_cnt in itertools.count():
             logger.info('Iteration #%d', iter_cnt)
@@ -75,7 +82,15 @@ class DD:
                 logger.info('\tGranularity: %d', len(subsets))
                 logger.debug('\tConfig: %r', subsets)
 
-                next_subsets, complement_offset = self._reduce_config(run, subsets, complement_offset)
+                try:
+                    next_subsets, complement_offset = self._reduce_config(run, subsets, complement_offset)
+                except ReductionStopped as e:
+                    logger.info('\tStopped')
+                    e.result = config
+                    raise
+                except Exception as e:
+                    logger.info('\tErrored')
+                    raise ReductionError(str(e), result=config) from e
 
                 if next_subsets is not None:
                     changed = True
@@ -127,7 +142,10 @@ class DD:
                 i = -i - 1
 
             # Get the outcome either from cache or by testing it.
-            outcome = self._lookup_cache(config_set, config_id) or self._test_config(config_set, config_id)
+            outcome = self._lookup_cache(config_set, config_id)
+            if outcome is None:
+                self._check_stop()
+                outcome = self._test_config(config_set, config_id)
             if outcome is Outcome.FAIL:
                 fvalue = i
                 break
@@ -144,6 +162,16 @@ class DD:
             return [subsets[fvalue]], 0
 
         return None, complement_offset
+
+    def _check_stop(self):
+        """
+        Check whether reduction shall continue with executing the next test or
+        stop.
+
+        :raises ReductionStopped: If reduction shall not continue.
+        """
+        if self._stop:
+            self._stop()
 
     def _lookup_cache(self, config, config_id):
         """

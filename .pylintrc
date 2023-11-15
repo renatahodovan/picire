@@ -22,6 +22,8 @@ disable=
     too-many-arguments,
     too-many-boolean-expressions,
     too-many-branches,
+    too-many-instance-attributes,
+    too-many-locals,
     unused-argument,
     useless-option-value,  # disables warning in recent pylint that does not check for no-self-use anymore
 

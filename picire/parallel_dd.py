@@ -22,7 +22,7 @@ logger = logging.getLogger(__name__)
 class ParallelDD(DD):
 
     def __init__(self, test, *, split=None, cache=None, id_prefix=None,
-                 config_iterator=None, dd_star=False,
+                 config_iterator=None, dd_star=False, stop=None,
                  proc_num=None, max_utilization=None):
         """
         Initialize a ParallelDD object.
@@ -34,11 +34,12 @@ class ParallelDD(DD):
         :param config_iterator: Reference to a generator function that provides
             config indices in an arbitrary order.
         :param dd_star: Boolean to enable the DD star algorithm.
+        :param stop: A callable invoked before the execution of every test.
         :param proc_num: The level of parallelization.
         :param max_utilization: The maximum CPU utilization accepted.
         """
         cache = cache or shared_cache_decorator(ConfigCache)()
-        super().__init__(test=test, split=split, cache=cache, id_prefix=id_prefix, config_iterator=config_iterator, dd_star=dd_star)
+        super().__init__(test=test, split=split, cache=cache, id_prefix=id_prefix, config_iterator=config_iterator, dd_star=dd_star, stop=stop)
 
         self._proc_num = proc_num
         self._max_utilization = max_utilization
@@ -93,6 +94,7 @@ class ParallelDD(DD):
                 ploop.brk()
                 break
 
+            self._check_stop()
             # Break if we found a FAIL either in the cache or be testing it now.
             if not ploop.do(self._loop_body, (config_set, i, config_id)):
                 # if do() returned False, the test was not started

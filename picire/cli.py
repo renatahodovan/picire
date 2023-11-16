@@ -250,7 +250,8 @@ def reduce(src, *,
     # (minus src, as that parameter can be arbitrarily large)
     args = locals().copy()
     del args['src']
-    logger.info('Reduce session starts\n%s', indent(pretty_str(args), '\t'))
+    if logger.isEnabledFor(logging.INFO):
+        logger.info('Reduce session starts\n%s', indent(pretty_str(args), '\t'))
 
     cache = cache_class(**cache_config) if cache_class else None
 

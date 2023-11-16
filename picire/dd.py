@@ -184,7 +184,8 @@ class DD:
             is disabled, PASS or FAIL otherwise.
         """
         cached_result = self._cache.lookup(config)
-        if cached_result is not None:
+
+        if cached_result is not None and logger.isEnabledFor(logging.DEBUG):
             logger.debug('\t[ %s ]: cache = %r', self._pretty_config_id(self._iteration_prefix + config_id), cached_result.name)
 
         return cached_result
@@ -200,9 +201,14 @@ class DD:
         """
         config_id = self._iteration_prefix + config_id
 
-        logger.debug('\t[ %s ]: test...', self._pretty_config_id(config_id))
+        if logger.isEnabledFor(logging.DEBUG):
+            pretty_config_id = self._pretty_config_id(config_id)
+            logger.debug('\t[ %s ]: test...', pretty_config_id)
+
         outcome = self._test(config, config_id)
-        logger.debug('\t[ %s ]: test = %r', self._pretty_config_id(config_id), outcome.name)
+
+        if logger.isEnabledFor(logging.DEBUG):
+            logger.debug('\t[ %s ]: test = %r', pretty_config_id, outcome.name)
 
         if 'assert' not in config_id:
             self._cache.add(config, outcome)

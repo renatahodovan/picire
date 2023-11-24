@@ -17,6 +17,7 @@ from math import inf
 from multiprocessing import cpu_count
 from os.path import basename, exists, join, realpath
 from shutil import rmtree
+from textwrap import indent
 
 try:
     from importlib import metadata
@@ -175,15 +176,22 @@ def process_args(args):
     logger.info('Input loaded from %s', args.input)
 
 
-def log_args(title, args):
-    def _log_args(args):
-        if not args:
-            return repr(args)
-        if isinstance(args, dict):
+def pretty_str(obj):
+    """
+    Return the "pretty-string" representation of a data structure. Explicitly
+    handles dicts and lists arbitrarily nested in each other, and objects with
+    ``__name__`` (typically functions and classes). Everything else is handled
+    with :func:`str` as a fallback. The output is YAML-like, but with no intent
+    to be conforming. The goal is to be informative when logging.
+    """
+    def _pretty_str(obj):
+        if not obj:
+            return repr(obj)
+        if isinstance(obj, dict):
             log = []
-            for k, v in sorted(args.items()):
-                k_log = _log_args(k)
-                v_log = _log_args(v)
+            for k, v in sorted(obj.items()):
+                k_log = _pretty_str(k)
+                v_log = _pretty_str(v)
                 if isinstance(v_log, list):
                     log += [f'{k_log}:']
                     for line in v_log:
@@ -191,8 +199,8 @@ def log_args(title, args):
                 else:
                     log += [f'{k_log}: {v_log}']
             return log if len(log) > 1 else log[0]
-        if isinstance(args, list):
-            v_logs = [_log_args(v) for v in args]
+        if isinstance(obj, list):
+            v_logs = [_pretty_str(v) for v in obj]
             if any(isinstance(v_log, list) for v_log in v_logs):
                 log = []
                 for v_log in v_logs:
@@ -203,10 +211,10 @@ def log_args(title, args):
             else:
                 log = ', '.join(v_log for v_log in v_logs)
             return log
-        if hasattr(args, '__name__'):
-            return '.'.join(([args.__module__] if hasattr(args, '__module__') else []) + [args.__name__])
-        return str(args)
-    logger.info('%s\n\t%s\n', title, '\n\t'.join(_log_args(args)))
+        if hasattr(obj, '__name__'):
+            return '.'.join(([obj.__module__] if hasattr(obj, '__module__') else []) + [obj.__name__])
+        return str(obj)
+    return '\n'.join(_pretty_str(obj))
 
 
 def reduce(src, *,
@@ -242,7 +250,7 @@ def reduce(src, *,
     # (minus src, as that parameter can be arbitrarily large)
     args = locals().copy()
     del args['src']
-    log_args('Reduce session starts', args)
+    logger.info('Reduce session starts\n%s', indent(pretty_str(args), '\t'))
 
     cache = cache_class(**cache_config) if cache_class else None
 

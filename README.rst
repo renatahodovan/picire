@@ -38,7 +38,7 @@ test is **1-minimal**).
 Requirements
 ============
 
-* Python_ >= 3.7
+* Python_ >= 3.8
 
 .. _Python: https://www.python.org
 

@@ -1,4 +1,4 @@
-# Copyright (c) 2016-2023 Renata Hodovan, Akos Kiss.
+# Copyright (c) 2016-2024 Renata Hodovan, Akos Kiss.
 #
 # Licensed under the BSD 3-Clause License
 # <LICENSE.rst or https://opensource.org/licenses/BSD-3-Clause>.
@@ -90,15 +90,13 @@ class CombinedIterator:
             i=-1..-n to remove subset -i-1).
         """
         if self._subset_first:
-            for i in self._subset_iterator(n):
-                yield i
+            yield from self._subset_iterator(n)
             for i in self._complement_iterator(n):
                 yield -i - 1
         else:
             for i in self._complement_iterator(n):
                 yield -i - 1
-            for i in self._subset_iterator(n):
-                yield i
+            yield from self._subset_iterator(n)
 
     def __str__(self):
         def _str(a):

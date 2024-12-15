@@ -1,4 +1,4 @@
-# Copyright (c) 2016-2023 Renata Hodovan, Akos Kiss.
+# Copyright (c) 2016-2024 Renata Hodovan, Akos Kiss.
 # Copyright (c) 2023 Daniel Vince.
 #
 # Licensed under the BSD 3-Clause License
@@ -13,16 +13,12 @@ import sys
 import time
 
 from datetime import timedelta
+from importlib import metadata
 from math import inf
 from multiprocessing import cpu_count
 from os.path import basename, exists, join, realpath
 from shutil import rmtree
 from textwrap import indent
-
-try:
-    from importlib import metadata
-except ImportError:
-    import importlib_metadata as metadata
 
 import chardet
 import inators

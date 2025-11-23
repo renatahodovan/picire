@@ -1,11 +1,10 @@
-# Copyright (c) 2016-2023 Renata Hodovan, Akos Kiss.
+# Copyright (c) 2016-2025 Renata Hodovan, Akos Kiss.
 #
 # Licensed under the BSD 3-Clause License
 # <LICENSE.rst or https://opensource.org/licenses/BSD-3-Clause>.
 # This file may not be copied, modified, or distributed except
 # according to those terms.
 
-import codecs
 import os
 import shutil
 
@@ -55,7 +54,7 @@ class SubprocessTest:
 
         os.makedirs(test_dir, exist_ok=True)
 
-        with codecs.open(test_path, 'w', encoding=self.encoding, errors='ignore') as f:
+        with open(test_path, 'w', encoding=self.encoding, errors='ignore', newline='') as f:
             f.write(self.test_builder(config))
 
         args = []

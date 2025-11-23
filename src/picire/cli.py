@@ -1,4 +1,4 @@
-# Copyright (c) 2016-2024 Renata Hodovan, Akos Kiss.
+# Copyright (c) 2016-2025 Renata Hodovan, Akos Kiss.
 # Copyright (c) 2023 Daniel Vince.
 #
 # Licensed under the BSD 3-Clause License
@@ -288,7 +288,7 @@ def postprocess(args, out_src):
         rmtree(join(args.out, 'tests'))
 
     output = join(args.out, basename(args.input))
-    with codecs.open(output, 'w', encoding=args.encoding, errors='ignore') as f:
+    with open(output, 'w', encoding=args.encoding, errors='ignore', newline='') as f:
         f.write(out_src)
 
     logger.info('Output saved to %s', output)

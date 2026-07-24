@@ -1,5 +1,5 @@
-# Copyright (c) 2016-2023 Renata Hodovan, Akos Kiss.
-# Copyright (c) 2023 Daniel Vince.
+# Copyright (c) 2016-2026 Renata Hodovan, Akos Kiss.
+# Copyright (c) 2023-2026 Daniel Vince.
 #
 # Licensed under the BSD 3-Clause License
 # <LICENSE.rst or https://opensource.org/licenses/BSD-3-Clause>.
@@ -25,32 +25,28 @@ class CacheRegistry:
 class OutcomeCache:
     """
     Abstract base class for configuration outcome caching strategies.
+
+    Both the configuration (list of unit indices) and its already-built test
+    content are passed in, so a strategy can key on whichever it needs without
+    re-building the content itself.
     """
 
-    def set_test_builder(self, test_builder):
-        """
-        Set the test builder for the cache.
-
-        :param test_builder: Callable object that creates test case from a
-            configuration. It must be identical to the test builder used by the
-            tester class.
-        """
-        raise NotImplementedError()
-
-    def add(self, config, result):
+    def add(self, config, content, result):
         """
         Add a new configuration to the cache.
 
         :param config: The configuration to save.
+        :param content: The test content built from the configuration.
         :param result: The outcome of the added configuration.
         """
         raise NotImplementedError()
 
-    def lookup(self, config):
+    def lookup(self, config, content):
         """
         Cache lookup to find out the outcome of a given configuration.
 
         :param config: The configuration we are looking for.
+        :param content: The test content built from the configuration.
         :return: PASS or FAIL if config is in the cache; None, otherwise.
         """
         raise NotImplementedError()
@@ -77,13 +73,10 @@ class NoCache(OutcomeCache):
             cache implementations.
         """
 
-    def set_test_builder(self, test_builder):
+    def add(self, config, content, result):
         pass
 
-    def add(self, config, result):
-        pass
-
-    def lookup(self, config):
+    def lookup(self, config, content):
         return None
 
     def clear(self):
@@ -135,9 +128,6 @@ class ConfigCache(OutcomeCache):
         self._evict_after_fail = evict_after_fail
         self._root = self._Entry()
 
-    def set_test_builder(self, test_builder):
-        pass
-
     def _evict(self, p, length):
         if length == 0:
             p.tail = {}
@@ -145,7 +135,7 @@ class ConfigCache(OutcomeCache):
             for e in p.tail.values():
                 self._evict(e, length - 1)
 
-    def add(self, config, result):
+    def add(self, config, content, result):
         if result is Outcome.PASS or self._cache_fail:
             p = self._root
             for cs in config:
@@ -157,7 +147,7 @@ class ConfigCache(OutcomeCache):
         if result is Outcome.FAIL and self._evict_after_fail:
             self._evict(self._root, len(config))
 
-    def lookup(self, config):
+    def lookup(self, config, content):
         p = self._root
         for cs in config:
             if cs not in p.tail:
@@ -205,10 +195,7 @@ class ConfigTupleCache(OutcomeCache):
         self._evict_after_fail = evict_after_fail
         self._container = {}
 
-    def set_test_builder(self, test_builder):
-        pass
-
-    def add(self, config, result):
+    def add(self, config, content, result):
         if result is Outcome.PASS or self._cache_fail:
             self._container[tuple(config)] = result
 
@@ -218,7 +205,7 @@ class ConfigTupleCache(OutcomeCache):
             for c in evicted:
                 del self._container[c]
 
-    def lookup(self, config):
+    def lookup(self, config, content):
         return self._container.get(tuple(config), None)
 
     def clear(self):
@@ -247,28 +234,28 @@ class ContentCache(OutcomeCache):
         self._cache_fail = cache_fail
         self._evict_after_fail = evict_after_fail
         self._container = {}
-        self._test_builder = None
 
-    def set_test_builder(self, test_builder):
-        self._test_builder = test_builder
+    def add(self, config, content, result):
+        if content is None:
+            raise ValueError('ContentCache requires test content.')
 
-    def add(self, config, result):
         if result is Outcome.FAIL and not self._cache_fail and not self._evict_after_fail:
             return
 
-        test_content = self._test_builder(config)
-
         if result is Outcome.PASS or self._cache_fail:
-            self._container[test_content] = result
+            self._container[content] = result
 
         if result is Outcome.FAIL and self._evict_after_fail:
-            length = len(test_content)
+            length = len(content)
             evicted = [c for c in self._container if len(c) > length]
             for c in evicted:
                 del self._container[c]
 
-    def lookup(self, config):
-        return self._container.get(self._test_builder(config), None)
+    def lookup(self, config, content):
+        if content is None:
+            raise ValueError('ContentCache requires test content.')
+
+        return self._container.get(content, None)
 
     def clear(self):
         pass
@@ -301,31 +288,26 @@ class ContentHashCache(OutcomeCache):
         self._evict_after_fail = evict_after_fail
         self._hash_ctor = hash_ctor
         self._container = {}
-        self._test_builder = None
 
     def _hash_content(self, test_content):
         return self._hash_ctor(test_content.encode('utf-8')).digest()
 
-    def set_test_builder(self, test_builder):
-        self._test_builder = test_builder
-
-    def add(self, config, result):
+    def add(self, config, content, result):
         if result is Outcome.FAIL and not self._evict_after_fail:
             return
 
-        test_content = self._test_builder(config)
-        length = len(test_content)
+        length = len(content)
 
         if result is Outcome.PASS:
-            self._container[self._hash_content(test_content)] = (result, length)
+            self._container[self._hash_content(content)] = (result, length)
 
         if result is Outcome.FAIL and self._evict_after_fail:
             evicted = [h for h, (_, l) in self._container.items() if l > length]
             for h in evicted:
                 del self._container[h]
 
-    def lookup(self, config):
-        result, _ = self._container.get(self._hash_content(self._test_builder(config)), (None, None))
+    def lookup(self, config, content):
+        result, _ = self._container.get(self._hash_content(content), (None, None))
         return result
 
     def clear(self):

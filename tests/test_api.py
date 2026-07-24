@@ -1,5 +1,5 @@
-# Copyright (c) 2016-2023 Renata Hodovan, Akos Kiss.
-# Copyright (c) 2023 Daniel Vince.
+# Copyright (c) 2016-2026 Renata Hodovan, Akos Kiss.
+# Copyright (c) 2023-2026 Daniel Vince.
 #
 # Licensed under the BSD 3-Clause License
 # <LICENSE.rst or https://opensource.org/licenses/BSD-3-Clause>.
@@ -53,7 +53,7 @@ class CaseTest:
         self.content = content
         self.interesting = interesting
 
-    def __call__(self, config, config_id):
+    def __call__(self, config, content, config_id):
         return picire.Outcome.FAIL if self.interesting([self.content[x] for x in config]) else picire.Outcome.PASS
 
 

@@ -14,13 +14,11 @@ from .outcome import Outcome
 
 class SubprocessTest:
 
-    def __init__(self, *, test_builder, command_pattern, work_dir, filename, encoding='utf-8', cleanup=True):
+    def __init__(self, *, command_pattern, work_dir, filename, encoding='utf-8', cleanup=True):
         """
         Wrapper around the script provided by the user. It decides about the
         interestingness based on the return code of executed script.
 
-        :param test_builder: Callable object that creates test case from a
-            configuration.
         :param command_pattern: The tester command as a sequence of arguments.
             If an element of the sequence contains %s, it is substituted with
             the path to the test case.
@@ -30,19 +28,19 @@ class SubprocessTest:
         :param cleanup: Binary flag denoting whether the test directory should
             be removed after test execution or not.
         """
-        self.test_builder = test_builder
         self.command_pattern = command_pattern
         self.work_dir = work_dir
         self.filename = filename
         self.encoding = encoding
         self.cleanup = cleanup
 
-    def __call__(self, config, config_id):
+    def __call__(self, config, content, config_id):
         """
         Saving and evaluating of the current configuration.
 
-        :param config: The list of units (chars or lines) that have to be
-            compiled into a single test.
+        :param config: The configuration being tested. It is unused because
+            the content has already been built by the reducer.
+        :param content: The already-built test case content to write and run.
         :param config_id: Unique ID of the current configuration. It's used to
             name the containing folder of the current test.
         :return: The evaluation of the current test. It's either FAIL or PASS.
@@ -54,7 +52,7 @@ class SubprocessTest:
         test_dir.mkdir(parents=True, exist_ok=True)
 
         with open(test_path, 'w', encoding=self.encoding, errors='ignore', newline='') as f:
-            f.write(self.test_builder(config))
+            f.write(content)
 
         args = []
         for arg in self.command_pattern:

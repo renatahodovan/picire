@@ -1,5 +1,5 @@
-# Copyright (c) 2016-2023 Renata Hodovan, Akos Kiss.
-# Copyright (c) 2023 Daniel Vince.
+# Copyright (c) 2016-2026 Renata Hodovan, Akos Kiss.
+# Copyright (c) 2023-2026 Daniel Vince.
 #
 # Licensed under the BSD 3-Clause License
 # <LICENSE.rst or https://opensource.org/licenses/BSD-3-Clause>.
@@ -18,13 +18,31 @@ from .splitter import ZellerSplit
 logger = logging.getLogger(__name__)
 
 
+class NoTestBuilder:
+    """
+    A dummy test builder that does not build a test case from a configuration.
+    It may only be used with caches and testers that do not expect content to work with.
+    """
+
+    def __call__(self, config):
+        """
+        No-op.
+
+        :param config: Unused, only added for compatibility with other test
+            builder implementations.
+        :return: `None`
+        """
+        return None
+
+
 class DD:
     """
     Single process version of the Delta Debugging algorithm.
     """
 
     def __init__(self, test, *, split=None, cache=None, id_prefix=None,
-                 config_iterator=None, dd_star=False, stop=None):
+                 config_iterator=None, dd_star=False, stop=None,
+                 test_builder=None):
         """
         Initialize a DD object.
 
@@ -36,6 +54,7 @@ class DD:
             config indices in an arbitrary order.
         :param dd_star: Boolean to enable the DD star algorithm.
         :param stop: A callable invoked before the execution of every test.
+        :param test_builder: Callable that builds test content from a config.
         """
         self._test = test
         self._split = split or ZellerSplit()
@@ -45,6 +64,7 @@ class DD:
         self._config_iterator = config_iterator or CombinedIterator()
         self._dd_star = dd_star
         self._stop = stop
+        self._test_builder = test_builder or NoTestBuilder()
 
     def __call__(self, config):
         """
@@ -67,7 +87,8 @@ class DD:
             for run in itertools.count():
                 logger.info('Run #%d', run)
                 logger.info('\tConfig size: %d', len(config))
-                assert self._test_config(config, (f'r{run}', 'assert')) is Outcome.FAIL
+                content = self._test_builder(config)
+                assert self._test_config(config, content, (f'r{run}', 'assert')) is Outcome.FAIL
 
                 # Minimization ends if the configuration is already reduced to a single unit.
                 if len(config) < 2:
@@ -142,10 +163,11 @@ class DD:
                 i = -i - 1
 
             # Get the outcome either from cache or by testing it.
-            outcome = self._lookup_cache(config_set, config_id)
+            content = self._test_builder(config_set)
+            outcome = self._lookup_cache(config_set, content, config_id)
             if outcome is None:
                 self._check_stop()
-                outcome = self._test_config(config_set, config_id)
+                outcome = self._test_config(config_set, content, config_id)
             if outcome is Outcome.FAIL:
                 fvalue = i
                 break
@@ -173,28 +195,30 @@ class DD:
         if self._stop:
             self._stop()
 
-    def _lookup_cache(self, config, config_id):
+    def _lookup_cache(self, config, content, config_id):
         """
         Perform a cache lookup if caching is enabled.
 
         :param config: The configuration we are looking for.
+        :param content: The test content built from the configuration.
         :param config_id: The ID describing the configuration (only for debug
             message).
         :return: None if outcome is not found for config in cache or if caching
             is disabled, PASS or FAIL otherwise.
         """
-        cached_result = self._cache.lookup(config)
+        cached_result = self._cache.lookup(config, content)
 
         if cached_result is not None and logger.isEnabledFor(logging.DEBUG):
             logger.debug('\t[ %s ]: cache = %r', self._pretty_config_id(self._iteration_prefix + config_id), cached_result.name)
 
         return cached_result
 
-    def _test_config(self, config, config_id):
+    def _test_config(self, config, content, config_id):
         """
         Test a single configuration and save the result in cache.
 
         :param config: The current configuration to test.
+        :param content: The test content built from the configuration.
         :param config_id: Unique ID that will be used to save tests to easily
             identifiable directories.
         :return: PASS or FAIL
@@ -205,13 +229,13 @@ class DD:
             pretty_config_id = self._pretty_config_id(config_id)
             logger.debug('\t[ %s ]: test...', pretty_config_id)
 
-        outcome = self._test(config, config_id)
+        outcome = self._test(config, content, config_id)
 
         if logger.isEnabledFor(logging.DEBUG):
             logger.debug('\t[ %s ]: test = %r', pretty_config_id, outcome.name)
 
         if 'assert' not in config_id:
-            self._cache.add(config, outcome)
+            self._cache.add(config, content, outcome)
 
         return outcome
 

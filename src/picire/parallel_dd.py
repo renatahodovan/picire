@@ -1,5 +1,5 @@
-# Copyright (c) 2016-2023 Renata Hodovan, Akos Kiss.
-# Copyright (c) 2023 Daniel Vince.
+# Copyright (c) 2016-2026 Renata Hodovan, Akos Kiss.
+# Copyright (c) 2023-2026 Daniel Vince.
 #
 # Licensed under the BSD 3-Clause License
 # <LICENSE.rst or https://opensource.org/licenses/BSD-3-Clause>.
@@ -29,17 +29,13 @@ class SharedCache(OutcomeCache):
         self._cache = cache
         self._lock = Lock()
 
-    def set_test_builder(self, test_builder):
+    def add(self, config, content, result):
         with self._lock:
-            self._cache.set_test_builder(test_builder)
+            self._cache.add(config, content, result)
 
-    def add(self, config, result):
+    def lookup(self, config, content):
         with self._lock:
-            self._cache.add(config, result)
-
-    def lookup(self, config):
-        with self._lock:
-            return self._cache.lookup(config)
+            return self._cache.lookup(config, content)
 
     def clear(self):
         with self._lock:
@@ -54,7 +50,7 @@ class ParallelDD(DD):
 
     def __init__(self, test, *, split=None, cache=None, id_prefix=None,
                  config_iterator=None, dd_star=False, stop=None,
-                 proc_num=None):
+                 test_builder=None, proc_num=None):
         """
         Initialize a ParallelDD object.
 
@@ -66,9 +62,12 @@ class ParallelDD(DD):
             config indices in an arbitrary order.
         :param dd_star: Boolean to enable the DD star algorithm.
         :param stop: A callable invoked before the execution of every test.
+        :param test_builder: Callable that builds test content from a config.
         :param proc_num: The level of parallelization.
         """
-        super().__init__(test=test, split=split, cache=cache, id_prefix=id_prefix, config_iterator=config_iterator, dd_star=dd_star, stop=stop)
+        super().__init__(test=test, split=split, cache=cache, id_prefix=id_prefix,
+                         config_iterator=config_iterator, dd_star=dd_star,
+                         stop=stop, test_builder=test_builder)
         self._cache = SharedCache(self._cache)
 
         self._proc_num = proc_num or cpu_count()
@@ -109,7 +108,8 @@ class ParallelDD(DD):
                     i = -i - 1
 
                 # If we checked this test before, return its result
-                outcome = self._lookup_cache(config_set, config_id)
+                content = self._test_builder(config_set)
+                outcome = self._lookup_cache(config_set, content, config_id)
                 if outcome is Outcome.PASS:
                     continue
                 if outcome is Outcome.FAIL:
@@ -117,7 +117,7 @@ class ParallelDD(DD):
                     break
 
                 self._check_stop()
-                tests.add(pool.submit(self._test_config_with_index, i, config_set, config_id))
+                tests.add(pool.submit(self._test_config_with_index, i, config_set, content, config_id))
 
             results, _ = wait(tests, return_when=ALL_COMPLETED)
             if fvalue == n:
@@ -140,5 +140,5 @@ class ParallelDD(DD):
 
         return None, complement_offset
 
-    def _test_config_with_index(self, index, config, config_id):
-        return index, self._test_config(config, config_id)
+    def _test_config_with_index(self, index, config, content, config_id):
+        return index, self._test_config(config, content, config_id)

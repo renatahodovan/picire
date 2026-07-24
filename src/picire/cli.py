@@ -262,11 +262,11 @@ def reduce(src, *,
         test_builder = ConcatTestBuilder(src)
         if cache:
             cache.clear()
-            cache.set_test_builder(test_builder)
 
-        dd = reduce_class(tester_class(test_builder=test_builder, **tester_config),
+        dd = reduce_class(tester_class(**tester_config),
                           cache=cache,
                           id_prefix=(f'a{atom_cnt}',),
+                          test_builder=test_builder,
                           **reduce_config)
         try:
             min_set = dd(list(range(len(src))))

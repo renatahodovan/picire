@@ -1,5 +1,5 @@
-# Copyright (c) 2016-2025 Renata Hodovan, Akos Kiss.
-# Copyright (c) 2023 Daniel Vince.
+# Copyright (c) 2016-2026 Renata Hodovan, Akos Kiss.
+# Copyright (c) 2023-2026 Daniel Vince.
 #
 # Licensed under the BSD 3-Clause License
 # <LICENSE.rst or https://opensource.org/licenses/BSD-3-Clause>.
@@ -16,7 +16,7 @@ from datetime import timedelta
 from importlib import metadata
 from math import inf
 from multiprocessing import cpu_count
-from os.path import basename, exists, join, realpath
+from pathlib import Path
 from shutil import rmtree
 from textwrap import indent
 
@@ -116,8 +116,8 @@ def config_logging(args):
 
 
 def process_args(args):
-    args.input = realpath(args.input)
-    if not exists(args.input):
+    args.input = Path(args.input).resolve()
+    if not args.input.exists():
         raise ValueError(f'Test case does not exist: {args.input}')
 
     with open(args.input, 'rb') as f:
@@ -133,16 +133,16 @@ def process_args(args):
 
     args.src = args.src.decode(args.encoding)
 
-    args.out = realpath(args.out if args.out else f'{args.input}.{time.strftime("%Y%m%d_%H%M%S")}')
+    args.out = Path(args.out if args.out else f'{args.input}.{time.strftime("%Y%m%d_%H%M%S")}').resolve()
 
-    args.test = realpath(args.test)
-    if not exists(args.test) or not os.access(args.test, os.X_OK):
+    args.test = Path(args.test).resolve()
+    if not args.test.exists() or not os.access(args.test, os.X_OK):
         raise ValueError(f'Tester program does not exist or isn\'t executable: {args.test}')
 
     args.tester_class = SubprocessTest
     args.tester_config = {'command_pattern': [args.test, '%s'],
-                          'work_dir': join(args.out, 'tests'),
-                          'filename': basename(args.input),
+                          'work_dir': args.out / 'tests',
+                          'filename': args.input.name,
                           'encoding': args.encoding,
                           'cleanup': args.cleanup}
 
@@ -285,10 +285,10 @@ def reduce(src, *,
 
 def postprocess(args, out_src):
     if args.cleanup:
-        rmtree(join(args.out, 'tests'))
+        rmtree(args.out / 'tests')
 
-    output = join(args.out, basename(args.input))
-    with open(output, 'w', encoding=args.encoding, errors='ignore', newline='') as f:
+    output = args.out / args.input.name
+    with output.open('w', encoding=args.encoding, errors='ignore', newline='') as f:
         f.write(out_src)
 
     logger.info('Output saved to %s', output)

@@ -1,13 +1,12 @@
-# Copyright (c) 2016-2025 Renata Hodovan, Akos Kiss.
+# Copyright (c) 2016-2026 Renata Hodovan, Akos Kiss.
 #
 # Licensed under the BSD 3-Clause License
 # <LICENSE.rst or https://opensource.org/licenses/BSD-3-Clause>.
 # This file may not be copied, modified, or distributed except
 # according to those terms.
 
-import os
-import shutil
-
+from pathlib import Path
+from shutil import rmtree
 from subprocess import run
 
 from .outcome import Outcome
@@ -49,10 +48,10 @@ class SubprocessTest:
         :return: The evaluation of the current test. It's either FAIL or PASS.
         """
 
-        test_dir = os.path.join(self.work_dir, '_'.join(str(i) for i in config_id))
-        test_path = os.path.join(test_dir, self.filename)
+        test_dir = Path(self.work_dir) / '_'.join(str(i) for i in config_id)
+        test_path = test_dir / self.filename
 
-        os.makedirs(test_dir, exist_ok=True)
+        test_dir.mkdir(parents=True, exist_ok=True)
 
         with open(test_path, 'w', encoding=self.encoding, errors='ignore', newline='') as f:
             f.write(self.test_builder(config))
@@ -67,7 +66,7 @@ class SubprocessTest:
         returncode = run(args, cwd=test_dir, check=False).returncode
 
         if self.cleanup:
-            shutil.rmtree(test_dir)
+            rmtree(test_dir)
 
         # Determine outcome.
         return Outcome.FAIL if returncode == 0 else Outcome.PASS

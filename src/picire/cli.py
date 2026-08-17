@@ -139,9 +139,11 @@ def process_args(args):
     if not args.test.exists() or not os.access(args.test, os.X_OK):
         raise ValueError(f'Tester program does not exist or isn\'t executable: {args.test}')
 
+    work_dir = args.out / 'tests'
+    work_dir.mkdir(parents=True, exist_ok=True)
     args.tester_class = SubprocessTest
     args.tester_config = {'command_pattern': [args.test, '%s'],
-                          'work_dir': args.out / 'tests',
+                          'work_dir': work_dir,
                           'filename': args.input.name,
                           'encoding': args.encoding,
                           'cleanup': args.cleanup}

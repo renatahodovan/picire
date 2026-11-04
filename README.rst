@@ -152,29 +152,15 @@ Compatibility
 
 *Picire* was tested on:
 
-* Linux (Ubuntu 14.04 / 16.04 / 18.04 / 20.04)
-* OS X / macOS (10.11 / 10.12 / 10.13 / 10.14 / 10.15 / 11)
-* Windows (Server 2012 R2 / Server version 1809 / Windows 10)
+* Linux (Ubuntu 14.04 ... 26.04)
+* OS X / macOS (10.11 ... 26.6)
+* Windows (Server 2012 ... 2025)
 
 
-Acknowledgement and Citations
-=============================
+Citations and Acknowledgements
+==============================
 
-This software uses the delta debugging algorithm as described in:
-
-* Andreas Zeller. Yesterday, My Program Worked. Today, It Does Not. Why?
-  In Proceedings of the 7th European Software Engineering Conference Held
-  Jointly with the 7th ACM SIGSOFT Symposium on the Foundations of Software
-  Engineering (ESEC/FSE '99), volume 1687 of Lecture Notes in Computer Science
-  (LNCS), pages 253-267, Toulouse, France, September 1999. Springer.
-  https://doi.org/10.1007/3-540-48166-4_16
-* Ralf Hildebrandt and Andreas Zeller. Simplifying Failure-Inducing Input.
-  In Proceedings of the 2000 ACM SIGSOFT International Symposium on Software
-  Testing and Analysis (ISSTA '00), pages 135-145, Portland, Oregon, USA, August
-  2000. ACM.
-  https://doi.org/10.1145/347324.348938
-
-Further improvements are described in:
+Background on *Picire* is published in:
 
 * Renata Hodovan and Akos Kiss. Practical Improvements to the Minimizing Delta
   Debugging Algorithm.
@@ -202,6 +188,25 @@ Further improvements are described in:
   Reliability, and Security (QRS 2022), pages 442-453, Guangzhou, China,
   December 2022. IEEE.
   https://doi.org/10.1109/QRS57517.2022.00052
+* Daniel Vince and Akos Kiss. Evaluation of the fixed-point iteration of
+  minimizing delta debugging.
+  Journal of Software: Evolution and Process, 36(10):e2702,1-16, October 2024.
+  Wiley.
+  https://doi.org/10.1002/smr.2702
+
+*Picire* uses the delta debugging algorithm as described in:
+
+* Andreas Zeller. Yesterday, My Program Worked. Today, It Does Not. Why?
+  In Proceedings of the 7th European Software Engineering Conference Held
+  Jointly with the 7th ACM SIGSOFT Symposium on the Foundations of Software
+  Engineering (ESEC/FSE '99), volume 1687 of Lecture Notes in Computer Science
+  (LNCS), pages 253-267, Toulouse, France, September 1999. Springer.
+  https://doi.org/10.1007/3-540-48166-4_16
+* Ralf Hildebrandt and Andreas Zeller. Simplifying Failure-Inducing Input.
+  In Proceedings of the 2000 ACM SIGSOFT International Symposium on Software
+  Testing and Analysis (ISSTA '00), pages 135-145, Portland, Oregon, USA, August
+  2000. ACM.
+  https://doi.org/10.1145/347324.348938
 
 
 Copyright and Licensing

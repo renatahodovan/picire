@@ -2,6 +2,34 @@
 *Picire* Release Notes
 ======================
 
+26.11
+=====
+
+Summary of changes:
+
+* Added support for DD* (iterating ddmin until fixpoint), enabled by default in
+  CLI.
+* Added time and test count limits to reduction.
+* Changed the API of DD classes by merging AbstractDD into DD and
+  AbstractParallelDD and CombinedParallelDD into ParallelDD, and by unifying
+  config iterators.
+* Changed the API of caches and testers to receive the already-built test
+  content.
+* Renamed modules of iterators, splitters, and caches, and stopped exporting
+  cache classes from the top-level package.
+* Added content-hash and config-tuple caches, and optimized memory usage of
+  caches.
+* Rewrote parallel DD based on futures.
+* Used decorator-based registries for iterators, splitters, and caches.
+* Improved the configurability of logging.
+* Bumped minimum Python requirement to 3.10.
+* Moved to src layout.
+* Various internal refactorings.
+* Improved the testing infrastructure (linting, testing Python 3.10-3.15 and
+  PyPy 3.12, upgraded GitHub Actions).
+* Improved documentation.
+
+
 21.8
 ====
 

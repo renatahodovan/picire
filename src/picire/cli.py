@@ -251,7 +251,7 @@ def reduce(src, *,
     if logger.isEnabledFor(logging.INFO):
         logger.info('Reduce session starts\n%s', indent(pretty_str(args), '\t'))
 
-    cache = cache_class(**cache_config) if cache_class else None
+    cache = cache_class(**(cache_config or {})) if cache_class else None
 
     for atom_cnt, atom_name in enumerate(['line', 'char'] if atom == 'both' else [atom]):
         # Split source to the chosen atoms.

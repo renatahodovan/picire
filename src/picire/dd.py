@@ -60,7 +60,7 @@ class DD:
         self._split = split or ZellerSplit()
         self._cache = cache or ConfigCache()
         self._id_prefix = id_prefix or ()
-        self._iteration_prefix = ()
+        self._iteration_prefix = self._id_prefix
         self._config_iterator = config_iterator or CombinedIterator()
         self._dd_star = dd_star
         self._stop = stop

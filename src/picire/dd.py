@@ -77,67 +77,69 @@ class DD:
             potentially non-minimal, but failing configuration found during
             reduction.
         """
-        for iter_cnt in itertools.count():
-            logger.info('Iteration #%d', iter_cnt)
-            self._iteration_prefix = self._id_prefix + (f'i{iter_cnt}',)
-            changed = False
-            subsets = [config]
-            complement_offset = 0
+        try:
+            for iter_cnt in itertools.count():
+                logger.info('Iteration #%d', iter_cnt)
+                self._iteration_prefix = self._id_prefix + (f'i{iter_cnt}',)
+                changed = False
+                subsets = [config]
+                complement_offset = 0
 
-            for run in itertools.count():
-                logger.info('Run #%d', run)
-                logger.info('\tConfig size: %d', len(config))
-                content = self._test_builder(config)
-                assert self._test_config(config, content, (f'r{run}', 'assert')) is Outcome.FAIL
+                for run in itertools.count():
+                    logger.info('Run #%d', run)
+                    logger.info('\tConfig size: %d', len(config))
+                    content = self._test_builder(config)
+                    assert self._test_config(config, content, (f'r{run}', 'assert')) is Outcome.FAIL
 
-                # Minimization ends if the configuration is already reduced to a single unit.
-                if len(config) < 2:
+                    # Minimization ends if the configuration is already reduced to a single unit.
+                    if len(config) < 2:
+                        logger.info('\tGranularity: %d', len(subsets))
+                        logger.debug('\tConfig: %r', subsets)
+                        break
+
+                    if len(subsets) < 2:
+                        assert len(subsets) == 1
+                        subsets = self._split(subsets)
+
                     logger.info('\tGranularity: %d', len(subsets))
                     logger.debug('\tConfig: %r', subsets)
-                    break
 
-                if len(subsets) < 2:
-                    assert len(subsets) == 1
-                    subsets = self._split(subsets)
-
-                logger.info('\tGranularity: %d', len(subsets))
-                logger.debug('\tConfig: %r', subsets)
-
-                try:
                     next_subsets, complement_offset = self._reduce_config(run, subsets, complement_offset)
-                except ReductionStopped as e:
-                    logger.info('\tStopped')
-                    e.result = config
-                    raise
-                except Exception as e:
-                    logger.info('\tErrored')
-                    raise ReductionError(str(e), result=config) from e
 
-                if next_subsets is not None:
-                    changed = True
-                    # Interesting configuration is found, continue reduction with this configuration.
-                    subsets = next_subsets
-                    config = [c for s in subsets for c in s]
+                    if next_subsets is not None:
+                        changed = True
+                        # Interesting configuration is found, continue reduction with this configuration.
+                        subsets = next_subsets
+                        config = [c for s in subsets for c in s]
 
-                    logger.info('\tReduced')
+                        logger.info('\tReduced')
 
-                elif len(subsets) < len(config):
-                    # No interesting configuration is found but it is still not the finest splitting, start new iteration.
-                    next_subsets = self._split(subsets)
-                    complement_offset = (complement_offset * len(next_subsets)) // len(subsets)
-                    subsets = next_subsets
+                    elif len(subsets) < len(config):
+                        # No interesting configuration is found but it is still not the finest splitting, start new iteration.
+                        next_subsets = self._split(subsets)
+                        complement_offset = (complement_offset * len(next_subsets)) // len(subsets)
+                        subsets = next_subsets
 
-                    logger.info('\tIncreased granularity')
+                        logger.info('\tIncreased granularity')
 
-                else:
-                    # Current iteration ends if no interesting configuration was found by the finest splitting.
+                    else:
+                        # Current iteration ends if no interesting configuration was found by the finest splitting.
+                        break
+
+                if not self._dd_star or not changed:
                     break
 
-            if not self._dd_star or not changed:
-                break
+            logger.info('\tDone')
+            return config
 
-        logger.info('\tDone')
-        return config
+        except ReductionStopped as e:
+            logger.info('\tStopped')
+            e.result = config
+            raise
+
+        except Exception as e:
+            logger.info('\tErrored')
+            raise ReductionError(str(e), result=config) from e
 
     def _reduce_config(self, run, subsets, complement_offset):
         """

@@ -88,8 +88,7 @@ class DD:
                 for run in itertools.count():
                     logger.info('Run #%d', run)
                     logger.info('\tConfig size: %d', len(config))
-                    content = self._test_builder(config)
-                    assert self._test_config(config, content, (f'r{run}', 'assert')) is Outcome.FAIL
+                    assert self._test_config(config, self._test_builder(config), (f'r{run}', 'assert')) is Outcome.FAIL, 'first configuration of a run is expected to fail but it did not'
 
                     # Minimization ends if the configuration is already reduced to a single unit.
                     if len(config) < 2:
